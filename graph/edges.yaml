@@ -1,0 +1,2 @@
+# Edge list — graph schema v1. Populated during seeding (see docs/project-kickoff.md §4).
+edges: []

@@ -1,3 +1,11 @@
+---
+summary: founding contract — positioning, pivot from MAS, graph schema v1, MVP scope, roadmap
+read_when:
+  - questioning product positioning or scope
+  - touching the graph schema or the domain vocabulary
+  - starting a new MVP week or writing an ADR
+---
+
 # scopegraph — Project Kickoff
 
 > **One-liner:** An AI scoping runtime for projects that don't exist in isolation. scopegraph grounds a new project idea in the existing ecosystem — systems, past projects, decisions, constraints — surfaces dependencies and risks, and produces a context-aware scoping dossier.

@@ -1,3 +1,10 @@
+---
+summary: validated MVP design — decisions closing the kickoff's open points, architecture, scoping loop, milestones
+read_when:
+  - implementing any MVP component
+  - questioning a design decision taken on 2026-06-09
+---
+
 # scopegraph MVP — Design Spec
 
 Date: 2026-06-09

@@ -87,3 +87,11 @@ Eval: ~5 documented cases in `docs/eval/` (French) where a well-written naive LL
 ## 9. Out of scope (MVP)
 
 Everything §5 of the kickoff excludes (DOCX, Confluence, dashboards, multi-agent…), plus: authentication, multi-user sessions, session persistence across restarts, d3/React map, document ingestion (ecosystem-foundry's job).
+
+## 10. Parked ideas (noted, not committed)
+
+Graph-governance safeguards identified during design review — cheap to add if the MVP lands early, otherwise roadmap material alongside ecosystem-foundry (which is the structural answer to graph maintenance: periodic re-ingestion refreshes node status and edges; see kickoff §2 and §8):
+
+- **Write-back dedup guard**: before creating the `Project` node, similarity check against existing nodes → warn "looks like `proj-x` (87%) — create anyway / merge?".
+- **`scopegraph lint`**: a command listing graph-rot signals — `ongoing` projects untouched for N months, orphan nodes, unresolved contradictory decisions, unverified edges.
+- A short "graph governance" ADR freezing the boundary: scopegraph curates at scoping time; lifecycle/refresh belongs to ingestion (Project B).

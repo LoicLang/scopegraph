@@ -16,19 +16,22 @@ read_when:
   (language split FR/EN, minimal web UI, Mistral/DeepSeek/Mock providers, multilingual local
   embeddings, iterative retrieval loop, dossier structure, 4-week milestones).
 - Workflow doctrine in place: `AGENTS.md`, `docs/README.md`, `scripts/docs-list`.
+- W1 implementation plan written: `docs/plans/2026-06-09-week1-foundations.md`
+  (11 TDD tasks, full code included — execute via subagent-driven-development).
 
 ## Next chantier — Week 1 (foundations)
 
-1. Implementation plan for W1 → `docs/plans/` (via writing-plans).
-2. ADR 0000 (pivot from MAS) + ADR 0001 (graph schema v1) — content specified in kickoff §1 and §4.
-3. Schema v1 as Pydantic models + YAML loader + in-memory `GraphService`
+Execute the plan above, task by task, in order:
+
+1. ADR 0000 (pivot from MAS) + ADR 0001 (graph schema v1) — content specified in kickoff §1 and §4.
+2. Schema v1 as Pydantic models + YAML loader + in-memory `GraphService`
    (`get_node`, `neighbors`, `k_hop`) — TDD, hermetic.
-4. Seed data: 15–25 fictional French banking-IT nodes across ≥4 domains, with the deliberate
+3. Seed data: 15–25 fictional French banking-IT nodes across ≥4 domains, with the deliberate
    traps of kickoff §5.1 (aliases MONAUT/« moteur d'autorisation », contradictory decisions,
    one superseded decision, one 2-hop cross-domain chain monétique→TPE).
-5. README v1 (English): positioning, pivot story, 6-step workflow, demo scenario, honest
+4. README v1 (English): positioning, pivot story, 6-step workflow, demo scenario, honest
    "seeded registry" statement, roadmap → ecosystem-foundry.
-6. Draft the 5 eval cases (French) in `docs/eval/`.
+5. Draft the 5 eval cases (French) in `docs/eval/`.
 
 ## Later
 

@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Generate the interactive graph viewer (out/graph.html by default).
+
+Usage: ./scripts/graph-viz [--focus ID] [--k N] [--domain D ...] [--type T ...]
+       [--highlight id1,id2] [--out PATH]
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# Re-exec into the project venv so `./scripts/graph-viz` just works.
+_VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
+_VENV_SITE = ROOT / ".venv" / "lib"
+_in_venv = any(str(_VENV_SITE) in p for p in sys.path)
+if _VENV_PYTHON.exists() and not _in_venv:
+    os.execv(str(_VENV_PYTHON), [str(_VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+sys.path.insert(0, str(ROOT))
+
+import argparse  # noqa: E402
+import json  # noqa: E402
+
+from core.graph.service import GraphService  # noqa: E402
+from core.viz.payload import build_payload  # noqa: E402
+
+NODE_TYPES = [
+    "system", "feature", "business_object", "project", "decision", "constraint", "risk",
+]
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Generate the interactive graph viewer.")
+    parser.add_argument("--focus", help="center node id (subgraph of its k-hop neighborhood)")
+    parser.add_argument("--k", type=int, default=2, help="radius when --focus is set")
+    parser.add_argument("--domain", action="append", help="keep nodes of this domain (repeatable)")
+    parser.add_argument("--type", action="append", choices=NODE_TYPES, dest="types",
+                        help="keep nodes of this type (repeatable)")
+    parser.add_argument("--highlight", help="comma-separated node ids to emphasize")
+    parser.add_argument("--out", type=Path, default=ROOT / "out" / "graph.html")
+    args = parser.parse_args(argv)
+
+    service = GraphService.from_dir(ROOT / "graph")
+    payload = build_payload(
+        service,
+        focus=args.focus,
+        k=args.k,
+        domains=set(args.domain) if args.domain else None,
+        types=set(args.types) if args.types else None,
+        highlight=set(args.highlight.split(",")) if args.highlight else None,
+    )
+
+    template = (ROOT / "web" / "graph_template.html").read_text(encoding="utf-8")
+    html = template.replace("__GRAPH_DATA__", json.dumps(payload, ensure_ascii=False))
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(html, encoding="utf-8")
+    print(f"{args.out} ({len(payload['nodes'])} nœuds, {len(payload['edges'])} arêtes)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

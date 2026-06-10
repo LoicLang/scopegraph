@@ -10,3 +10,4 @@ build/
 .chroma/
 .env
 .DS_Store
+out/

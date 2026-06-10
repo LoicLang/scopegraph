@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>scopegraph — carte de l'écosystème</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: -apple-system, "Segoe UI", sans-serif; color: #2c2c2a; background: #fff; }
+  header { display: flex; gap: 12px; align-items: center; padding: 12px 16px;
+           border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; }
+  header h1 { font-size: 16px; font-weight: 600; margin-right: auto; }
+  header input, header select { padding: 6px 10px; border: 1px solid #d3d1c7;
+           border-radius: 6px; font-size: 13px; min-width: 220px; }
+  header button { padding: 6px 12px; border: 1px solid #d3d1c7; border-radius: 6px;
+           background: #f1efe8; font-size: 13px; cursor: pointer; }
+  #legend { display: flex; gap: 14px; padding: 8px 16px; font-size: 12px;
+            border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; color: #5f5e5a; }
+  #legend span { display: inline-flex; align-items: center; gap: 5px; }
+  #legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  main { display: flex; height: calc(100vh - 92px); }
+  #cy { flex: 1; }
+  #panel { width: 320px; border-left: 1px solid #e3e1d9; padding: 16px;
+           overflow-y: auto; font-size: 13px; line-height: 1.55; }
+  #panel h2 { font-size: 15px; margin-bottom: 2px; }
+  #panel .type { font-size: 12px; color: #5f5e5a; margin-bottom: 10px; }
+  #panel .domains { margin: 8px 0; }
+  #panel .domains code { background: #f1efe8; border-radius: 4px; padding: 1px 6px;
+           font-size: 11px; margin-right: 4px; }
+  #panel .edges { margin-top: 12px; border-top: 1px solid #e3e1d9; padding-top: 10px; }
+  #panel .edges div { margin-bottom: 6px; }
+  #panel .edges small { color: #888780; }
+  #panel button { margin-top: 12px; margin-right: 6px; padding: 5px 10px; font-size: 12px;
+           border: 1px solid #d3d1c7; border-radius: 6px; background: #f1efe8; cursor: pointer; }
+  .hint { color: #888780; }
+</style>
+</head>
+<body>
+<header>
+  <h1>scopegraph — carte de l'écosystème</h1>
+  <input id="search" placeholder="Rechercher (nom, alias, id)…">
+  <select id="domain"><option value="">Tous les domaines</option></select>
+  <button id="reset">Réinitialiser</button>
+</header>
+<div id="legend"></div>
+<main>
+  <div id="cy"></div>
+  <aside id="panel"><p class="hint">Cliquez sur un nœud pour afficher son détail.</p></aside>
+</main>
+<script>
+const GRAPH_DATA = __GRAPH_DATA__;
+
+const TYPE_COLORS = {
+  system: "#534AB7", feature: "#D4537E", business_object: "#0F6E56",
+  project: "#185FA5", decision: "#993C1D", constraint: "#854F0B", risk: "#A32D2D",
+};
+const TYPE_LABELS = {
+  system: "Système", feature: "Feature", business_object: "Objet métier",
+  project: "Projet", decision: "Décision", constraint: "Contrainte", risk: "Risque",
+};
+const EDGE_STYLES = {
+  PART_OF: { color: "#b4b2a9", style: "dashed" },
+  OPERATES_ON: { color: "#1D9E75", style: "solid" },
+  DEPENDS_ON: { color: "#5f5e5a", style: "solid" },
+  CONSTRAINS: { color: "#BA7517", style: "solid" },
+  PRODUCED: { color: "#378ADD", style: "solid" },
+  SUPERSEDES: { color: "#E24B4A", style: "solid" },
+  RELATES_TO: { color: "#888780", style: "dotted" },
+};
+
+const elements = [
+  ...GRAPH_DATA.nodes.map(n => ({ data: { ...n } })),
+  ...GRAPH_DATA.edges.map((e, i) => ({ data: { id: "e" + i, ...e } })),
+];
+const highlighted = new Set(GRAPH_DATA.highlight);
+
+const cy = cytoscape({
+  container: document.getElementById("cy"),
+  elements,
+  style: [
+    { selector: "node", style: {
+        "background-color": n => TYPE_COLORS[n.data("type")] || "#888",
+        label: "data(label)", "font-size": 10, color: "#2c2c2a",
+        "text-wrap": "wrap", "text-max-width": 110,
+        "text-valign": "bottom", "text-margin-y": 4, width: 26, height: 26,
+    }},
+    { selector: "edge", style: {
+        width: 1.4, "curve-style": "bezier",
+        "line-color": e => EDGE_STYLES[e.data("type")].color,
+        "line-style": e => EDGE_STYLES[e.data("type")].style,
+        "target-arrow-shape": "vee",
+        "target-arrow-color": e => EDGE_STYLES[e.data("type")].color,
+        "arrow-scale": 0.8,
+    }},
+    { selector: "node.hl", style: { "border-width": 4, "border-color": "#2c2c2a", width: 34, height: 34 } },
+    { selector: ".dim", style: { opacity: 0.18 } },
+    { selector: "node.found", style: { "border-width": 4, "border-color": "#EF9F27" } },
+  ],
+  layout: { name: "cose", animate: false, nodeRepulsion: 9000, idealEdgeLength: 90, padding: 30 },
+});
+
+if (highlighted.size) {
+  cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dim"));
+  cy.edges().forEach(e => {
+    if (!(highlighted.has(e.source().id()) && highlighted.has(e.target().id()))) e.addClass("dim");
+  });
+}
+
+// Legend
+document.getElementById("legend").innerHTML = Object.entries(TYPE_LABELS)
+  .map(([t, l]) => `<span><i style="background:${TYPE_COLORS[t]}"></i>${l}</span>`).join("");
+
+// Side panel
+const panel = document.getElementById("panel");
+cy.on("tap", "node", evt => {
+  const n = evt.target;
+  const edges = n.connectedEdges().map(e => {
+    const out = e.source().id() === n.id();
+    const other = out ? e.target() : e.source();
+    const arrow = out ? "→" : "←";
+    const note = e.data("note") ? `<br><small>${e.data("note")}</small>` : "";
+    return `<div><code>${e.data("type")}</code> ${arrow} ${other.data("label")}${note}</div>`;
+  }).join("");
+  panel.innerHTML = `
+    <h2>${n.data("label")}</h2>
+    <div class="type">${TYPE_LABELS[n.data("type")]} · <code>${n.id()}</code></div>
+    <p>${n.data("summary")}</p>
+    <div class="domains">${n.data("domains").map(d => `<code>${d}</code>`).join("")}</div>
+    <div class="edges"><strong>${edges ? "Liens" : "Aucun lien"}</strong>${edges}</div>
+    <button id="isolate">Isoler le voisinage</button>
+    <button id="showall">Tout afficher</button>`;
+  document.getElementById("isolate").onclick = () => {
+    const keep = n.closedNeighborhood();
+    cy.elements().addClass("dim");
+    keep.removeClass("dim");
+  };
+  document.getElementById("showall").onclick = () => cy.elements().removeClass("dim");
+});
+cy.on("tap", evt => { if (evt.target === cy) panel.innerHTML = '<p class="hint">Cliquez sur un nœud pour afficher son détail.</p>'; });
+
+// Search (matches id, label, aliases via the payload "search" field)
+document.getElementById("search").addEventListener("input", evt => {
+  const q = evt.target.value.trim().toLowerCase();
+  cy.nodes().removeClass("found");
+  if (q.length < 2) return;
+  cy.nodes().filter(n => n.data("search").includes(q)).addClass("found");
+});
+
+// Domain filter
+const domainSelect = document.getElementById("domain");
+[...new Set(GRAPH_DATA.nodes.flatMap(n => n.domains))].sort().forEach(d => {
+  domainSelect.insertAdjacentHTML("beforeend", `<option>${d}</option>`);
+});
+domainSelect.addEventListener("change", () => {
+  const d = domainSelect.value;
+  cy.elements().removeClass("dim");
+  if (!d) return;
+  const keep = cy.nodes().filter(n => n.data("domains").includes(d));
+  cy.elements().addClass("dim");
+  keep.removeClass("dim");
+  keep.connectedEdges().filter(e =>
+    keep.contains(e.source()) && keep.contains(e.target())).removeClass("dim");
+});
+
+// Reset
+document.getElementById("reset").onclick = () => {
+  cy.elements().removeClass("dim found");
+  document.getElementById("search").value = "";
+  domainSelect.value = "";
+  if (highlighted.size) {
+    cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dim"));
+  }
+  cy.fit(undefined, 30);
+};
+</script>
+</body>
+</html>

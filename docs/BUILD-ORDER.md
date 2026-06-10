@@ -43,9 +43,16 @@ first (no validated plan exists yet):
    with provenance (k_hop is ready). Unit test = the BNPL→TPE 2-hop case and the
    beneficiary-inheritance case (eval cases 1 and 2).
 3. Iterative MAPPING loop: deterministic ambiguity triggers → discriminating questions.
-4. First web screens: FastAPI + single Alpine.js page (chat pane + live Mermaid Context Map).
+4. First web screens: FastAPI + single Alpine.js page (chat pane + live Context Map pane,
+   served from the `core/viz/payload.py` seam — graph-viz design spec).
 
 ## Later
 
 W3 LLM providers (Mistral/DeepSeek/Mock) + grounding gate + challenge · W4 dossier +
 Context Map polish + write-back + scripted demo + eval run. See MVP spec §8.
+
+W4 note (decided in session, 2026-06-10): write-back needs a small TOPOLOGY-extension ADR —
+allow `Project → DEPENDS_ON → System` and `Project → OPERATES_ON → BusinessObject` so an
+in-flight project can express what it touches (collision detection). New `Feature` nodes are
+NOT created at scoping write-back (intention ≠ reality); they enter the graph at delivery,
+via `PRODUCED` (see fine-grain spec §6).

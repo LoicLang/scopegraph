@@ -87,3 +87,24 @@ def test_neighbors_filter_by_edge_type(service):
 
 def test_neighbors_of_isolated_node_empty(service):
     assert service.neighbors("sys-isole") == []
+
+
+def test_k_hop_finds_constraint_through_shared_object(service):
+    # The founding trap shape: from the mobile feature, the shared rule is 2 hops away.
+    reached = service.k_hop("feat-mobile-ajout-benef", k=2)
+    assert "con-carence-beneficiaire-48h" in reached
+    path = reached["con-carence-beneficiaire-48h"]
+    assert len(path) == 2
+    assert path[0].type == EdgeType.OPERATES_ON
+    assert path[1].type == EdgeType.CONSTRAINS
+
+
+def test_k_hop_respects_radius(service):
+    reached = service.k_hop("feat-mobile-ajout-benef", k=1)
+    assert set(reached) == {"obj-beneficiaire"}
+
+
+def test_k_hop_excludes_start_and_unreachable(service):
+    reached = service.k_hop("feat-mobile-ajout-benef", k=3)
+    assert "feat-mobile-ajout-benef" not in reached
+    assert "sys-isole" not in reached

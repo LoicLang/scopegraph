@@ -52,3 +52,24 @@ class GraphService:
             other_id = edge.target_id if edge.source_id == node_id else edge.source_id
             result.append((edge, self._nodes[other_id]))
         return result
+
+    def k_hop(self, start: str, k: int) -> dict[str, list[Edge]]:
+        """BFS up to k hops (edges treated as undirected).
+
+        Returns reached node id -> shortest path as the list of edges from start.
+        The start node itself is excluded.
+        """
+        self.get_node(start)
+        paths: dict[str, list[Edge]] = {start: []}
+        frontier = [start]
+        for _ in range(k):
+            next_frontier: list[str] = []
+            for node_id in frontier:
+                for edge, node in self.neighbors(node_id):
+                    if node.id in paths:
+                        continue
+                    paths[node.id] = [*paths[node_id], edge]
+                    next_frontier.append(node.id)
+            frontier = next_frontier
+        del paths[start]
+        return paths

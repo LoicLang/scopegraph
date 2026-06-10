@@ -1,0 +1,16 @@
+# graph/nodes/con-archivage-alertes-fraude.yaml
+type: constraint
+id: con-archivage-alertes-fraude
+title: Archivage des alertes de fraude
+statement: >-
+  Les alertes de fraude qualifiées (niveau 2 ou supérieur) sont archivées dans
+  un coffre-fort électronique dédié pour une durée minimale de 5 ans à compter
+  de leur qualification. Elles doivent être restituables aux autorités compétentes
+  (Tracfin, autorités judiciaires) dans un format structuré et dans un délai
+  défini par la réglementation. L'intégrité des archives est vérifiée
+  trimestriellement par l'équipe conformité.
+source: réglementation LCB-FT
+severity: medium
+domains: [lcb-ft, editique-reporting]
+tags: [fraude, archivage, lcb-ft, conformite]
+created_from: seed

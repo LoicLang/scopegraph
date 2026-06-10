@@ -1,0 +1,21 @@
+# graph/nodes/proj-refonte-scoring-fraude.yaml
+type: project
+id: proj-refonte-scoring-fraude
+name: Refonte du scoring fraude
+aliases: [REFONTE-FRAUDE, FRAUDSCORE-PROJET]
+description: >-
+  Projet de refonte complète du dispositif de détection de la fraude (2023-2024),
+  mené conjointement par les équipes LCB-FT et les équipes canaux. Avant ce projet,
+  chaque canal de paiement maintenait son propre modèle de scoring, entraînant des
+  incohérences et des angles morts entre canaux. Le projet a unifié les données
+  d'entraînement, les règles métier et les seuils de décision en un point unique.
+status: done
+owner_team: Équipe LCB-FT
+outcomes: >-
+  A consolidé l'ensemble des scorings par canal en un point de décision unique
+  (FRAUDSCORE), dépréciant la décision de scoring par canal de 2021; tous les
+  paiements passent désormais par ce moteur centralisé avant autorisation.
+known_risks: [risk-modele-fraude-derive]
+domains: [lcb-ft]
+tags: [fraude, scoring, unification]
+created_from: seed

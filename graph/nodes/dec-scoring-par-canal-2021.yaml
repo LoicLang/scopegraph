@@ -1,0 +1,20 @@
+# graph/nodes/dec-scoring-par-canal-2021.yaml
+type: decision
+id: dec-scoring-par-canal-2021
+title: Scoring fraude par canal
+statement: >-
+  Chaque canal de paiement (banque en ligne, mobile, agence, entreprise) portait son
+  propre moteur de scoring fraude, calibré sur les profils de risque spécifiques au
+  canal. Les seuils et les modèles étaient gérés indépendamment par les équipes
+  canal, sans consolidation centrale.
+rationale: >-
+  À l'époque, les canaux avaient des volumes et des typologies de fraude suffisamment
+  distincts pour justifier des modèles séparés. Cette approche a été supersédée par
+  la décision de scoring unique de 2024, qui a mis en évidence les angles morts
+  inter-canaux générés par cette architecture distribuée.
+date: "2021-09-01"
+decided_by: Comité des risques
+still_active: false
+domains: [lcb-ft]
+tags: [fraude, scoring, obsolete]
+created_from: seed

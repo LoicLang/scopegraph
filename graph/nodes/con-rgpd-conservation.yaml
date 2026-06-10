@@ -1,0 +1,15 @@
+# graph/nodes/con-rgpd-conservation.yaml
+type: constraint
+id: con-rgpd-conservation
+title: Conservation RGPD
+statement: >-
+  Les données personnelles des clients sont soumises à des durées de conservation
+  maximales définies dans le registre des traitements RGPD; au-delà de ces durées,
+  les données doivent être purgées ou anonymisées de façon irréversible. Les
+  opérations de purge sont planifiées, tracées et auditables; tout incident de
+  non-purge dans les délais doit être déclaré au DPO dans les 72 heures.
+source: RGPD
+severity: medium
+domains: [referentiel-client]
+tags: [rgpd, conservation, purge, conformite]
+created_from: seed

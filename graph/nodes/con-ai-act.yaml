@@ -1,0 +1,16 @@
+# graph/nodes/con-ai-act.yaml
+type: constraint
+id: con-ai-act
+title: Classification AI Act
+statement: >-
+  Tout composant intégrant de l'intelligence artificielle ou du machine learning
+  doit faire l'objet d'une classification par niveau de risque selon le règlement
+  européen AI Act. Les systèmes à haut risque — notamment les moteurs de scoring
+  fraude et de décision de crédit — exigent une documentation technique complète,
+  une supervision humaine identifiée et un processus de recalibrage périodique
+  tracé. La mise en production d'un système IA non classifié est interdite.
+source: règlement européen AI Act
+severity: medium
+domains: [socle-si, lcb-ft]
+tags: [ia, ai-act, conformite, scoring]
+created_from: seed

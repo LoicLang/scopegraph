@@ -1,0 +1,16 @@
+# graph/nodes/con-credit-conso-kyc.yaml
+type: constraint
+id: con-credit-conso-kyc
+title: KYC à jour pour le crédit conso
+statement: >-
+  Tout octroi de crédit à la consommation nécessite que le dossier KYC du
+  client soit complet et daté de moins de 12 mois au moment de la décision.
+  Si le dossier est absent ou périmé, l'instruction du dossier de crédit est
+  bloquée jusqu'à la mise à jour du KYC par le conseiller référent. Cette
+  exigence s'applique aussi bien aux crédits accordés en agence que par les
+  canaux digitaux.
+source: réglementation crédit / LCB-FT
+severity: high
+domains: [credit, referentiel-client]
+tags: [kyc, credit, conformite, lcb-ft]
+created_from: seed

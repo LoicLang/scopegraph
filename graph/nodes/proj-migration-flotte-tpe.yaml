@@ -1,0 +1,18 @@
+# graph/nodes/proj-migration-flotte-tpe.yaml
+type: project
+id: proj-migration-flotte-tpe
+name: Migration logicielle de la flotte TPE
+aliases: [MIGRATION-TPE, PAYTERM-MIGRATION]
+description: >-
+  Projet de migration du logiciel embarqué sur l'ensemble des terminaux de paiement
+  électronique PAYTERM, étalé sur 18 mois. La flotte comporte plusieurs générations
+  de firmware incompatibles, source de comportements divergents et de vulnérabilités non
+  corrigées. Le projet opère sous contrainte des releases trimestrielles et requiert
+  une coordination étroite avec les équipes terrain pour le déploiement silencieux.
+status: ongoing
+owner_team: Équipe Acceptation TPE
+outcomes: ""
+known_risks: [risk-fragmentation-tpe]
+domains: [tpe-acceptation]
+tags: [migration, firmware, tpe]
+created_from: seed

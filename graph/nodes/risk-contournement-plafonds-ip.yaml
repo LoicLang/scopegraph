@@ -1,0 +1,21 @@
+# graph/nodes/risk-contournement-plafonds-ip.yaml
+type: risk
+id: risk-contournement-plafonds-ip
+title: Contournement des plafonds instantané
+statement: >-
+  Des acteurs frauduleux peuvent contourner les plafonds unitaires de virement
+  instantané en émettant des rafales de virements dont chacun reste sous le
+  seuil de déclenchement, répartis sur une courte période ou entre plusieurs
+  bénéficiaires. Ce schéma n'est détectable qu'en analysant les volumes cumulés
+  sur une fenêtre glissante, ce que FLUXINST ne fait pas nativement. L'impact
+  financier unitaire par client peut être élevé et la nature instantanée du rail
+  rend le rappel des fonds très difficile.
+likelihood: low
+impact: high
+mitigations:
+  - Implémentation d'un contrôle de cumul glissant sur 1h et 24h dans FLUXINST
+    en complément des plafonds unitaires
+  - Transmission des séquences anormales à FRAUDSCORE pour scoring comportemental
+domains: [paiement-instantane, lcb-ft]
+tags: [fraude, plafond, virement-instantane, contournement]
+created_from: seed

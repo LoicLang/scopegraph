@@ -1,0 +1,21 @@
+# graph/nodes/proj-programme-dsp2.yaml
+type: project
+id: proj-programme-dsp2
+name: Programme de conformité DSP2
+aliases: [DSP2, PROGRAMME-DSP2]
+description: >-
+  Programme pluriannuel (2021-2023) visant la mise en conformité complète avec la
+  directive européenne DSP2 et les normes techniques ABE relatives à l'authentification
+  forte. Le programme a structuré l'ensemble des parcours de paiement autour d'un
+  orchestrateur SCA centralisé, réutilisable par tous les canaux. Il a également posé
+  les bases de l'open-banking en exposant les APIs réglementaires aux tiers de paiement.
+status: done
+owner_team: Direction des paiements
+outcomes: >-
+  A livré l'orchestration SCA réutilisable (composant central du moteur d'autorisation)
+  et imposé sa réutilisation obligatoire pour tout nouveau flux de paiement; aucun mécanisme
+  d'authentification parallèle ne peut être introduit sans dérogation du Comité d'architecture.
+known_risks: []
+domains: [dsp2-open-banking, monetique]
+tags: [conformite, reglementaire, sca]
+created_from: seed

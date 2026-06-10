@@ -1,0 +1,20 @@
+# graph/nodes/proj-lancement-paiement-instantane.yaml
+type: project
+id: proj-lancement-paiement-instantane
+name: Lancement du paiement instantané SEPA
+aliases: [LANCEMENT-INST, SEPA-INST]
+description: >-
+  Projet de mise en production des rails SEPA Instant Credit Transfer pour les
+  émissions et réceptions de virements en moins de dix secondes. A nécessité la
+  construction d'une passerelle dédiée, l'intégration au criblage sanctions en
+  temps réel et la définition des plafonds d'émission par défaut. L'interopérabilité
+  avec les établissements partenaires a conditionné le calendrier de livraison.
+status: done
+owner_team: Direction des paiements
+outcomes: >-
+  A livré la passerelle FLUXINST et ses plafonds d'émission par défaut (15 000 €);
+  le composant est opérationnel sur l'ensemble des canaux retail et entreprise.
+known_risks: [risk-contournement-plafonds-ip]
+domains: [paiement-instantane]
+tags: [virement-instantane, sepa, rail-paiement]
+created_from: seed

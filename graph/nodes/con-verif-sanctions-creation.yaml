@@ -1,0 +1,16 @@
+# graph/nodes/con-verif-sanctions-creation.yaml
+type: constraint
+id: con-verif-sanctions-creation
+title: Vérification sanctions à la création
+statement: >-
+  L'IBAN et le nom du titulaire de tout nouveau bénéficiaire sont criblés
+  contre les listes de sanctions internationales au moment de la création,
+  de manière synchrone et bloquante. Si le criblage retourne un résultat positif
+  ou une indisponibilité du service de vérification, la création est suspendue
+  et la demande est placée en file d'analyse manuelle. La création ne peut
+  être finalisée sans une levée de doute explicite.
+source: réglementation LCB-FT
+severity: high
+domains: [referentiel-client, lcb-ft]
+tags: [sanctions, criblage, beneficiaire, lcb-ft]
+created_from: seed

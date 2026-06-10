@@ -1,0 +1,16 @@
+# graph/nodes/con-carence-beneficiaire-48h.yaml
+type: constraint
+id: con-carence-beneficiaire-48h
+title: Délai de carence bénéficiaire
+statement: >-
+  Tout nouveau bénéficiaire, ou tout bénéficiaire dont l'IBAN a été modifié,
+  est inutilisable pendant une durée de 48 heures à compter de la création ou
+  de la modification, quel que soit le canal d'initiation et quel que soit le
+  montant du virement. Cette règle s'applique sans exception, y compris pour
+  les bénéficiaires créés par des conseillers en agence ou via des batchs
+  d'import entreprise.
+source: politique interne fraude
+severity: high
+domains: [referentiel-client, banque-en-ligne]
+tags: [carence, beneficiaire, anti-fraude, regle-partagee]
+created_from: seed

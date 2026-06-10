@@ -1,0 +1,22 @@
+# graph/nodes/risk-kyc-obsolete.yaml
+type: risk
+id: risk-kyc-obsolete
+title: Données KYC obsolètes
+statement: >-
+  Une part significative du stock de dossiers KYC n'a pas été revue ou mise à
+  jour depuis plus de 3 ans, notamment pour les clients peu actifs et les clients
+  dont le conseiller référent a changé. Toute décision fondée sur ces données —
+  octroi de crédit, modification de plafonds, traitement d'une alerte LCB-FT —
+  est fragilisée par l'incertitude sur la fiabilité des informations. Le risque
+  est aggravé par l'absence d'un processus automatisé de détection des dossiers
+  périmés.
+likelihood: high
+impact: medium
+mitigations:
+  - Campagne de revue KYC ciblée sur les dossiers de plus de 36 mois,
+    priorisée par niveau de risque client
+  - Mise en place d'une alerte automatique aux conseillers référents lorsqu'un
+    dossier KYC atteint 24 mois sans mise à jour
+domains: [referentiel-client]
+tags: [kyc, qualite-donnee, conformite]
+created_from: seed

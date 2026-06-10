@@ -1,0 +1,20 @@
+# graph/nodes/dec-gel-evolutions-monetique.yaml
+type: decision
+id: dec-gel-evolutions-monetique
+title: Gel des évolutions monétiques
+statement: >-
+  Les évolutions non réglementaires du moteur d'autorisation MONAUT sont gelées
+  pendant toute la durée de la migration de la flotte TPE, à compter du 15 janvier
+  2026. Seules les corrections de sécurité et les adaptations réglementaires
+  obligatoires peuvent être livrées sur MONAUT pendant cette période.
+rationale: >-
+  La migration de la flotte nécessite une stabilité du protocole d'autorisation
+  pour éviter des incompatibilités avec les firmware en cours de déploiement. Ce
+  gel crée une tension avec la décision de réutilisation SCA : tout nouveau flux
+  de paiement requiert des modifications de MONAUT, qui sont précisément bloquées.
+date: "2026-01-15"
+decided_by: Comité d'architecture
+still_active: true
+domains: [monetique, tpe-acceptation]
+tags: [gel, monaut, migration, tension-architecturale]
+created_from: seed

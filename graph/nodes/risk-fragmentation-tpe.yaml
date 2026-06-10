@@ -1,0 +1,22 @@
+# graph/nodes/risk-fragmentation-tpe.yaml
+type: risk
+id: risk-fragmentation-tpe
+title: Fragmentation du parc TPE
+statement: >-
+  La flotte de terminaux PAYTERM comporte plusieurs générations de firmware
+  coexistant simultanément sur le terrain, générant des comportements divergents
+  lors du traitement des transactions et des failles de sécurité non corrigées
+  sur les versions les plus anciennes. Tant que la migration logicielle n'est
+  pas achevée, un incident sur une version ancienne peut être non reproductible
+  en environnement de recette et difficile à diagnostiquer. Ce risque est la
+  motivation première du projet de migration de la flotte.
+likelihood: medium
+impact: high
+mitigations:
+  - Accélération du calendrier de migration pour les terminaux portant les
+    deux versions firmware les plus anciennes
+  - Surveillance renforcée des transactions des terminaux en version N-2
+    ou antérieure avec alerting automatique
+domains: [tpe-acceptation]
+tags: [tpe, firmware, fragmentation, migration]
+created_from: seed

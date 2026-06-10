@@ -1,0 +1,22 @@
+# graph/nodes/proj-refonte-parcours-beneficiaire.yaml
+type: project
+id: proj-refonte-parcours-beneficiaire
+name: Refonte du parcours bénéficiaire
+aliases: [REFONTE-PARCOURS-BENEF]
+description: >-
+  Projet lancé en 2022 pour rénover entièrement l'expérience utilisateur d'ajout et
+  de gestion des bénéficiaires sur la banque en ligne, incluant la proposition d'une
+  migration du stock historique vers un nouveau modèle de données. Dès les premières
+  phases d'analyse, l'équipe a identifié que la migration du stock existant était
+  impossible sans imposer une fenêtre de gel total des virements de plusieurs jours,
+  jugée inacceptable par la Direction. En l'absence d'une stratégie de migration
+  viable, le projet a été arrêté en 2023 avant la livraison du moindre composant.
+status: cancelled
+owner_team: Équipe Banque en ligne
+outcomes: >-
+  Migration du stock de bénéficiaires jugée infaisable sans fenêtre de gel des
+  virements ; le chantier a été arrêté avant tout livrable.
+known_risks: []
+domains: [banque-en-ligne, referentiel-client]
+tags: [parcours-client, abandon, migration]
+created_from: seed

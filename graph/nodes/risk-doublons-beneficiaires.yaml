@@ -1,0 +1,22 @@
+# graph/nodes/risk-doublons-beneficiaires.yaml
+type: risk
+id: risk-doublons-beneficiaires
+title: Doublons de bénéficiaires historiques
+statement: >-
+  Le stock de bénéficiaires hérité des périodes antérieures à l'API unique
+  de 2024 contient un volume significatif de doublons issus des écritures
+  directes multi-canaux. Ces doublons faussent les contrôles de carence lors
+  d'une modification (un doublon peut être actif alors que le bénéficiaire
+  principal est encore en carence), dégradent l'expérience client en présentant
+  des entrées multiples pour le même bénéficiaire, et compliquent les rapports
+  de criblage sanctions.
+likelihood: medium
+impact: medium
+mitigations:
+  - Campagne de déduplication du stock historique avec règle de fusion basée
+    sur la correspondance IBAN + nom normalisé
+  - Ajout d'une contrainte d'unicité IBAN par client dans BENEFGEST pour
+    bloquer tout nouveau doublon
+domains: [referentiel-client]
+tags: [qualite-donnee, beneficiaires, doublons]
+created_from: seed

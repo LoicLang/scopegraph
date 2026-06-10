@@ -1,0 +1,20 @@
+# graph/nodes/dec-double-validation-entreprise.yaml
+type: decision
+id: dec-double-validation-entreprise
+title: Double validation entreprise
+statement: >-
+  Tout virement initié depuis un canal entreprise (banque en ligne professionnelle,
+  API entreprise) exige une double validation par deux collaborateurs distincts du
+  client, disposant chacun des droits de validation requis. Une seule signature
+  numérique ne suffit pas, quel que soit le montant du virement.
+rationale: >-
+  Les fraudes au virement ciblant les entreprises impliquent fréquemment la
+  compromission d'un unique compte utilisateur. La double validation réduit
+  significativement le risque d'exécution d'un virement frauduleux initié par
+  un compte compromis ou sous manipulation sociale.
+date: "2025-02-01"
+decided_by: Comité des risques
+still_active: true
+domains: [paiement-instantane, dsp2-open-banking]
+tags: [entreprise, validation, securite]
+created_from: seed

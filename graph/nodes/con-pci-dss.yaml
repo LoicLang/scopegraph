@@ -1,0 +1,16 @@
+# graph/nodes/con-pci-dss.yaml
+type: constraint
+id: con-pci-dss
+title: Périmètre PCI DSS
+statement: >-
+  Tout composant applicatif ou infrastructure manipulant des données de carte de
+  paiement (numéro PAN, CVV, données de piste) entre dans le périmètre PCI DSS
+  et est soumis aux exigences d'audit annuel, de cloisonnement réseau et de
+  chiffrement de bout en bout. L'extension du périmètre PCI est un coût projet
+  majeur : tout nouveau composant entrant dans ce périmètre doit être validé
+  par la RSSI avant mise en production.
+source: PCI Security Standards Council
+severity: high
+domains: [monetique]
+tags: [pci-dss, securite, conformite, carte]
+created_from: seed

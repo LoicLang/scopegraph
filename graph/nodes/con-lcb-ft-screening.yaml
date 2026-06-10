@@ -1,0 +1,16 @@
+# graph/nodes/con-lcb-ft-screening.yaml
+type: constraint
+id: con-lcb-ft-screening
+title: Criblage LCB-FT des rails de paiement
+statement: >-
+  Tout nouveau rail de paiement doit intégrer un criblage systématique des
+  contreparties contre les listes de sanctions officielles (OFAC, UE, ONU)
+  avant sa mise en production. Cette vérification doit être réalisée en temps
+  réel pour les paiements instantanés et ne peut être différée à un traitement
+  batch. L'absence de criblage sur un rail actif constitue une infraction
+  réglementaire susceptible d'engager la responsabilité de l'établissement.
+source: réglementation LCB-FT
+severity: high
+domains: [lcb-ft, paiement-instantane]
+tags: [lcb-ft, sanctions, criblage, conformite]
+created_from: seed

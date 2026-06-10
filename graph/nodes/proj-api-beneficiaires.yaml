@@ -1,0 +1,21 @@
+# graph/nodes/proj-api-beneficiaires.yaml
+type: project
+id: proj-api-beneficiaires
+name: API unique des bénéficiaires
+aliases: [PROJET-BENEFGEST, API-BENEF]
+description: >-
+  Projet de mise en place de l'API centrale BENEFGEST comme unique point d'écriture
+  sur le référentiel des bénéficiaires (2024). Avant ce projet, plusieurs canaux
+  écrivaient directement en base, contournant les règles de carence, de SCA et de
+  criblage sanctions. Le projet a migré tous les canaux vers l'API et interdit les
+  accès directs à la base de données, y compris pour les traitements batch.
+status: done
+owner_team: Équipe Référentiels
+outcomes: >-
+  Suppression de l'ensemble des écritures directes en base par les canaux;
+  tous les créations et modifications de bénéficiaires transitent désormais
+  exclusivement par BENEFGEST, garantissant l'application uniforme des règles métier.
+known_risks: []
+domains: [referentiel-client]
+tags: [api, reforme-acces, beneficiaires]
+created_from: seed

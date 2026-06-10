@@ -1,0 +1,22 @@
+# graph/nodes/risk-indispo-service-sanctions.yaml
+type: risk
+id: risk-indispo-service-sanctions
+title: Indisponibilité du service sanctions
+statement: >-
+  Le service externe de vérification des listes de sanctions — dont dépend la
+  création synchrone de bénéficiaires — connaît des indisponibilités ponctuelles
+  non planifiées, pouvant durer de quelques minutes à plusieurs heures. Lors
+  d'une indisponibilité, la contrainte de criblage bloquant impose la suspension
+  de toutes les créations de bénéficiaires, dégradant significativement
+  l'expérience client. L'absence de stratégie de fallback documentée aggrave
+  l'impact opérationnel de chaque incident.
+likelihood: low
+impact: high
+mitigations:
+  - Définition et documentation d'un mode dégradé avec mise en file d'attente
+    des demandes et traitement différé sous 4 heures
+  - Évaluation d'un fournisseur de service de sanctions alternatif pour
+    basculement automatique en cas d'indisponibilité du fournisseur principal
+domains: [lcb-ft, referentiel-client]
+tags: [sanctions, disponibilite, beneficiaires, risque-operationnel]
+created_from: seed

@@ -1,0 +1,21 @@
+# graph/nodes/dec-ecriture-via-api-benef.yaml
+type: decision
+id: dec-ecriture-via-api-benef
+title: Écriture bénéficiaires via API unique
+statement: >-
+  Toute création ou modification de bénéficiaire doit passer par l'API BENEFGEST,
+  sans exception. L'écriture directe en base est strictement interdite, y compris
+  pour les traitements batch internes, les migrations de données et les opérations
+  de support. Toute dérogation requiert une validation du Comité d'architecture
+  et doit être tracée.
+rationale: >-
+  Avant cette décision, plusieurs canaux contournaient les règles de carence et de
+  SCA en écrivant directement en base, créant des bénéficiaires sans contrôles.
+  La centralisation sur BENEFGEST garantit l'application systématique de toutes
+  les règles métier et réglementaires.
+date: "2024-06-01"
+decided_by: Comité d'architecture
+still_active: true
+domains: [referentiel-client]
+tags: [api, gouvernance-donnee, beneficiaires]
+created_from: seed

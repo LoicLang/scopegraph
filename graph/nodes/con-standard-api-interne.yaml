@@ -1,0 +1,15 @@
+# graph/nodes/con-standard-api-interne.yaml
+type: constraint
+id: con-standard-api-interne
+title: Standard d'API interne
+statement: >-
+  Toute API interne doit respecter le standard maison : authentification OAuth2
+  avec jeton de service, versionnage sémantique dans l'URL, traçabilité de
+  chaque appel avec corrélation de requête, et contrat OpenAPI publié dans le
+  registre d'APIs avant mise en production. Les APIs ne respectant pas ce standard
+  ne peuvent être référencées ni consommées par d'autres équipes.
+source: normes d'architecture internes
+severity: medium
+domains: [socle-si]
+tags: [api, standard, gouvernance-architecture]
+created_from: seed

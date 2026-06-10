@@ -1,0 +1,22 @@
+# graph/nodes/risk-modele-fraude-derive.yaml
+type: risk
+id: risk-modele-fraude-derive
+title: Dérive du modèle de fraude
+statement: >-
+  Le modèle de scoring centralisé FRAUDSCORE n'a pas été recalibré depuis sa
+  mise en production lors de la refonte de 2024; ses données d'entraînement ne
+  reflètent plus les schémas de fraude les plus récents, qui évoluent rapidement.
+  Une dérive non détectée se traduit par une augmentation progressive du taux de
+  faux négatifs (fraudes non détectées) ou de faux positifs (virements légitimes
+  bloqués). Le risque est renforcé par l'absence d'un tableau de bord de
+  performance du modèle mis à jour en continu.
+likelihood: medium
+impact: high
+mitigations:
+  - Mise en place d'un processus de recalibrage trimestriel du modèle avec
+    validation par le Comité des risques
+  - Déploiement d'un tableau de bord de dérive (data drift) alimenté
+    hebdomadairement par les équipes data
+domains: [lcb-ft]
+tags: [fraude, scoring, derive-modele, ia]
+created_from: seed

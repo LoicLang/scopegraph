@@ -1,0 +1,19 @@
+# graph/nodes/dec-releases-tpe-trimestrielles.yaml
+type: decision
+id: dec-releases-tpe-trimestrielles
+title: Releases TPE trimestrielles
+statement: >-
+  Les mises à jour du logiciel embarqué des terminaux PAYTERM sont regroupées en
+  releases trimestrielles planifiées. Aucune mise à jour hors cycle n'est autorisée,
+  sauf en cas de faille de sécurité critique avérée nécessitant un correctif
+  d'urgence validé par la RSSI.
+rationale: >-
+  La dispersion des mises à jour engendrait une fragmentation du parc et des
+  coûts de qualification élevés. Le regroupement trimestriel stabilise le parc
+  et permet une validation complète avant déploiement à grande échelle.
+date: "2022-11-01"
+decided_by: Comité d'architecture
+still_active: true
+domains: [tpe-acceptation]
+tags: [tpe, release, gouvernance]
+created_from: seed

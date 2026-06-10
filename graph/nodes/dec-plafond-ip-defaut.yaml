@@ -1,0 +1,20 @@
+# graph/nodes/dec-plafond-ip-defaut.yaml
+type: decision
+id: dec-plafond-ip-defaut
+title: Plafond instantané par défaut
+statement: >-
+  Le plafond d'émission de virement instantané est fixé à 15 000 € par défaut
+  pour l'ensemble des clients retail. Toute dérogation à la hausse est soumise
+  à une demande explicite du client et gérée via le module de gestion des plafonds
+  de FLUXINST; les dérogations sont tracées et auditables.
+rationale: >-
+  La livraison du rail SEPA Instant a nécessité la définition d'un plafond par
+  défaut équilibrant l'expérience client et la maîtrise du risque de fraude
+  instantanée. Le seuil de 15 000 € couvre l'essentiel des usages courants
+  sans exposer la banque à des pertes unitaires élevées en cas de fraude.
+date: "2024-10-01"
+decided_by: Direction des paiements
+still_active: true
+domains: [paiement-instantane]
+tags: [plafond, virement-instantane, risque]
+created_from: seed

@@ -1,0 +1,19 @@
+# graph/nodes/dec-scoring-unique.yaml
+type: decision
+id: dec-scoring-unique
+title: Scoring fraude unique
+statement: >-
+  Le moteur FRAUDSCORE est l'unique point de décision risque pour l'ensemble des
+  paiements, quel que soit le canal d'initiation. Tout nouveau canal ou nouveau
+  type de paiement doit s'y raccorder avant sa mise en production; aucun scoring
+  autonome par canal n'est autorisé.
+rationale: >-
+  La refonte de 2024 a démontré que les scorings par canal produisaient des angles
+  morts exploitables par les fraudeurs changeant de canal. La centralisation améliore
+  la détection croisée et simplifie la gouvernance du modèle.
+date: "2024-03-01"
+decided_by: Comité des risques
+still_active: true
+domains: [lcb-ft]
+tags: [fraude, scoring, unicite]
+created_from: seed

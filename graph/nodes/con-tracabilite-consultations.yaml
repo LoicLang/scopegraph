@@ -1,0 +1,15 @@
+# graph/nodes/con-tracabilite-consultations.yaml
+type: constraint
+id: con-tracabilite-consultations
+title: Traçabilité des consultations
+statement: >-
+  Toute consultation du référentiel client — qu'elle soit initiée par un canal
+  applicatif, un conseiller en agence ou un traitement batch — est journalisée,
+  horodatée et associée à l'identifiant de l'opérateur ou du service demandeur.
+  Les journaux de consultation sont conservés 5 ans et doivent être restituables
+  à la CNIL ou aux autorités judiciaires dans un délai de 72 heures.
+source: politique sécurité interne
+severity: medium
+domains: [referentiel-client, socle-si]
+tags: [tracabilite, audit, referentiel-client]
+created_from: seed

@@ -1,0 +1,21 @@
+# graph/nodes/dec-reutilisation-sca.yaml
+type: decision
+id: dec-reutilisation-sca
+title: Réutilisation de l'orchestration SCA
+statement: >-
+  Tout nouveau flux de paiement doit obligatoirement réutiliser l'orchestration SCA
+  livrée par le programme DSP2, sans duplication ni contournement. Aucun mécanisme
+  d'authentification forte parallèle ne peut être introduit sans dérogation formelle
+  du Comité d'architecture; tout parcours dérogatoire doit démontrer l'équivalence
+  du niveau de sécurité.
+rationale: >-
+  La multiplication de mécanismes SCA distincts avait conduit à des incohérences de
+  sécurité et à une charge de maintenance élevée avant le programme DSP2. La
+  centralisation garantit la cohérence de l'expérience utilisateur et réduit la
+  surface d'exposition réglementaire.
+date: "2023-05-15"
+decided_by: Comité d'architecture
+still_active: true
+domains: [dsp2-open-banking, monetique]
+tags: [sca, securite, gouvernance-architecture]
+created_from: seed

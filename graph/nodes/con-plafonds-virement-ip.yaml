@@ -1,0 +1,16 @@
+# graph/nodes/con-plafonds-virement-ip.yaml
+type: constraint
+id: con-plafonds-virement-ip
+title: Plafonds de virement instantané
+statement: >-
+  Les émissions de virements instantanés sont soumises à des plafonds par client
+  et par période (journalier, hebdomadaire), paramétrables dans FLUXINST dans
+  les limites définies par la politique des risques. Le dépassement d'un plafond
+  bloque l'émission et renvoie une erreur explicite au canal appelant. Les
+  dérogations accordées aux clients sont tracées et révisables par les équipes
+  risques.
+source: politique des risques
+severity: medium
+domains: [paiement-instantane]
+tags: [plafond, virement-instantane, risque]
+created_from: seed

@@ -1,0 +1,21 @@
+# graph/nodes/proj-dedup-incidents.yaml
+type: project
+id: proj-dedup-incidents
+name: Déduplication du référentiel d'incidents
+aliases: [DEDUP-INCIDENTS]
+description: >-
+  Projet de nettoyage et de déduplication du référentiel central d'incidents du
+  socle SI, dont la qualité s'était dégradée au fil des années d'exploitation et
+  de migrations successives. Des incidents dupliqués faussaient les métriques de
+  disponibilité, les rapports réglementaires et les analyses de tendance. Le projet
+  a défini une clé de déduplication, rapproché les doublons et mis en place des
+  règles de création pour éviter les récidives.
+status: done
+owner_team: Équipe Socle SI
+outcomes: >-
+  Référentiel d'incidents assaini : taux de doublons ramené sous 2 % et règles
+  de création imposées à toutes les équipes productrices d'incidents.
+known_risks: []
+domains: [socle-si]
+tags: [qualite-donnee, referentiel, incidents]
+created_from: seed

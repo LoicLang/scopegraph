@@ -15,6 +15,17 @@ from core.graph.models import TOPOLOGY, Edge, EdgeType, Node
 
 _NODE_ADAPTER: TypeAdapter[Node] = TypeAdapter(Node)
 
+# Id prefix per node type (ADR 0001 shared fields).
+_ID_PREFIXES: dict[str, str] = {
+    "system": "sys-",
+    "feature": "feat-",
+    "business_object": "obj-",
+    "project": "proj-",
+    "decision": "dec-",
+    "constraint": "con-",
+    "risk": "risk-",
+}
+
 
 class GraphLoadError(Exception):
     """The graph on disk violates schema v1 (ADR 0001)."""
@@ -42,6 +53,12 @@ def load_graph(graph_dir: Path) -> tuple[dict[str, Node], list[Edge]]:
             raise GraphLoadError(f"{path}: invalid node: {exc}") from exc
         if node.id in nodes:
             raise GraphLoadError(f"{path}: duplicate node id '{node.id}'")
+        expected_prefix = _ID_PREFIXES[node.type]
+        if not node.id.startswith(expected_prefix):
+            raise GraphLoadError(
+                f"{path}: id '{node.id}' must carry the '{expected_prefix}' prefix "
+                f"for type '{node.type}' (ADR 0001)"
+            )
         unknown = set(node.domains) - vocabulary
         if unknown:
             raise GraphLoadError(

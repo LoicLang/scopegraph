@@ -63,10 +63,10 @@ RELATES_TO). The schema is defined at the Feature/BusinessObject grain, not the 
 A shared business rule is defined once as a single `Constraint` node. Its `CONSTRAINS` edges are
 drawn to every `BusinessObject` it applies to. Every `Feature` that `OPERATES_ON` that object
 inherits the constraint automatically — including features built after the constraint was defined,
-and across applications that have no direct edge to each other. For example: a 48h cooling-off
-period on credit products is one `Constraint` node attached to the `credit-contract`
-`BusinessObject`; every application that operates on that object inherits it without a
-direct application-to-application edge.
+and across applications that have no direct edge to each other. For example: the 48-hour
+cooling-off period on new payees is one `Constraint` node attached to the `obj-beneficiaire`
+`BusinessObject`; the beneficiary-management app and the mobile app both inherit it through
+their `OPERATES_ON` edges, without any direct application-to-application edge.
 
 The schema is domain-agnostic: node and edge types contain nothing banking-specific. Only
 `graph/domains.yaml` and the seed content are environment-specific. Porting scopegraph to a
@@ -74,8 +74,10 @@ different IT estate means swapping those two; zero schema-code change. See
 [docs/adr/0001-graph-schema-v1.md](docs/adr/0001-graph-schema-v1.md) for the full topology rules.
 
 The ecosystem registry is seeded. The seed contains **72 fictional French banking-IT nodes**
-across 10 domains, **100 edges**, and **7 deliberate traps** (system aliases, contradictory
-decisions, a superseded decision, a 2-hop cross-domain propagation chain). All entities are
+across 10 domains, **100 edges**, and **7 deliberate traps**: system aliases, contradictory
+decisions, a superseded decision, a 2-hop cross-domain propagation chain, constraint
+inheritance through a shared business object, non-uniform documentation depth, and a
+cancelled project that must surface as a warning, not a constraint. All entities are
 fictional; ingestion from documents is the roadmap (see ecosystem-foundry).
 
 ---

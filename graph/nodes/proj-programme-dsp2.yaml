@@ -13,7 +13,7 @@ status: done
 owner_team: Direction des paiements
 outcomes: >-
   A livré l'orchestration SCA réutilisable (composant central du moteur d'autorisation)
-  et imposé sa réutilisation obligatoire pour tout nouveau flux de paiement; aucun mécanisme
+  et imposé sa réutilisation obligatoire pour tout nouveau flux de paiement ; aucun mécanisme
   d'authentification parallèle ne peut être introduit sans dérogation du Comité d'architecture.
 known_risks: []
 domains: [dsp2-open-banking, monetique]

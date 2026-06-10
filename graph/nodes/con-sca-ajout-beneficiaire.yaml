@@ -6,7 +6,7 @@ statement: >-
   L'ajout d'un nouveau bénéficiaire ou la modification de l'IBAN d'un bénéficiaire
   existant exige une authentification forte (SCA) du client titulaire, sur tous
   les canaux sans exception. Cette exigence est d'origine réglementaire DSP2 et
-  renforcée par la politique interne de sécurité; elle ne peut être levée ni
+  renforcée par la politique interne de sécurité ; elle ne peut être levée ni
   contournée par une configuration de profil de risque client.
 source: DSP2 / politique interne
 severity: high

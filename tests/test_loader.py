@@ -146,3 +146,9 @@ edges:
         write_graph(tmp_path, [SYSTEM_YAML, OBJECT_YAML, CANCELLED_PROJECT_YAML], edges)
     )
     assert len(edge_list) == 1
+
+
+def test_id_prefix_must_match_node_type(tmp_path):
+    bad = FEATURE_YAML.replace("id: feat-benef-ajout", "id: sys-benef-ajout")
+    with pytest.raises(GraphLoadError, match="prefix"):
+        load_graph(write_graph(tmp_path, [bad]))

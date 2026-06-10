@@ -12,8 +12,8 @@ description: >-
 status: done
 owner_team: Équipe Référentiels
 outcomes: >-
-  Suppression de l'ensemble des écritures directes en base par les canaux;
-  tous les créations et modifications de bénéficiaires transitent désormais
+  Suppression de l'ensemble des écritures directes en base par les canaux ;
+  toutes les créations et modifications de bénéficiaires transitent désormais
   exclusivement par BENEFGEST, garantissant l'application uniforme des règles métier.
 known_risks: []
 domains: [referentiel-client]

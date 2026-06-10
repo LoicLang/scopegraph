@@ -25,6 +25,11 @@ read_when:
     7 projects, 8 decisions, 12 constraints, 6 risks), 100 edges, 7 deliberate traps — each
     trap has an integration test in `tests/test_seed.py`.
   - README v1 · 6 eval cases drafted in `docs/eval/cases.md`.
+- **Graph viewer** (2026-06-10): `./scripts/graph-viz` generates an interactive standalone
+  Cytoscape view of the graph (filters, search incl. aliases, highlight mode). Built on
+  `core/viz/payload.py` — the data seam the W2 web Context Map pane and the W4 scoping
+  highlight will reuse. Spec: `docs/specs/2026-06-10-graph-viz-design.md` (amends the MVP
+  spec: Context Map medium = interactive viewer; Mermaid deferred to the dossier export).
 
 ## Next chantier — Week 2 (retrieval + first web screens)
 

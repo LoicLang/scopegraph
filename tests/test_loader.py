@@ -87,3 +87,62 @@ edges:
 """
     with pytest.raises(GraphLoadError, match="sys-fantome"):
         load_graph(write_graph(tmp_path, [SYSTEM_YAML, FEATURE_YAML], edges))
+
+
+def test_topology_violation_fails(tmp_path):
+    edges = """
+edges:
+  - source_id: sys-gestion-beneficiaires
+    target_id: feat-benef-ajout
+    type: PART_OF
+"""
+    with pytest.raises(GraphLoadError, match="topology"):
+        load_graph(write_graph(tmp_path, [SYSTEM_YAML, FEATURE_YAML], edges))
+
+
+def test_feature_without_parent_fails(tmp_path):
+    with pytest.raises(GraphLoadError, match="exactly one PART_OF"):
+        load_graph(write_graph(tmp_path, [SYSTEM_YAML, FEATURE_YAML]))
+
+
+def test_feature_with_two_parents_fails(tmp_path):
+    edges = "edges:\n" + PART_OF_EDGE + PART_OF_EDGE
+    with pytest.raises(GraphLoadError, match="exactly one PART_OF"):
+        load_graph(write_graph(tmp_path, [SYSTEM_YAML, FEATURE_YAML], edges))
+
+
+CANCELLED_PROJECT_YAML = """
+type: project
+id: proj-refonte-parcours-beneficiaire
+name: Refonte du parcours bénéficiaire
+description: Tentative de refonte abandonnée en 2023.
+status: cancelled
+owner_team: Équipe Canaux
+outcomes: Migration du stock jugée infaisable sans fenêtre de gel.
+domains: [banque-en-ligne]
+"""
+
+
+def test_cancelled_project_with_structural_edge_fails(tmp_path):
+    edges = """
+edges:
+  - source_id: proj-refonte-parcours-beneficiaire
+    target_id: sys-gestion-beneficiaires
+    type: PRODUCED
+"""
+    with pytest.raises(GraphLoadError, match="cancelled"):
+        load_graph(write_graph(tmp_path, [SYSTEM_YAML, CANCELLED_PROJECT_YAML], edges))
+
+
+def test_cancelled_project_relates_to_is_allowed(tmp_path):
+    edges = """
+edges:
+  - source_id: proj-refonte-parcours-beneficiaire
+    target_id: obj-beneficiaire
+    type: RELATES_TO
+    note: tentative de refonte abandonnée en 2023 — migration du stock infaisable
+"""
+    nodes, edge_list = load_graph(
+        write_graph(tmp_path, [SYSTEM_YAML, OBJECT_YAML, CANCELLED_PROJECT_YAML], edges)
+    )
+    assert len(edge_list) == 1

@@ -1,2 +1,212 @@
 # Edge list — graph schema v1. Populated during seeding (see docs/project-kickoff.md §4).
-edges: []
+# 100 edges total: PART_OF(24) + OPERATES_ON(23) + DEPENDS_ON(17) + PRODUCED(5) + CONSTRAINS(22) + SUPERSEDES(1) + RELATES_TO(8)
+
+edges:
+
+  # ---------------------------------------------------------------------------
+  # PART_OF (24) — feature → system parent
+  # ---------------------------------------------------------------------------
+
+  # BENEFGEST features (5)
+  - {source_id: feat-benef-ajout, target_id: sys-gestion-beneficiaires, type: PART_OF, evidence: "description of feat-benef-ajout", verified: true}
+  - {source_id: feat-benef-modification, target_id: sys-gestion-beneficiaires, type: PART_OF, evidence: "description of feat-benef-modification", verified: true}
+  - {source_id: feat-benef-suppression, target_id: sys-gestion-beneficiaires, type: PART_OF, evidence: "description of feat-benef-suppression", verified: true}
+  - {source_id: feat-benef-consultation, target_id: sys-gestion-beneficiaires, type: PART_OF, evidence: "description of feat-benef-consultation", verified: true}
+  - {source_id: feat-benef-api, target_id: sys-gestion-beneficiaires, type: PART_OF, evidence: "description of feat-benef-api", verified: true}
+
+  # App mobile features (5)
+  - {source_id: feat-mobile-ajout-benef, target_id: sys-app-mobile, type: PART_OF, evidence: "description of feat-mobile-ajout-benef", verified: true}
+  - {source_id: feat-mobile-virement-ip, target_id: sys-app-mobile, type: PART_OF, evidence: "description of feat-mobile-virement-ip", verified: true}
+  - {source_id: feat-mobile-souscription-credit, target_id: sys-app-mobile, type: PART_OF, evidence: "description of feat-mobile-souscription-credit", verified: true}
+  - {source_id: feat-mobile-consultation-comptes, target_id: sys-app-mobile, type: PART_OF, evidence: "description of feat-mobile-consultation-comptes", verified: true}
+  - {source_id: feat-mobile-activation-carte, target_id: sys-app-mobile, type: PART_OF, evidence: "description of feat-mobile-activation-carte", verified: true}
+
+  # Passerelle IP features (4)
+  - {source_id: feat-ip-emission, target_id: sys-passerelle-ip, type: PART_OF, evidence: "description of feat-ip-emission", verified: true}
+  - {source_id: feat-ip-reception, target_id: sys-passerelle-ip, type: PART_OF, evidence: "description of feat-ip-reception", verified: true}
+  - {source_id: feat-ip-rappel-fonds, target_id: sys-passerelle-ip, type: PART_OF, evidence: "description of feat-ip-rappel-fonds", verified: true}
+  - {source_id: feat-ip-gestion-plafonds, target_id: sys-passerelle-ip, type: PART_OF, evidence: "description of feat-ip-gestion-plafonds", verified: true}
+
+  # Moteur autorisation features (5)
+  - {source_id: feat-aut-temps-reel, target_id: sys-moteur-autorisation, type: PART_OF, evidence: "description of feat-aut-temps-reel", verified: true}
+  - {source_id: feat-aut-oppositions, target_id: sys-moteur-autorisation, type: PART_OF, evidence: "description of feat-aut-oppositions", verified: true}
+  - {source_id: feat-aut-controle-plafonds, target_id: sys-moteur-autorisation, type: PART_OF, evidence: "description of feat-aut-controle-plafonds", verified: true}
+  - {source_id: feat-aut-routage-reseaux, target_id: sys-moteur-autorisation, type: PART_OF, evidence: "description of feat-aut-routage-reseaux", verified: true}
+  - {source_id: feat-aut-tarification, target_id: sys-moteur-autorisation, type: PART_OF, evidence: "description of feat-aut-tarification", verified: true}
+
+  # Référentiel client features (5)
+  - {source_id: feat-ref-creation-client, target_id: sys-referentiel-client, type: PART_OF, evidence: "description of feat-ref-creation-client", verified: true}
+  - {source_id: feat-ref-maj-kyc, target_id: sys-referentiel-client, type: PART_OF, evidence: "description of feat-ref-maj-kyc", verified: true}
+  - {source_id: feat-ref-screening-periodique, target_id: sys-referentiel-client, type: PART_OF, evidence: "description of feat-ref-screening-periodique", verified: true}
+  - {source_id: feat-ref-fusion-doublons, target_id: sys-referentiel-client, type: PART_OF, evidence: "description of feat-ref-fusion-doublons", verified: true}
+  - {source_id: feat-ref-exposition, target_id: sys-referentiel-client, type: PART_OF, evidence: "description of feat-ref-exposition", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # OPERATES_ON (23) — feature/system → business_object
+  # ---------------------------------------------------------------------------
+
+  # → obj-beneficiaire (6)
+  - {source_id: feat-benef-ajout, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-benef-ajout", verified: true}
+  - {source_id: feat-benef-modification, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-benef-modification", verified: true}
+  - {source_id: feat-benef-suppression, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-benef-suppression", verified: true}
+  - {source_id: feat-benef-consultation, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-benef-consultation", verified: true}
+  - {source_id: feat-benef-api, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-benef-api", verified: true}
+  - {source_id: feat-mobile-ajout-benef, target_id: obj-beneficiaire, type: OPERATES_ON, evidence: "description of feat-mobile-ajout-benef", verified: true}
+
+  # → obj-virement-instantane (5)
+  - {source_id: feat-ip-emission, target_id: obj-virement-instantane, type: OPERATES_ON, evidence: "description of feat-ip-emission", verified: true}
+  - {source_id: feat-ip-reception, target_id: obj-virement-instantane, type: OPERATES_ON, evidence: "description of feat-ip-reception", verified: true}
+  - {source_id: feat-ip-rappel-fonds, target_id: obj-virement-instantane, type: OPERATES_ON, evidence: "description of feat-ip-rappel-fonds", verified: true}
+  - {source_id: feat-ip-gestion-plafonds, target_id: obj-virement-instantane, type: OPERATES_ON, evidence: "description of feat-ip-gestion-plafonds", verified: true}
+  - {source_id: feat-mobile-virement-ip, target_id: obj-virement-instantane, type: OPERATES_ON, evidence: "description of feat-mobile-virement-ip", verified: true}
+
+  # → obj-transaction-carte (4)
+  - {source_id: feat-aut-temps-reel, target_id: obj-transaction-carte, type: OPERATES_ON, evidence: "description of feat-aut-temps-reel", verified: true}
+  - {source_id: feat-aut-oppositions, target_id: obj-transaction-carte, type: OPERATES_ON, evidence: "description of feat-aut-oppositions", verified: true}
+  - {source_id: feat-aut-controle-plafonds, target_id: obj-transaction-carte, type: OPERATES_ON, evidence: "description of feat-aut-controle-plafonds", verified: true}
+  - {source_id: sys-scoring-fraude, target_id: obj-transaction-carte, type: OPERATES_ON, evidence: "description of sys-scoring-fraude", verified: true}
+
+  # → obj-dossier-client-kyc (5)
+  - {source_id: feat-ref-creation-client, target_id: obj-dossier-client-kyc, type: OPERATES_ON, evidence: "description of feat-ref-creation-client", verified: true}
+  - {source_id: feat-ref-maj-kyc, target_id: obj-dossier-client-kyc, type: OPERATES_ON, evidence: "description of feat-ref-maj-kyc", verified: true}
+  - {source_id: feat-ref-screening-periodique, target_id: obj-dossier-client-kyc, type: OPERATES_ON, evidence: "description of feat-ref-screening-periodique", verified: true}
+  - {source_id: feat-ref-fusion-doublons, target_id: obj-dossier-client-kyc, type: OPERATES_ON, evidence: "description of feat-ref-fusion-doublons", verified: true}
+  - {source_id: feat-ref-exposition, target_id: obj-dossier-client-kyc, type: OPERATES_ON, evidence: "description of feat-ref-exposition", verified: true}
+
+  # → obj-contrat-credit (2)
+  - {source_id: feat-mobile-souscription-credit, target_id: obj-contrat-credit, type: OPERATES_ON, evidence: "description of feat-mobile-souscription-credit", verified: true}
+  - {source_id: sys-moteur-credit, target_id: obj-contrat-credit, type: OPERATES_ON, evidence: "description of sys-moteur-credit", verified: true}
+
+  # → obj-alerte-fraude (1)
+  - {source_id: sys-scoring-fraude, target_id: obj-alerte-fraude, type: OPERATES_ON, evidence: "description of sys-scoring-fraude", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # DEPENDS_ON (17) — system→system, feature→feature, feature→system
+  # ---------------------------------------------------------------------------
+
+  # System spine (10)
+  - {source_id: sys-app-mobile, target_id: sys-moteur-autorisation, type: DEPENDS_ON, evidence: "description of sys-app-mobile", verified: true}
+  - {source_id: sys-logiciel-tpe, target_id: sys-moteur-autorisation, type: DEPENDS_ON, evidence: "description of sys-logiciel-tpe", verified: true}
+  - {source_id: sys-moteur-autorisation, target_id: sys-scoring-fraude, type: DEPENDS_ON, evidence: "description of sys-moteur-autorisation", verified: true}
+  - {source_id: sys-passerelle-ip, target_id: sys-scoring-fraude, type: DEPENDS_ON, evidence: "description of sys-passerelle-ip", verified: true}
+  - {source_id: sys-app-mobile, target_id: sys-referentiel-client, type: DEPENDS_ON, evidence: "description of sys-app-mobile", verified: true}
+  - {source_id: sys-moteur-autorisation, target_id: sys-core-banking, type: DEPENDS_ON, evidence: "description of sys-moteur-autorisation", verified: true}
+  - {source_id: sys-passerelle-ip, target_id: sys-core-banking, type: DEPENDS_ON, evidence: "description of sys-passerelle-ip", verified: true}
+  - {source_id: sys-gestion-beneficiaires, target_id: sys-referentiel-client, type: DEPENDS_ON, evidence: "description of sys-gestion-beneficiaires", verified: true}
+  - {source_id: sys-moteur-credit, target_id: sys-referentiel-client, type: DEPENDS_ON, evidence: "description of sys-moteur-credit", verified: true}
+  - {source_id: sys-moteur-credit, target_id: sys-core-banking, type: DEPENDS_ON, evidence: "description of sys-moteur-credit", verified: true}
+
+  # Feature grain (7)
+  - {source_id: feat-mobile-ajout-benef, target_id: feat-benef-api, type: DEPENDS_ON, evidence: "description of feat-mobile-ajout-benef", verified: true}
+  - {source_id: feat-mobile-virement-ip, target_id: feat-ip-emission, type: DEPENDS_ON, evidence: "description of feat-mobile-virement-ip", verified: true}
+  - {source_id: feat-mobile-souscription-credit, target_id: sys-moteur-credit, type: DEPENDS_ON, evidence: "description of feat-mobile-souscription-credit", verified: true}
+  - {source_id: feat-mobile-consultation-comptes, target_id: sys-core-banking, type: DEPENDS_ON, evidence: "description of feat-mobile-consultation-comptes", verified: true}
+  - {source_id: feat-mobile-activation-carte, target_id: sys-moteur-autorisation, type: DEPENDS_ON, evidence: "description of feat-mobile-activation-carte", verified: true}
+  - {source_id: feat-ip-emission, target_id: sys-scoring-fraude, type: DEPENDS_ON, evidence: "description of feat-ip-emission", verified: true}
+  - {source_id: feat-aut-temps-reel, target_id: sys-scoring-fraude, type: DEPENDS_ON, evidence: "description of feat-aut-temps-reel", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # PRODUCED (5) — project → system/feature/decision
+  # ---------------------------------------------------------------------------
+
+  - {source_id: proj-programme-dsp2, target_id: dec-reutilisation-sca, type: PRODUCED, evidence: "outcomes of proj-programme-dsp2", verified: true}
+  - {source_id: proj-refonte-scoring-fraude, target_id: dec-scoring-unique, type: PRODUCED, evidence: "outcomes of proj-refonte-scoring-fraude", verified: true}
+  - {source_id: proj-lancement-paiement-instantane, target_id: sys-passerelle-ip, type: PRODUCED, evidence: "outcomes of proj-lancement-paiement-instantane", verified: true}
+  - {source_id: proj-api-beneficiaires, target_id: feat-benef-api, type: PRODUCED, evidence: "outcomes of proj-api-beneficiaires", verified: true}
+  - {source_id: proj-api-beneficiaires, target_id: dec-ecriture-via-api-benef, type: PRODUCED, evidence: "outcomes of proj-api-beneficiaires", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # CONSTRAINS (22) — constraint/decision → system/feature/business_object/project
+  # ---------------------------------------------------------------------------
+
+  # From constraints (13)
+  - {source_id: con-pci-dss, target_id: sys-moteur-autorisation, type: CONSTRAINS, evidence: "statement of con-pci-dss", verified: true}
+  - {source_id: con-lcb-ft-screening, target_id: sys-passerelle-ip, type: CONSTRAINS, evidence: "statement of con-lcb-ft-screening", verified: true}
+  - {source_id: con-standard-api-interne, target_id: feat-benef-api, type: CONSTRAINS, evidence: "statement of con-standard-api-interne", verified: true}
+  - {source_id: con-standard-api-interne, target_id: feat-ref-exposition, type: CONSTRAINS, evidence: "statement of con-standard-api-interne", verified: true}
+  - {source_id: con-ai-act, target_id: sys-scoring-fraude, type: CONSTRAINS, evidence: "statement of con-ai-act", verified: true}
+  - {source_id: con-carence-beneficiaire-48h, target_id: obj-beneficiaire, type: CONSTRAINS, evidence: "statement of con-carence-beneficiaire-48h", verified: true}
+  - {source_id: con-sca-ajout-beneficiaire, target_id: obj-beneficiaire, type: CONSTRAINS, evidence: "statement of con-sca-ajout-beneficiaire", verified: true}
+  - {source_id: con-verif-sanctions-creation, target_id: obj-beneficiaire, type: CONSTRAINS, evidence: "statement of con-verif-sanctions-creation", verified: true}
+  - {source_id: con-plafonds-virement-ip, target_id: obj-virement-instantane, type: CONSTRAINS, evidence: "statement of con-plafonds-virement-ip", verified: true}
+  - {source_id: con-rgpd-conservation, target_id: obj-dossier-client-kyc, type: CONSTRAINS, evidence: "statement of con-rgpd-conservation", verified: true}
+  - {source_id: con-tracabilite-consultations, target_id: obj-dossier-client-kyc, type: CONSTRAINS, evidence: "statement of con-tracabilite-consultations", verified: true}
+  - {source_id: con-credit-conso-kyc, target_id: obj-contrat-credit, type: CONSTRAINS, evidence: "statement of con-credit-conso-kyc", verified: true}
+  - {source_id: con-archivage-alertes-fraude, target_id: obj-alerte-fraude, type: CONSTRAINS, evidence: "statement of con-archivage-alertes-fraude", verified: true}
+
+  # From decisions (9)
+  - {source_id: dec-releases-tpe-trimestrielles, target_id: sys-logiciel-tpe, type: CONSTRAINS, evidence: "statement of dec-releases-tpe-trimestrielles", verified: true}
+  - {source_id: dec-releases-tpe-trimestrielles, target_id: proj-migration-flotte-tpe, type: CONSTRAINS, evidence: "statement of dec-releases-tpe-trimestrielles", verified: true}
+  - {source_id: dec-scoring-unique, target_id: sys-moteur-autorisation, type: CONSTRAINS, evidence: "statement of dec-scoring-unique", verified: true}
+  - {source_id: dec-scoring-unique, target_id: sys-passerelle-ip, type: CONSTRAINS, evidence: "statement of dec-scoring-unique", verified: true}
+  - {source_id: dec-reutilisation-sca, target_id: sys-app-mobile, type: CONSTRAINS, evidence: "statement of dec-reutilisation-sca", verified: true}
+  - {source_id: dec-gel-evolutions-monetique, target_id: sys-moteur-autorisation, type: CONSTRAINS, evidence: "statement of dec-gel-evolutions-monetique", verified: true}
+  - {source_id: dec-ecriture-via-api-benef, target_id: obj-beneficiaire, type: CONSTRAINS, evidence: "statement of dec-ecriture-via-api-benef", verified: true}
+  - {source_id: dec-double-validation-entreprise, target_id: obj-virement-instantane, type: CONSTRAINS, evidence: "statement of dec-double-validation-entreprise", verified: true}
+  - {source_id: dec-plafond-ip-defaut, target_id: feat-ip-gestion-plafonds, type: CONSTRAINS, evidence: "statement of dec-plafond-ip-defaut", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # SUPERSEDES (1) — decision → decision
+  # ---------------------------------------------------------------------------
+
+  - {source_id: dec-scoring-unique, target_id: dec-scoring-par-canal-2021, type: SUPERSEDES, evidence: "statement of dec-scoring-unique", verified: true}
+
+  # ---------------------------------------------------------------------------
+  # RELATES_TO (8) — any-to-any, note mandatory
+  # ---------------------------------------------------------------------------
+
+  - source_id: dec-gel-evolutions-monetique
+    target_id: dec-reutilisation-sca
+    type: RELATES_TO
+    note: "tension non arbitrée — le gel monétique contredit la réutilisation SCA pour tout nouveau flux"
+    evidence: "statements of both decisions"
+    verified: true
+
+  - source_id: risk-fragmentation-tpe
+    target_id: proj-migration-flotte-tpe
+    type: RELATES_TO
+    note: "la migration de flotte est la mitigation principale de ce risque"
+    evidence: "statement of risk-fragmentation-tpe"
+    verified: true
+
+  - source_id: risk-kyc-obsolete
+    target_id: sys-referentiel-client
+    type: RELATES_TO
+    note: "risque porté par la qualité des données du référentiel"
+    evidence: "data_quality_notes of sys-referentiel-client"
+    verified: true
+
+  - source_id: risk-contournement-plafonds-ip
+    target_id: sys-passerelle-ip
+    type: RELATES_TO
+    note: "scénario de contournement des plafonds via rafales de virements instantanés"
+    evidence: "statement of risk-contournement-plafonds-ip"
+    verified: true
+
+  - source_id: risk-doublons-beneficiaires
+    target_id: obj-beneficiaire
+    type: RELATES_TO
+    note: "stock historique saisi en double avant l'API unique"
+    evidence: "statement of risk-doublons-beneficiaires"
+    verified: true
+
+  - source_id: risk-modele-fraude-derive
+    target_id: sys-scoring-fraude
+    type: RELATES_TO
+    note: "modèle non recalibré depuis la refonte de 2024"
+    evidence: "statement of risk-modele-fraude-derive"
+    verified: true
+
+  - source_id: risk-indispo-service-sanctions
+    target_id: con-verif-sanctions-creation
+    type: RELATES_TO
+    note: "la contrainte repose sur un service externe sujet à indisponibilités"
+    evidence: "statement of risk-indispo-service-sanctions"
+    verified: true
+
+  - source_id: proj-refonte-parcours-beneficiaire
+    target_id: obj-beneficiaire
+    type: RELATES_TO
+    note: "tentative de refonte abandonnée en 2023 — migration du stock jugée infaisable sans fenêtre de gel des virements"
+    evidence: "outcomes of proj-refonte-parcours-beneficiaire"
+    verified: true

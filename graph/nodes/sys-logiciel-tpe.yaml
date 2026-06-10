@@ -1,0 +1,16 @@
+# graph/nodes/sys-logiciel-tpe.yaml
+type: system
+id: sys-logiciel-tpe
+name: Logiciel d'acceptation TPE
+aliases: [PAYTERM]
+description: >-
+  Logiciel embarqué de la flotte de terminaux de paiement en acceptation marchande.
+  Gère le flux de paiement côté terminal, de la lecture de carte à la transmission
+  de la demande d'autorisation au moteur d'autorisation. Toute mise à jour firmware
+  implique une campagne de déploiement sur le parc.
+owner_team: Équipe Acceptation
+known_risks:
+  - Fragmentation des versions firmware sur le parc, rendant les montées de version complexes.
+domains: [tpe-acceptation]
+tags: [embarque, parc-terminal]
+created_from: seed

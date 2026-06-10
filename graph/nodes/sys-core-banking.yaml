@@ -1,0 +1,14 @@
+# graph/nodes/sys-core-banking.yaml
+type: system
+id: sys-core-banking
+name: Core banking
+aliases: [LEDGERIS]
+description: >-
+  Système de tenue de compte central : gestion des positions, enregistrement des
+  mouvements comptables et calcul des soldes disponibles. Socle de tous les flux
+  de paiement — le moteur d'autorisation, la passerelle SEPA Inst et le moteur
+  de crédit le mouvementent à chaque opération.
+owner_team: Équipe Socle SI
+domains: [socle-si]
+tags: [socle, chemin-critique, tenue-de-compte]
+created_from: seed

@@ -1,0 +1,14 @@
+# graph/nodes/sys-moteur-credit.yaml
+type: system
+id: sys-moteur-credit
+name: Moteur de crédit
+aliases: [CREDIFLOW]
+description: >-
+  Gère le cycle de vie complet du crédit à la consommation : calcul d'éligibilité,
+  scoring d'octroi, édition et signature du contrat réglementé. Consulte le dossier
+  KYC dans le référentiel client pour les contrôles réglementaires et déclenche
+  le déblocage des fonds via le core banking à l'acceptation du contrat.
+owner_team: Équipe Crédit
+domains: [credit]
+tags: [reglementaire, octroi]
+created_from: seed

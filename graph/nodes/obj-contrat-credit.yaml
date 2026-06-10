@@ -1,0 +1,14 @@
+# graph/nodes/obj-contrat-credit.yaml
+type: business_object
+id: obj-contrat-credit
+name: Contrat de crédit
+aliases: [contrat de crédit conso]
+description: >-
+  Contrat de crédit à la consommation couvrant le cycle complet : simulation,
+  offre, acceptation, déblocage des fonds et suivi du remboursement. Produit
+  réglementé soumis au Code de la consommation (délai de rétractation, taux
+  effectif global, informations précontractuelles obligatoires).
+steward_team: Équipe Crédit
+domains: [credit]
+tags: [reglementaire, contrat]
+created_from: seed

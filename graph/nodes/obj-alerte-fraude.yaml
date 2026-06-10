@@ -1,0 +1,14 @@
+# graph/nodes/obj-alerte-fraude.yaml
+type: business_object
+id: obj-alerte-fraude
+name: Alerte fraude
+aliases: [alerte de fraude]
+description: >-
+  Alerte émise par le moteur de scoring fraude sur un paiement suspect, qualifiée
+  ensuite par un analyste LCB-FT. Porte le niveau de risque, les signaux déclencheurs
+  et la décision de traitement. Soumise à des obligations de conservation réglementaire
+  dans le cadre du dispositif LCB-FT.
+steward_team: Équipe LCB-FT
+domains: [lcb-ft]
+tags: [reglementaire, lcb-ft, fraude]
+created_from: seed

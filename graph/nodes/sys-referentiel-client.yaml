@@ -1,0 +1,15 @@
+# graph/nodes/sys-referentiel-client.yaml
+type: system
+id: sys-referentiel-client
+name: Référentiel client
+aliases: [REFCLI]
+description: >-
+  Source de vérité des données client et des dossiers KYC : identité, coordonnées,
+  habilitations et statut de la relation bancaire. Exposé aux autres systèmes
+  (app mobile, gestion des bénéficiaires, moteur de crédit) via des API de lecture
+  et des événements de changement de statut.
+owner_team: Équipe Référentiels
+data_quality_notes: Les revues périodiques KYC sont en retard sur le stock de dossiers anciens.
+domains: [referentiel-client]
+tags: [donnee-sensible, source-of-truth]
+created_from: seed

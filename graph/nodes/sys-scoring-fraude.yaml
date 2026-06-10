@@ -1,0 +1,14 @@
+# graph/nodes/sys-scoring-fraude.yaml
+type: system
+id: sys-scoring-fraude
+name: Moteur de scoring fraude
+aliases: [FRAUDSCORE]
+description: >-
+  Point de décision risque unique depuis 2024 : score en temps réel tous les
+  paiements, carte et virement, et émet des alertes de fraude à destination des
+  équipes LCB-FT. Intégré en synchrone sur le chemin d'autorisation carte et sur
+  la passerelle de paiement instantané avant émission.
+owner_team: Équipe LCB-FT
+domains: [lcb-ft, monetique]
+tags: [temps-reel, risque, chemin-critique]
+created_from: seed

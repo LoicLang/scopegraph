@@ -1,0 +1,15 @@
+# graph/nodes/sys-gestion-beneficiaires.yaml
+type: system
+id: sys-gestion-beneficiaires
+name: Gestion des bénéficiaires
+aliases: [BENEFGEST]
+description: >-
+  Référentiel unique des bénéficiaires de virement et de leurs règles de gestion :
+  période de carence, exigences d'authentification forte et criblage sanctions.
+  Expose la seule API d'écriture autorisée sur les bénéficiaires — l'app mobile
+  et tout autre canal y transitent obligatoirement. Adossé au référentiel client
+  pour la vérification d'identité du titulaire.
+owner_team: Équipe Référentiels
+domains: [referentiel-client, banque-en-ligne]
+tags: [securite, api-critique]
+created_from: seed

@@ -1,0 +1,14 @@
+# graph/nodes/obj-virement-instantane.yaml
+type: business_object
+id: obj-virement-instantane
+name: Virement instantané
+aliases: [virement SEPA Inst]
+description: >-
+  Ordre de virement SEPA Inst suivi du dépôt jusqu'à l'irrévocabilité du règlement.
+  Soumis aux plafonds réglementaires et au criblage fraude et sanctions avant
+  émission. L'irrévocabilité rend le cycle de vie plus contraint que celui d'un
+  virement ordinaire.
+steward_team: Équipe Paiements
+domains: [paiement-instantane]
+tags: [sepa-inst, irreversible]
+created_from: seed

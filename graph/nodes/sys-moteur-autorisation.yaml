@@ -1,0 +1,16 @@
+# graph/nodes/sys-moteur-autorisation.yaml
+type: system
+id: sys-moteur-autorisation
+name: Moteur d'autorisation carte
+aliases: [MONAUT, "moteur d'autorisation"]
+description: >-
+  Cœur de la chaîne monétique : autorise ou refuse chaque transaction carte en
+  temps réel (plafonds, opposition, solde, règles réseau). Sollicité par les TPE,
+  les automates et l'app mobile. Toute évolution touche un chemin critique.
+owner_team: Équipe Monétique
+data_quality_notes: ""
+known_risks:
+  - Dette technique sur les modules COBOL historiques de tarification.
+domains: [monetique]
+tags: [temps-reel, chemin-critique]
+created_from: seed

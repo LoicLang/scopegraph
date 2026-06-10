@@ -1,0 +1,14 @@
+# graph/nodes/obj-dossier-client-kyc.yaml
+type: business_object
+id: obj-dossier-client-kyc
+name: Dossier client KYC
+aliases: [dossier KYC]
+description: >-
+  Dossier de connaissance client regroupant identité, pièces justificatives et
+  résultat de la revue périodique. Conditionne l'entrée en relation bancaire, les
+  opérations sensibles et l'octroi de crédit. Soumis aux obligations de mise à jour
+  réglementaires LCB-FT.
+steward_team: Équipe Référentiels
+domains: [referentiel-client, lcb-ft]
+tags: [reglementaire, donnee-sensible, kyc]
+created_from: seed

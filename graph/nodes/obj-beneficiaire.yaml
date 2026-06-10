@@ -1,0 +1,13 @@
+# graph/nodes/obj-beneficiaire.yaml
+type: business_object
+id: obj-beneficiaire
+name: Bénéficiaire
+aliases: [bénéficiaire de virement]
+description: >-
+  Tiers destinataire de virements, rattaché à un client titulaire. Porte l'IBAN,
+  le BIC, un libellé et l'état d'activation. Toute création ou modification est
+  soumise aux règles de sécurité partagées (carence, SCA, sanctions).
+steward_team: Équipe Référentiels
+domains: [referentiel-client, banque-en-ligne]
+tags: [donnee-sensible]
+created_from: seed

@@ -1,0 +1,12 @@
+# Controlled domain vocabulary (ADR 0001): extensible only via a new ADR.
+domains:
+  - monetique            # card payments: authorization, clearing, card lifecycle
+  - tpe-acceptation      # POS terminals & merchant acceptance
+  - paiement-instantane  # instant payment / SEPA Inst rails
+  - dsp2-open-banking    # PSD2, SCA, APIs, TPP access
+  - lcb-ft               # AML/CFT, fraud scoring, sanctions screening
+  - credit               # consumer & mortgage credit
+  - banque-en-ligne      # web & mobile banking front ends
+  - referentiel-client   # customer master data, KYC
+  - editique-reporting   # statements, regulatory reporting
+  - socle-si             # shared infrastructure, core banking, standards

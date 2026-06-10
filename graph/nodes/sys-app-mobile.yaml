@@ -1,0 +1,14 @@
+# graph/nodes/sys-app-mobile.yaml
+type: system
+id: sys-app-mobile
+name: Application mobile bancaire
+aliases: [MOBANK]
+description: >-
+  Canal digital principal des clients particuliers : consultation de comptes,
+  virements classiques et virements instantanés, gestion des bénéficiaires,
+  souscription de crédit à la consommation et activation de carte. S'appuie sur
+  le référentiel client pour les données d'identité et les habilitations.
+owner_team: Équipe Banque en Ligne
+domains: [banque-en-ligne]
+tags: [canal-client, digital]
+created_from: seed

@@ -1,0 +1,14 @@
+# graph/nodes/obj-transaction-carte.yaml
+type: business_object
+id: obj-transaction-carte
+name: Transaction carte
+aliases: [transaction carte de paiement]
+description: >-
+  Cycle de vie complet d'une transaction par carte, de la demande d'autorisation
+  au clearing et au règlement interbancaire. Contient des données sensibles soumises
+  au standard PCI-DSS (numéro de carte, cryptogramme). Trace toutes les décisions
+  d'autorisation et les motifs de refus.
+steward_team: Équipe Monétique
+domains: [monetique]
+tags: [pci-dss, donnee-sensible, temps-reel]
+created_from: seed

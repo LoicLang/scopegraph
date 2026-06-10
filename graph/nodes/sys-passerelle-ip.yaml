@@ -1,0 +1,14 @@
+# graph/nodes/sys-passerelle-ip.yaml
+type: system
+id: sys-passerelle-ip
+name: Passerelle de paiement instantané
+aliases: [FLUXINST]
+description: >-
+  Connecteur aux rails SEPA Inst pour l'émission et la réception de virements
+  instantanés en moins de 10 secondes. Soumet chaque ordre au moteur de scoring
+  fraude avant émission et déclenche le mouvement de fonds dans le core banking
+  à réception de l'accusé de règlement.
+owner_team: Équipe Paiements
+domains: [paiement-instantane]
+tags: [temps-reel, sepa-inst]
+created_from: seed

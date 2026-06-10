@@ -8,38 +8,39 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-10)
+## Current state (2026-06-10, end of session)
 
 - Repo bootstrapped: structure, pyproject, CI (ruff + pytest, green), pre-commit.
-- `docs/project-kickoff.md` committed — founding contract (positioning, MVP scope; its §4
-  schema is superseded by the 2026-06-10 spec below).
-- MVP design spec validated and committed: `docs/specs/2026-06-09-scopegraph-mvp-design.md`
-  (language split FR/EN, minimal web UI, Mistral/DeepSeek/Mock providers, multilingual local
-  embeddings, iterative retrieval loop, dossier structure, 4-week milestones).
-- Schema refined to feature/business-object grain and validated:
-  `docs/specs/2026-06-10-graph-schema-fine-grain-design.md` (7 node types, 7 edge types with
-  topology matrix, domains as ecosystem data, ~72-node seed, 7 traps).
-- Workflow doctrine in place: `AGENTS.md`, `docs/README.md`, `scripts/docs-list`.
-- W1 implementation plan rewritten for the refined schema:
-  `docs/plans/2026-06-10-week1-foundations.md` (15 TDD tasks, full code included — execute via
-  subagent-driven-development). The 2026-06-09 plan is archived, superseded before execution.
+- Founding docs: `docs/project-kickoff.md` (its §4 schema superseded), MVP design spec
+  `docs/specs/2026-06-09-scopegraph-mvp-design.md`, fine-grain schema spec
+  `docs/specs/2026-06-10-graph-schema-fine-grain-design.md`.
+- **W1 foundations DONE** (branch `w1-foundations`, executed via subagent-driven-development
+  from `docs/plans/2026-06-10-week1-foundations.md`):
+  - ADR 0000 (pivot) + ADR 0001 (schema v1 frozen: 7 node types, 7 edge types, topology
+    matrix, domains as ecosystem data).
+  - `core/graph/`: Pydantic models + TOPOLOGY, fail-fast loader (vocabulary, topology,
+    PART_OF cardinality, cancelled-project rules), GraphService (`get_node`, `neighbors`,
+    `k_hop` with path provenance). 37 hermetic tests, ruff clean.
+  - Seed: 72 fictional French banking-IT nodes (9 systems, 24 features, 6 business objects,
+    7 projects, 8 decisions, 12 constraints, 6 risks), 100 edges, 7 deliberate traps — each
+    trap has an integration test in `tests/test_seed.py`.
+  - README v1 · 6 eval cases drafted in `docs/eval/cases.md`.
 
-## Next chantier — Week 1 (foundations)
+## Next chantier — Week 2 (retrieval + first web screens)
 
-Execute `docs/plans/2026-06-10-week1-foundations.md`, task by task, in order:
+Per MVP spec §8 (`docs/specs/2026-06-09-scopegraph-mvp-design.md` §2–§4), brainstorm/plan
+first (no validated plan exists yet):
 
-1. ADR 0000 (pivot from MAS) + ADR 0001 (graph schema v1, written from the 2026-06-10 spec).
-2. Schema v1 as Pydantic models (7+7, TOPOLOGY) + vocabulary-aware fail-fast loader +
-   in-memory `GraphService` (`get_node`, `neighbors`, `k_hop`) — TDD, hermetic.
-3. Seed data: 72 fictional French banking-IT nodes (9 systems, 24 features, 6 business
-   objects, 7 projects, 8 decisions, 12 constraints, 6 risks), 100 edges, 7 deliberate traps
-   (alias MONAUT, superseded decision, contradiction, 2-hop monétique→TPE chain, constraint
-   inheritance via obj-beneficiaire, non-uniform depth, cancelled project).
-4. README v1 (English): positioning, pivot story, 6-step workflow, schema universality note,
-   demo scenario, honest "seeded registry" statement, roadmap → ecosystem-foundry.
-5. Draft the 6 eval cases (French) in `docs/eval/`.
+1. `Embedder` Protocol + `SentenceTransformers` impl (paraphrase-multilingual-MiniLM-L12-v2)
+   + `FakeEmbedder` for hermetic tests; ChromaDB indexing of node descriptions — now
+   including features and business objects (richer corpus than originally specced).
+2. Hybrid scorer: semantic similarity + domain-overlap boost + 1–2 hop traversal expansion
+   with provenance (k_hop is ready). Unit test = the BNPL→TPE 2-hop case and the
+   beneficiary-inheritance case (eval cases 1 and 2).
+3. Iterative MAPPING loop: deterministic ambiguity triggers → discriminating questions.
+4. First web screens: FastAPI + single Alpine.js page (chat pane + live Mermaid Context Map).
 
 ## Later
 
-W2 retrieval + web screens · W3 grounding gate + challenge · W4 dossier + Context Map +
-write-back + scripted demo. See spec §8.
+W3 LLM providers (Mistral/DeepSeek/Mock) + grounding gate + challenge · W4 dossier +
+Context Map polish + write-back + scripted demo + eval run. See MVP spec §8.

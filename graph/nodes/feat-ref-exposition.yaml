@@ -1,0 +1,13 @@
+# graph/nodes/feat-ref-exposition.yaml
+type: feature
+id: feat-ref-exposition
+name: Exposition du référentiel
+description: >-
+  Expose le référentiel client de REFCLI aux systèmes consommateurs (application
+  mobile MOBANK, gestion des bénéficiaires BENEFGEST, moteur de crédit) via des
+  API de consultation en lecture seule. Chaque accès est individuellement tracé
+  et auditable, conformément aux exigences de protection des données personnelles.
+parameters: [API de consultation]
+domains: [referentiel-client]
+tags: [api, lecture, tracabilite, donnee-sensible]
+created_from: seed

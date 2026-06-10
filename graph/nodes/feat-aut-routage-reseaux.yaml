@@ -1,0 +1,14 @@
+# graph/nodes/feat-aut-routage-reseaux.yaml
+type: feature
+id: feat-aut-routage-reseaux
+name: Routage réseaux
+description: >-
+  Détermine et achemine chaque demande d'autorisation vers le réseau carte
+  approprié (CB, Visa ou Mastercard) selon les règles de priorité et les
+  conventions interbancaires gérées dans MONAUT. La logique de routage est
+  indépendante des objets métier client et opère uniquement sur les attributs
+  techniques de la transaction.
+parameters: [réseau (CB, Visa, MC)]
+domains: [monetique]
+tags: [routage, chemin-critique]
+created_from: seed

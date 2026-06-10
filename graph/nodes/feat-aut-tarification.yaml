@@ -1,0 +1,14 @@
+# graph/nodes/feat-aut-tarification.yaml
+type: feature
+id: feat-aut-tarification
+name: Tarification monétique
+description: >-
+  Calcule les commissions d'interchange et de service applicables à chaque
+  transaction carte, en appliquant la grille tarifaire définie pour chaque
+  réseau et produit. Repose sur des modules COBOL historiques de MONAUT
+  identifiés comme dette technique connue, dont la maintenance est coûteuse
+  et le risque de régression élevé.
+parameters: [grille tarifaire]
+domains: [monetique]
+tags: [calcul, dette-technique]
+created_from: seed

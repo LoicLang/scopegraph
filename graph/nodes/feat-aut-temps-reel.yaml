@@ -1,0 +1,13 @@
+# graph/nodes/feat-aut-temps-reel.yaml
+type: feature
+id: feat-aut-temps-reel
+name: Autorisation temps réel
+description: >-
+  Prend la décision d'autorisation ou de refus pour chaque transaction carte en
+  moins de 100 ms dans MONAUT, en vérifiant les plafonds, les oppositions et le
+  solde disponible. Consulte le moteur de scoring fraude à chaque demande pour
+  détecter les comportements suspects avant d'accorder l'autorisation.
+parameters: [numéro de carte, montant, commerçant]
+domains: [monetique]
+tags: [temps-reel, chemin-critique, securite]
+created_from: seed

@@ -1,0 +1,13 @@
+# graph/nodes/feat-ref-fusion-doublons.yaml
+type: feature
+id: feat-ref-fusion-doublons
+name: Fusion de doublons
+description: >-
+  Détecte et fusionne les dossiers clients en double dans REFCLI, en consolidant
+  les données d'identité et les habilitations sur le dossier maître. L'opération
+  est irréversible et intégralement journalisée pour garantir la traçabilité et
+  permettre une reconstitution en cas de contestation.
+parameters: [identifiants à fusionner]
+domains: [referentiel-client]
+tags: [ecriture, irreversible, tracabilite, qualite-donnee]
+created_from: seed

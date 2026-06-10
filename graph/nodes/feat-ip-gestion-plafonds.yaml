@@ -1,0 +1,13 @@
+# graph/nodes/feat-ip-gestion-plafonds.yaml
+type: feature
+id: feat-ip-gestion-plafonds
+name: Gestion des plafonds instantané
+description: >-
+  Permet de consulter et modifier les plafonds d'émission de virements instantanés
+  par client dans FLUXINST. Le plafond par défaut est fixé à 15 000 € par décision
+  de gouvernance ; toute modification individuelle s'effectue uniquement via cette
+  fonctionnalité, garantissant la traçabilité des changements.
+parameters: [plafond, période]
+domains: [paiement-instantane]
+tags: [ecriture, gouvernance, tracabilite]
+created_from: seed

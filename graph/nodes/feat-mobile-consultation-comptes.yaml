@@ -1,0 +1,12 @@
+# graph/nodes/feat-mobile-consultation-comptes.yaml
+type: feature
+id: feat-mobile-consultation-comptes
+name: Consultation des comptes
+description: >-
+  Affiche en temps réel les soldes et les derniers mouvements de l'ensemble des
+  comptes d'un client depuis l'application mobile MOBANK. Les données sont lues
+  directement depuis le core banking sans transformation intermédiaire.
+parameters: [identifiant client]
+domains: [banque-en-ligne]
+tags: [lecture, temps-reel, canal-client]
+created_from: seed

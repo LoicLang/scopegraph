@@ -1,0 +1,13 @@
+# graph/nodes/feat-aut-oppositions.yaml
+type: feature
+id: feat-aut-oppositions
+name: Gestion des oppositions
+description: >-
+  Enregistre la mise en opposition immédiate d'une carte dans MONAUT et propage
+  le statut aux réseaux CB, Visa et Mastercard. Toute tentative d'autorisation
+  ultérieure sur la carte concernée est systématiquement refusée, y compris les
+  transactions en cours de traitement.
+parameters: [identifiant carte, motif]
+domains: [monetique]
+tags: [ecriture, securite, temps-reel]
+created_from: seed

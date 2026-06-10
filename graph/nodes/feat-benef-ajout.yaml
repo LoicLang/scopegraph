@@ -1,0 +1,12 @@
+# graph/nodes/feat-benef-ajout.yaml
+type: feature
+id: feat-benef-ajout
+name: Ajout de bénéficiaire
+description: >-
+  Crée un bénéficiaire de virement pour un client titulaire : saisie de l'IBAN,
+  du BIC et d'un libellé. La création déclenche le délai de carence de 48 heures,
+  exige une authentification forte et soumet l'IBAN à la vérification sanctions.
+parameters: [IBAN, BIC, libellé, canal]
+domains: [referentiel-client, banque-en-ligne]
+tags: [ecriture, donnee-sensible]
+created_from: seed

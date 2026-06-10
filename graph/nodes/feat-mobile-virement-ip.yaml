@@ -1,0 +1,13 @@
+# graph/nodes/feat-mobile-virement-ip.yaml
+type: feature
+id: feat-mobile-virement-ip
+name: Virement instantané (mobile)
+description: >-
+  Permet au client d'initier un virement SEPA Inst directement depuis l'application
+  mobile MOBANK : saisie du bénéficiaire, du montant et du motif. L'ordre est transmis
+  à l'émission de la passerelle FLUXINST qui assure le routage et le scoring fraude
+  avant envoi sur les rails interbancaires.
+parameters: [montant, bénéficiaire, motif]
+domains: [banque-en-ligne, paiement-instantane]
+tags: [ecriture, temps-reel, canal-client]
+created_from: seed

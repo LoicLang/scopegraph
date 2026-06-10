@@ -1,0 +1,13 @@
+# graph/nodes/feat-mobile-ajout-benef.yaml
+type: feature
+id: feat-mobile-ajout-benef
+name: Ajout de bénéficiaire (mobile)
+description: >-
+  Parcours mobile guidé permettant à un client d'ajouter un bénéficiaire de
+  virement depuis l'application MOBANK. N'effectue jamais d'écriture directe :
+  appelle exclusivement l'API bénéficiaires de BENEFGEST et hérite ainsi de
+  toutes les règles de carence, d'authentification forte (SCA) et de vérification sanctions.
+parameters: [IBAN, libellé]
+domains: [banque-en-ligne, referentiel-client]
+tags: [ecriture, sca, canal-client]
+created_from: seed

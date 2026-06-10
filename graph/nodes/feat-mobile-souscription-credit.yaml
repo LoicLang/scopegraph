@@ -1,0 +1,13 @@
+# graph/nodes/feat-mobile-souscription-credit.yaml
+type: feature
+id: feat-mobile-souscription-credit
+name: Souscription crédit conso (mobile)
+description: >-
+  Permet au client de souscrire un crédit à la consommation en autonomie depuis
+  l'application mobile MOBANK, en saisissant le montant souhaité, la durée et
+  ses revenus déclarés. S'appuie sur le moteur de crédit pour l'évaluation de
+  l'éligibilité et l'édition du contrat signable électroniquement.
+parameters: [montant, durée, revenus]
+domains: [banque-en-ligne, credit]
+tags: [ecriture, donnee-sensible, canal-client]
+created_from: seed

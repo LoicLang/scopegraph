@@ -1,0 +1,13 @@
+# graph/nodes/feat-aut-controle-plafonds.yaml
+type: feature
+id: feat-aut-controle-plafonds
+name: Contrôle des plafonds carte
+description: >-
+  Vérifie, lors de chaque demande d'autorisation traitée par MONAUT, que les
+  plafonds journaliers et mensuels de paiement et de retrait définis pour la
+  carte ne sont pas dépassés. Les plafonds sont paramétrables par produit carte
+  et modifiables par le client via les canaux autorisés, notamment l'application mobile.
+parameters: [plafonds par période]
+domains: [monetique]
+tags: [lecture, chemin-critique, gouvernance]
+created_from: seed

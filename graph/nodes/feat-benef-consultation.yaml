@@ -1,0 +1,12 @@
+# graph/nodes/feat-benef-consultation.yaml
+type: feature
+id: feat-benef-consultation
+name: Consultation des bénéficiaires
+description: >-
+  Retourne la liste des bénéficiaires actifs associés à un client, avec pour chacun
+  l'état du délai de carence et les coordonnées IBAN/BIC stockées dans BENEFGEST.
+  Lecture seule, sans impact sur les règles de gestion du risque.
+parameters: [identifiant client]
+domains: [referentiel-client, banque-en-ligne]
+tags: [lecture]
+created_from: seed

@@ -1,0 +1,12 @@
+# graph/nodes/feat-benef-suppression.yaml
+type: feature
+id: feat-benef-suppression
+name: Suppression de bénéficiaire
+description: >-
+  Retire un bénéficiaire de la liste active d'un client dans BENEFGEST.
+  La suppression est uniquement logique : le dossier bénéficiaire est marqué inactif
+  et l'historique complet est conservé pour la traçabilité et les obligations réglementaires.
+parameters: [identifiant bénéficiaire]
+domains: [referentiel-client, banque-en-ligne]
+tags: [ecriture, tracabilite]
+created_from: seed

@@ -1,0 +1,13 @@
+# graph/nodes/feat-benef-api.yaml
+type: feature
+id: feat-benef-api
+name: API bénéficiaires
+description: >-
+  Expose les opérations CRUD sur les bénéficiaires via un contrat REST conforme
+  au standard d'API interne (décision d'architecture 2024) : c'est la SEULE porte
+  d'écriture autorisée sur les bénéficiaires. Consommée par l'application mobile
+  MOBANK et tout autre canal souhaitant gérer des bénéficiaires.
+parameters: [opérations CRUD exposées]
+domains: [referentiel-client, banque-en-ligne]
+tags: [api, ecriture, api-critique]
+created_from: seed

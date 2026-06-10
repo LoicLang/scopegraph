@@ -1,0 +1,13 @@
+# graph/nodes/feat-ip-emission.yaml
+type: feature
+id: feat-ip-emission
+name: Émission de virement instantané
+description: >-
+  Émet un virement SEPA Inst vers un bénéficiaire en moins de 10 secondes via
+  la passerelle FLUXINST. Appelle obligatoirement le scoring fraude avant tout
+  envoi sur les rails interbancaires. L'opération est irrévocable une fois le
+  message d'acquittement reçu du système de règlement.
+parameters: [IBAN bénéficiaire, montant]
+domains: [paiement-instantane]
+tags: [ecriture, temps-reel, irreversible]
+created_from: seed

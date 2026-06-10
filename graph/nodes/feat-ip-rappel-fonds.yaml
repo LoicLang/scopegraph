@@ -1,0 +1,13 @@
+# graph/nodes/feat-ip-rappel-fonds.yaml
+type: feature
+id: feat-ip-rappel-fonds
+name: Rappel de fonds
+description: >-
+  Déclenche la procédure de recall interbancaire sur un virement instantané déjà
+  émis par FLUXINST, en cas de fraude avérée ou d'erreur d'exécution. Soumis à
+  des délais réglementaires stricts et nécessite la coopération de la banque du
+  bénéficiaire ; le dénouement n'est pas garanti.
+parameters: [référence, motif]
+domains: [paiement-instantane]
+tags: [remediation, reglementaire]
+created_from: seed

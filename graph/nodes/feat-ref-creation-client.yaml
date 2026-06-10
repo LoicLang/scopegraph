@@ -1,0 +1,13 @@
+# graph/nodes/feat-ref-creation-client.yaml
+type: feature
+id: feat-ref-creation-client
+name: Création de client
+description: >-
+  Crée le dossier client dans REFCLI à partir des données d'identité et des
+  justificatifs fournis lors de l'entrée en relation. Effectue les contrôles
+  d'identité réglementaires et constitue le dossier KYC initial, point de départ
+  de la relation bancaire et du suivi de conformité du client.
+parameters: [identité, justificatifs]
+domains: [referentiel-client]
+tags: [ecriture, kyc, donnee-sensible]
+created_from: seed

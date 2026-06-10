@@ -1,0 +1,13 @@
+# graph/nodes/feat-ref-maj-kyc.yaml
+type: feature
+id: feat-ref-maj-kyc
+name: Mise à jour KYC
+description: >-
+  Met à jour le dossier de connaissance client dans REFCLI lors des révisions
+  périodiques ou à la demande, en collectant de nouveaux justificatifs et
+  informations sur les revenus. Assure la conformité réglementaire continue du
+  dossier KYC et trace chaque modification pour l'audit.
+parameters: [justificatifs, revenus]
+domains: [referentiel-client]
+tags: [ecriture, kyc, reglementaire, tracabilite]
+created_from: seed

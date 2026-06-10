@@ -1,0 +1,13 @@
+# graph/nodes/feat-ref-screening-periodique.yaml
+type: feature
+id: feat-ref-screening-periodique
+name: Criblage périodique
+description: >-
+  Exécute le criblage de l'ensemble du stock client de REFCLI contre les listes
+  de sanctions internationales et nationales, selon la fréquence LCB-FT requise.
+  Dépend d'un service externe de vérification de sanctions ; tout résultat positif
+  génère une alerte de conformité nécessitant une revue manuelle.
+parameters: [listes de sanctions]
+domains: [referentiel-client, lcb-ft]
+tags: [lecture, lcb-ft, reglementaire, service-externe]
+created_from: seed

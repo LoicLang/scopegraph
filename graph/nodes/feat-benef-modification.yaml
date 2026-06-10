@@ -1,0 +1,12 @@
+# graph/nodes/feat-benef-modification.yaml
+type: feature
+id: feat-benef-modification
+name: Modification de bénéficiaire
+description: >-
+  Permet au client de modifier l'IBAN ou le libellé d'un bénéficiaire existant
+  dans BENEFGEST. La modification de l'IBAN relance intégralement le délai de
+  carence de 48 heures, ce qui équivaut à une re-création côté gestion du risque.
+parameters: [IBAN, libellé]
+domains: [referentiel-client, banque-en-ligne]
+tags: [ecriture, donnee-sensible]
+created_from: seed

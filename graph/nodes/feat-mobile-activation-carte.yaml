@@ -1,0 +1,13 @@
+# graph/nodes/feat-mobile-activation-carte.yaml
+type: feature
+id: feat-mobile-activation-carte
+name: Activation de carte
+description: >-
+  Permet au client d'activer une nouvelle carte bancaire et de gérer ses plafonds
+  de paiement et de retrait depuis l'application mobile MOBANK. S'appuie sur le
+  moteur d'autorisation MONAUT pour appliquer les modifications de plafonds en
+  temps réel sur la chaîne monétique.
+parameters: [identifiant carte]
+domains: [banque-en-ligne, monetique]
+tags: [ecriture, temps-reel, canal-client]
+created_from: seed

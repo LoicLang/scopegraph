@@ -1,0 +1,13 @@
+# graph/nodes/feat-ip-reception.yaml
+type: feature
+id: feat-ip-reception
+name: Réception de virement instantané
+description: >-
+  Prend en charge l'accusé de réception d'un virement SEPA Inst entrant et
+  déclenche le crédit immédiat en compte dans le core banking via FLUXINST.
+  Applique les contrôles de cohérence du montant et du bénéficiaire ainsi que
+  le filtrage des transactions suspectes avant tout mouvement de fonds.
+parameters: [référence de virement]
+domains: [paiement-instantane]
+tags: [ecriture, temps-reel, filtrage]
+created_from: seed

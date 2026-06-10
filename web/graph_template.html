@@ -4,59 +4,85 @@
 <meta charset="utf-8">
 <title>scopegraph — carte de l'écosystème</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<script src="https://unpkg.com/layout-base@2.0.1/layout-base.js"></script>
+<script src="https://unpkg.com/cose-base@2.2.0/cose-base.js"></script>
+<script src="https://unpkg.com/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; }
-  body { font-family: -apple-system, "Segoe UI", sans-serif; color: #2c2c2a; background: #fff; }
-  header { display: flex; gap: 12px; align-items: center; padding: 12px 16px;
-           border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; }
-  header h1 { font-size: 16px; font-weight: 600; margin-right: auto; }
-  header input, header select { padding: 6px 10px; border: 1px solid #d3d1c7;
-           border-radius: 6px; font-size: 13px; min-width: 220px; }
-  header button { padding: 6px 12px; border: 1px solid #d3d1c7; border-radius: 6px;
-           background: #f1efe8; font-size: 13px; cursor: pointer; }
-  #legend { display: flex; gap: 14px; padding: 8px 16px; font-size: 12px;
-            border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; color: #5f5e5a; }
-  #legend span { display: inline-flex; align-items: center; gap: 5px; }
-  #legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  main { display: flex; height: calc(100vh - 92px); }
-  #cy { flex: 1; }
-  #panel { width: 320px; border-left: 1px solid #e3e1d9; padding: 16px;
-           overflow-y: auto; font-size: 13px; line-height: 1.55; }
-  #panel h2 { font-size: 15px; margin-bottom: 2px; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #2c2c2a;
+         background: #f7f6f2; height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; gap: 10px; align-items: center; padding: 10px 16px;
+           background: #fff; border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; }
+  header h1 { font-size: 15px; font-weight: 600; margin-right: auto; white-space: nowrap; }
+  header input { padding: 7px 12px; border: 1px solid #d3d1c7; border-radius: 8px;
+           font-size: 13px; width: 260px; outline: none; }
+  header input:focus { border-color: #534AB7; }
+  header select { padding: 7px 10px; border: 1px solid #d3d1c7; border-radius: 8px;
+           font-size: 13px; background: #fff; }
+  header button { padding: 7px 12px; border: 1px solid #d3d1c7; border-radius: 8px;
+           background: #fff; font-size: 13px; cursor: pointer; }
+  header button:hover { background: #f1efe8; }
+  #legend { display: flex; gap: 8px; padding: 8px 16px; font-size: 12px;
+            background: #fff; border-bottom: 1px solid #e3e1d9; flex-wrap: wrap; }
+  #legend .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+            border: 1px solid #e3e1d9; border-radius: 999px; cursor: pointer;
+            user-select: none; background: #fff; transition: opacity .15s; }
+  #legend .chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  #legend .chip.off { opacity: 0.35; }
+  #legend .count { color: #888780; }
+  main { display: flex; flex: 1; min-height: 0; }
+  #cy { flex: 1; background: #f7f6f2; }
+  #panel { width: 340px; background: #fff; border-left: 1px solid #e3e1d9;
+           padding: 18px; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+  #panel h2 { font-size: 16px; margin-bottom: 2px; }
   #panel .type { font-size: 12px; color: #5f5e5a; margin-bottom: 10px; }
-  #panel .domains { margin: 8px 0; }
-  #panel .domains code { background: #f1efe8; border-radius: 4px; padding: 1px 6px;
-           font-size: 11px; margin-right: 4px; }
-  #panel .edges { margin-top: 12px; border-top: 1px solid #e3e1d9; padding-top: 10px; }
-  #panel .edges div { margin-bottom: 6px; }
-  #panel .edges small { color: #888780; }
-  #panel button { margin-top: 12px; margin-right: 6px; padding: 5px 10px; font-size: 12px;
-           border: 1px solid #d3d1c7; border-radius: 6px; background: #f1efe8; cursor: pointer; }
+  #panel .type b { padding: 1px 8px; border-radius: 999px; color: #fff; font-weight: 500; }
+  #panel code { background: #f1efe8; border-radius: 4px; padding: 1px 6px; font-size: 11px; }
+  #panel .domains { margin: 10px 0; display: flex; gap: 4px; flex-wrap: wrap; }
+  #panel .edges { margin-top: 14px; border-top: 1px solid #e3e1d9; padding-top: 12px; }
+  #panel .edges h3 { font-size: 12px; color: #5f5e5a; text-transform: uppercase;
+           letter-spacing: .04em; margin: 10px 0 6px; }
+  #panel .edge-row { padding: 6px 8px; border-radius: 8px; margin-bottom: 4px;
+           cursor: pointer; border-left: 3px solid transparent; }
+  #panel .edge-row:hover { background: #f7f6f2; }
+  #panel .edge-row small { color: #888780; display: block; }
+  #panel .actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  #panel .actions button { padding: 6px 12px; font-size: 12px; border: 1px solid #d3d1c7;
+           border-radius: 8px; background: #fff; cursor: pointer; }
+  #panel .actions button:hover { background: #f1efe8; }
   .hint { color: #888780; }
+  .hint kbd { background: #f1efe8; border-radius: 4px; padding: 1px 6px; font-size: 11px; }
 </style>
 </head>
 <body>
 <header>
   <h1>scopegraph — carte de l'écosystème</h1>
-  <input id="search" placeholder="Rechercher (nom, alias, id)…">
+  <input id="search" placeholder="Rechercher (nom, alias, id)… puis Entrée">
   <select id="domain"><option value="">Tous les domaines</option></select>
+  <button id="fit" title="Recadrer la vue">Recentrer</button>
+  <button id="relayout" title="Recalculer la disposition">Réorganiser</button>
   <button id="reset">Réinitialiser</button>
 </header>
 <div id="legend"></div>
 <main>
   <div id="cy"></div>
-  <aside id="panel"><p class="hint">Cliquez sur un nœud pour afficher son détail.</p></aside>
+  <aside id="panel"></aside>
 </main>
 <script>
 const GRAPH_DATA = __GRAPH_DATA__;
 
 const TYPE_COLORS = {
   system: "#534AB7", feature: "#D4537E", business_object: "#0F6E56",
-  project: "#185FA5", decision: "#993C1D", constraint: "#854F0B", risk: "#A32D2D",
+  project: "#378ADD", decision: "#993C1D", constraint: "#BA7517", risk: "#A32D2D",
+};
+const TYPE_SHAPES = {
+  system: "round-rectangle", feature: "ellipse", business_object: "round-diamond",
+  project: "round-hexagon", decision: "round-pentagon", constraint: "round-tag",
+  risk: "round-triangle",
 };
 const TYPE_LABELS = {
-  system: "Système", feature: "Feature", business_object: "Objet métier",
-  project: "Projet", decision: "Décision", constraint: "Contrainte", risk: "Risque",
+  system: "Systèmes", feature: "Features", business_object: "Objets métier",
+  project: "Projets", decision: "Décisions", constraint: "Contraintes", risk: "Risques",
 };
 const EDGE_STYLES = {
   PART_OF: { color: "#b4b2a9", style: "dashed" },
@@ -67,110 +93,254 @@ const EDGE_STYLES = {
   SUPERSEDES: { color: "#E24B4A", style: "solid" },
   RELATES_TO: { color: "#888780", style: "dotted" },
 };
+const EDGE_FR = {
+  PART_OF: "fait partie de", OPERATES_ON: "opère sur", DEPENDS_ON: "dépend de",
+  CONSTRAINS: "contraint", PRODUCED: "a produit", SUPERSEDES: "remplace",
+  RELATES_TO: "lié à",
+};
 
+const highlighted = new Set(GRAPH_DATA.highlight);
 const elements = [
   ...GRAPH_DATA.nodes.map(n => ({ data: { ...n } })),
   ...GRAPH_DATA.edges.map((e, i) => ({ data: { id: "e" + i, ...e } })),
 ];
-const highlighted = new Set(GRAPH_DATA.highlight);
 
 const cy = cytoscape({
   container: document.getElementById("cy"),
   elements,
+  wheelSensitivity: 0.25,
   style: [
     { selector: "node", style: {
-        "background-color": n => TYPE_COLORS[n.data("type")] || "#888",
-        label: "data(label)", "font-size": 10, color: "#2c2c2a",
-        "text-wrap": "wrap", "text-max-width": 110,
-        "text-valign": "bottom", "text-margin-y": 4, width: 26, height: 26,
+        shape: n => TYPE_SHAPES[n.data("type")],
+        "background-color": n => TYPE_COLORS[n.data("type")],
+        "background-opacity": 0.92,
+        width: "data(size)", height: "data(size)",
+        label: "data(label)",
+        "font-size": 12, color: "#2c2c2a",
+        "text-wrap": "wrap", "text-max-width": 160,
+        "text-valign": "bottom", "text-margin-y": 5,
+        "text-background-color": "#f7f6f2", "text-background-opacity": 0.85,
+        "text-background-padding": 2, "text-background-shape": "round-rectangle",
+        "min-zoomed-font-size": 8,
+        "transition-property": "opacity, width, height",
+        "transition-duration": "150ms",
+        "border-width": 1.5, "border-color": "#ffffff",
     }},
     { selector: "edge", style: {
-        width: 1.4, "curve-style": "bezier",
+        width: 1.6, "curve-style": "bezier",
         "line-color": e => EDGE_STYLES[e.data("type")].color,
         "line-style": e => EDGE_STYLES[e.data("type")].style,
         "target-arrow-shape": "vee",
         "target-arrow-color": e => EDGE_STYLES[e.data("type")].color,
-        "arrow-scale": 0.8,
+        "arrow-scale": 0.9, opacity: 0.75,
+        "transition-property": "opacity", "transition-duration": "150ms",
     }},
-    { selector: "node.hl", style: { "border-width": 4, "border-color": "#2c2c2a", width: 34, height: 34 } },
-    { selector: ".dim", style: { opacity: 0.18 } },
-    { selector: "node.found", style: { "border-width": 4, "border-color": "#EF9F27" } },
+    { selector: "edge.named", style: {
+        label: e => EDGE_FR[e.data("type")], "font-size": 9, color: "#5f5e5a",
+        "text-background-color": "#f7f6f2", "text-background-opacity": 0.9,
+        "text-background-padding": 2, "text-rotation": "autorotate",
+    }},
+    { selector: "node.major", style: {
+        "font-size": 13, "min-zoomed-font-size": 2,
+    }},
+    { selector: "node.show-label", style: {
+        "min-zoomed-font-size": 0, "font-size": 13, "z-index": 20,
+    }},
+    { selector: "node:selected", style: {
+        "border-width": 3, "border-color": "#2c2c2a",
+    }},
+    { selector: ".faded", style: { opacity: 0.08, "text-opacity": 0.08 } },
+    { selector: ".dimmed", style: { opacity: 0.15, "text-opacity": 0.15 } },
+    { selector: ".hidden", style: { display: "none" } },
+    { selector: "node.hl", style: {
+        "border-width": 4, "border-color": "#2c2c2a", "z-index": 10,
+    }},
+    { selector: "node.found", style: {
+        "border-width": 4, "border-color": "#EF9F27", "z-index": 10,
+        "min-zoomed-font-size": 0, "font-size": 13,
+    }},
+    { selector: "node.hl", style: {
+        "min-zoomed-font-size": 0, "font-size": 13,
+    }},
   ],
-  layout: { name: "cose", animate: false, nodeRepulsion: 9000, idealEdgeLength: 90, padding: 30 },
 });
 
+// Node size by connectivity (hubs stand out); hubs keep their label at overview zoom.
+cy.nodes().forEach(n => {
+  n.data("size", 24 + Math.min(28, n.degree(false) * 2.5));
+  const isHub = ["system", "business_object"].includes(n.data("type")) || n.degree(false) >= 6;
+  if (isHub) n.addClass("major");
+});
+window.addEventListener("resize", () => cy.resize());
+
+function runLayout() {
+  let opts;
+  try {
+    cy.layout({ name: "fcose" }); // throws if the plugin failed to load
+    opts = { name: "fcose", quality: "proof", animate: true, animationDuration: 600,
+             nodeSeparation: 120, idealEdgeLength: 120, nodeRepulsion: 7000,
+             gravity: 0.25, padding: 40, randomize: true };
+  } catch {
+    opts = { name: "cose", animate: false, nodeRepulsion: 10000, idealEdgeLength: 120,
+             padding: 40 };
+  }
+  const layout = cy.elements(":visible").layout(opts);
+  layout.on("layoutstop", () => {
+    if (highlighted.size) cy.animate({ fit: { eles: cy.nodes(".hl"), padding: 80 }, duration: 300 });
+    else cy.animate({ fit: { eles: cy.elements(":visible"), padding: 40 }, duration: 300 });
+  });
+  layout.run();
+}
+runLayout();
+
+// Context-Map highlight mode.
 if (highlighted.size) {
-  cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dim"));
+  cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dimmed"));
   cy.edges().forEach(e => {
-    if (!(highlighted.has(e.source().id()) && highlighted.has(e.target().id()))) e.addClass("dim");
+    if (!(highlighted.has(e.source().id()) && highlighted.has(e.target().id())))
+      e.addClass("dimmed");
   });
 }
 
-// Legend
-document.getElementById("legend").innerHTML = Object.entries(TYPE_LABELS)
-  .map(([t, l]) => `<span><i style="background:${TYPE_COLORS[t]}"></i>${l}</span>`).join("");
-
-// Side panel
-const panel = document.getElementById("panel");
-cy.on("tap", "node", evt => {
-  const n = evt.target;
-  const edges = n.connectedEdges().map(e => {
-    const out = e.source().id() === n.id();
-    const other = out ? e.target() : e.source();
-    const arrow = out ? "→" : "←";
-    const note = e.data("note") ? `<br><small>${e.data("note")}</small>` : "";
-    return `<div><code>${e.data("type")}</code> ${arrow} ${other.data("label")}${note}</div>`;
-  }).join("");
-  panel.innerHTML = `
-    <h2>${n.data("label")}</h2>
-    <div class="type">${TYPE_LABELS[n.data("type")]} · <code>${n.id()}</code></div>
-    <p>${n.data("summary")}</p>
-    <div class="domains">${n.data("domains").map(d => `<code>${d}</code>`).join("")}</div>
-    <div class="edges"><strong>${edges ? "Liens" : "Aucun lien"}</strong>${edges}</div>
-    <button id="isolate">Isoler le voisinage</button>
-    <button id="showall">Tout afficher</button>`;
-  document.getElementById("isolate").onclick = () => {
-    const keep = n.closedNeighborhood();
-    cy.elements().addClass("dim");
-    keep.removeClass("dim");
-  };
-  document.getElementById("showall").onclick = () => cy.elements().removeClass("dim");
+// Hover: light up the neighborhood, fade the rest, name the edges.
+cy.on("mouseover", "node", evt => {
+  const hood = evt.target.closedNeighborhood();
+  cy.elements().not(hood).addClass("faded");
+  hood.edges().addClass("named");
+  hood.nodes().addClass("show-label");
 });
-cy.on("tap", evt => { if (evt.target === cy) panel.innerHTML = '<p class="hint">Cliquez sur un nœud pour afficher son détail.</p>'; });
+cy.on("mouseout", "node", () => {
+  cy.elements().removeClass("faded show-label");
+  cy.edges().removeClass("named");
+});
 
-// Search (matches id, label, aliases via the payload "search" field)
-document.getElementById("search").addEventListener("input", evt => {
-  const q = evt.target.value.trim().toLowerCase();
+// Legend = clickable type filter chips.
+const typeOn = Object.fromEntries(Object.keys(TYPE_LABELS).map(t => [t, true]));
+const counts = {};
+GRAPH_DATA.nodes.forEach(n => counts[n.type] = (counts[n.type] || 0) + 1);
+const legend = document.getElementById("legend");
+legend.innerHTML = Object.entries(TYPE_LABELS).map(([t, l]) =>
+  `<span class="chip" data-type="${t}"><i style="background:${TYPE_COLORS[t]}"></i>${l}
+   <span class="count">${counts[t] || 0}</span></span>`).join("");
+legend.querySelectorAll(".chip").forEach(chip => {
+  chip.onclick = () => {
+    const t = chip.dataset.type;
+    typeOn[t] = !typeOn[t];
+    chip.classList.toggle("off", !typeOn[t]);
+    applyFilters();
+  };
+});
+
+// Domain dropdown.
+const domainSelect = document.getElementById("domain");
+[...new Set(GRAPH_DATA.nodes.flatMap(n => n.domains))].sort().forEach(d =>
+  domainSelect.insertAdjacentHTML("beforeend", `<option>${d}</option>`));
+domainSelect.addEventListener("change", applyFilters);
+
+function applyFilters() {
+  const d = domainSelect.value;
+  cy.batch(() => {
+    cy.nodes().forEach(n => {
+      const ok = typeOn[n.data("type")] && (!d || n.data("domains").includes(d));
+      n.toggleClass("hidden", !ok);
+    });
+    cy.edges().forEach(e => e.toggleClass(
+      "hidden", e.source().hasClass("hidden") || e.target().hasClass("hidden")));
+  });
+}
+
+// Search: live match + Enter zooms to results.
+const searchInput = document.getElementById("search");
+searchInput.addEventListener("input", () => {
+  const q = searchInput.value.trim().toLowerCase();
   cy.nodes().removeClass("found");
   if (q.length < 2) return;
-  cy.nodes().filter(n => n.data("search").includes(q)).addClass("found");
+  cy.nodes(":visible").filter(n => n.data("search").includes(q)).addClass("found");
+});
+searchInput.addEventListener("keydown", evt => {
+  if (evt.key !== "Enter") return;
+  const found = cy.nodes(".found");
+  if (found.length) cy.animate({ fit: { eles: found, padding: 90 }, duration: 400 });
 });
 
-// Domain filter
-const domainSelect = document.getElementById("domain");
-[...new Set(GRAPH_DATA.nodes.flatMap(n => n.domains))].sort().forEach(d => {
-  domainSelect.insertAdjacentHTML("beforeend", `<option>${d}</option>`);
-});
-domainSelect.addEventListener("change", () => {
-  const d = domainSelect.value;
-  cy.elements().removeClass("dim");
-  if (!d) return;
-  const keep = cy.nodes().filter(n => n.data("domains").includes(d));
-  cy.elements().addClass("dim");
-  keep.removeClass("dim");
-  keep.connectedEdges().filter(e =>
-    keep.contains(e.source()) && keep.contains(e.target())).removeClass("dim");
-});
+// Side panel.
+const panel = document.getElementById("panel");
+const DEFAULT_PANEL = `
+  <p class="hint"><strong>Navigation</strong><br><br>
+  <kbd>survol</kbd> illumine le voisinage d'un nœud et nomme ses liens<br><br>
+  <kbd>clic</kbd> ouvre le détail d'un nœud, clic sur le fond le referme<br><br>
+  <kbd>molette</kbd> zoome, <kbd>glisser</kbd> déplace la vue ou un nœud<br><br>
+  La légende filtre par type (cliquez pour masquer/afficher) ;
+  la recherche connaît aussi les alias (essayez « MONAUT »).</p>`;
+panel.innerHTML = DEFAULT_PANEL;
 
-// Reset
+function showNode(n) {
+  const groups = {};
+  n.connectedEdges().forEach(e => {
+    const out = e.source().id() === n.id();
+    const other = out ? e.target() : e.source();
+    const t = e.data("type");
+    (groups[t] = groups[t] || []).push(
+      `<div class="edge-row" data-node="${other.id()}"
+            style="border-left-color:${EDGE_STYLES[t].color}">
+         ${out ? "" : "⟵ "}${EDGE_FR[t]} <strong>${other.data("label")}</strong>
+         ${e.data("note") ? `<small>${e.data("note")}</small>` : ""}
+       </div>`);
+  });
+  const edgesHtml = Object.entries(groups).map(([t, rows]) =>
+    `<h3>${t}</h3>${rows.join("")}`).join("") || `<p class="hint">Aucun lien.</p>`;
+  panel.innerHTML = `
+    <h2>${n.data("label")}</h2>
+    <div class="type"><b style="background:${TYPE_COLORS[n.data("type")]}">
+      ${TYPE_LABELS[n.data("type")].replace(/s$/, "")}</b> &nbsp;<code>${n.id()}</code></div>
+    <p>${n.data("summary")}</p>
+    <div class="domains">${n.data("domains").map(d => `<code>${d}</code>`).join("")}</div>
+    <div class="edges">${edgesHtml}</div>
+    <div class="actions">
+      <button id="isolate">Isoler le voisinage</button>
+      <button id="showall">Tout réafficher</button>
+    </div>`;
+  panel.querySelectorAll(".edge-row").forEach(row => {
+    row.onclick = () => {
+      const target = cy.getElementById(row.dataset.node);
+      cy.nodes().unselect();
+      target.select();
+      cy.animate({ fit: { eles: target.closedNeighborhood(), padding: 80 }, duration: 350 });
+      showNode(target);
+    };
+  });
+  document.getElementById("isolate").onclick = () => {
+    const keep = n.closedNeighborhood();
+    cy.elements().not(keep).addClass("dimmed");
+    cy.animate({ fit: { eles: keep, padding: 80 }, duration: 350 });
+  };
+  document.getElementById("showall").onclick = () => {
+    cy.elements().removeClass("dimmed");
+    if (highlighted.size) cy.nodes().forEach(x =>
+      x.addClass(highlighted.has(x.id()) ? "hl" : "dimmed"));
+  };
+}
+cy.on("tap", "node", evt => showNode(evt.target));
+cy.on("tap", evt => { if (evt.target === cy) panel.innerHTML = DEFAULT_PANEL; });
+
+// Header buttons.
+document.getElementById("fit").onclick = () =>
+  cy.animate({ fit: { eles: cy.elements(":visible"), padding: 40 }, duration: 350 });
+document.getElementById("relayout").onclick = () => runLayout();
 document.getElementById("reset").onclick = () => {
-  cy.elements().removeClass("dim found");
-  document.getElementById("search").value = "";
+  searchInput.value = "";
   domainSelect.value = "";
+  Object.keys(typeOn).forEach(t => typeOn[t] = true);
+  legend.querySelectorAll(".chip").forEach(c => c.classList.remove("off"));
+  cy.elements().removeClass("faded dimmed hidden found named");
   if (highlighted.size) {
-    cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dim"));
+    cy.nodes().forEach(n => n.addClass(highlighted.has(n.id()) ? "hl" : "dimmed"));
+    cy.edges().forEach(e => {
+      if (!(highlighted.has(e.source().id()) && highlighted.has(e.target().id())))
+        e.addClass("dimmed");
+    });
   }
-  cy.fit(undefined, 30);
+  cy.animate({ fit: { eles: cy.elements(), padding: 40 }, duration: 350 });
 };
 </script>
 </body>

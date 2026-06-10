@@ -4,7 +4,9 @@ The domain vocabulary is NOT defined here: it is ecosystem data, loaded from
 graph/domains.yaml and enforced by the loader.
 """
 
+import datetime
 from enum import StrEnum
+from typing import Annotated, Literal, Union
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -65,3 +67,81 @@ class Edge(BaseModel):
         if self.type is EdgeType.RELATES_TO and not self.note.strip():
             raise ValueError("RELATES_TO is a last-resort link and must carry a note (ADR 0001)")
         return self
+
+
+class NodeBase(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    id: str = Field(pattern=SLUG_PATTERN)
+    domains: list[str] = Field(min_length=1)
+    tags: list[str] = Field(default_factory=list)
+    created_from: str = Field(default="seed", pattern=CREATED_FROM_PATTERN)
+
+
+class System(NodeBase):
+    type: Literal["system"] = "system"
+    name: str
+    aliases: list[str] = Field(default_factory=list)
+    description: str
+    owner_team: str
+    data_quality_notes: str = ""
+    known_risks: list[str] = Field(default_factory=list)
+
+
+class Feature(NodeBase):
+    type: Literal["feature"] = "feature"
+    name: str
+    description: str
+    parameters: list[str] = Field(default_factory=list)
+
+
+class BusinessObject(NodeBase):
+    type: Literal["business_object"] = "business_object"
+    name: str
+    aliases: list[str] = Field(default_factory=list)
+    description: str
+    steward_team: str = ""
+
+
+class Project(NodeBase):
+    type: Literal["project"] = "project"
+    name: str
+    aliases: list[str] = Field(default_factory=list)
+    description: str
+    status: Literal["done", "ongoing", "cancelled"]
+    owner_team: str
+    outcomes: str = ""
+    known_risks: list[str] = Field(default_factory=list)
+
+
+class Decision(NodeBase):
+    type: Literal["decision"] = "decision"
+    title: str
+    statement: str
+    rationale: str
+    date: datetime.date
+    decided_by: str
+    still_active: bool = True
+
+
+class Constraint(NodeBase):
+    type: Literal["constraint"] = "constraint"
+    title: str
+    statement: str
+    source: str
+    severity: Literal["low", "medium", "high"]
+
+
+class Risk(NodeBase):
+    type: Literal["risk"] = "risk"
+    title: str
+    statement: str
+    likelihood: Literal["low", "medium", "high"]
+    impact: Literal["low", "medium", "high"]
+    mitigations: list[str] = Field(default_factory=list)
+
+
+Node = Annotated[
+    Union[System, Feature, BusinessObject, Project, Decision, Constraint, Risk],
+    Field(discriminator="type"),
+]

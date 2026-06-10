@@ -33,18 +33,15 @@ read_when:
 
 ## Next chantier — Week 2 (retrieval + first web screens)
 
-Per MVP spec §8 (`docs/specs/2026-06-09-scopegraph-mvp-design.md` §2–§4), brainstorm/plan
-first (no validated plan exists yet):
+**W2 design spec validated** (2026-06-10 brainstorm):
+`docs/specs/2026-06-10-week2-retrieval-mapping-web-design.md` — the build contract for the
+four lots (embeddings+Chroma, hybrid scorer, deterministic MAPPING loop with template
+questions, FastAPI+Alpine first screens). Key decisions: no LLM/agent in the loop (template
+questions in W2, LLM rephrases in W3), query = accumulated ProjectBrief, pivot trigger
+derived from domains (no schema change), map payload rides the message response.
 
-1. `Embedder` Protocol + `SentenceTransformers` impl (paraphrase-multilingual-MiniLM-L12-v2)
-   + `FakeEmbedder` for hermetic tests; ChromaDB indexing of node descriptions — now
-   including features and business objects (richer corpus than originally specced).
-2. Hybrid scorer: semantic similarity + domain-overlap boost + 1–2 hop traversal expansion
-   with provenance (k_hop is ready). Unit test = the BNPL→TPE 2-hop case and the
-   beneficiary-inheritance case (eval cases 1 and 2).
-3. Iterative MAPPING loop: deterministic ambiguity triggers → discriminating questions.
-4. First web screens: FastAPI + single Alpine.js page (chat pane + live Context Map pane,
-   served from the `core/viz/payload.py` seam — graph-viz design spec).
+**Next step: write the implementation plan** (`docs/plans/`, writing-plans) from that spec,
+then execute subagent-driven on branch `w2-retrieval-web`, TDD — same mechanics as W1.
 
 ## Later
 

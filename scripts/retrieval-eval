@@ -8,12 +8,16 @@ docs/known-limits.md — re-run this after any constants change and update that 
 
 Usage:
     pip install -e ".[embeddings]"
-    ./scripts/retrieval-eval                # per-scenario report at current config
-    ./scripts/retrieval-eval --sweep        # recall/size/precision across threshold grids
+    ./scripts/retrieval-eval                        # per-scenario report at current config
+    ./scripts/retrieval-eval --sweep                # recall/size/precision across threshold grids
+    ./scripts/retrieval-eval --distractors N        # merge N pool distractors before running
+    ./scripts/retrieval-eval --distractor-sweep     # run at N=0,500,1000,2000 and print verdict
 """
 
 import argparse
+import statistics
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -142,40 +146,137 @@ GRIDS = [
     ("1-hop tight++", 0.45, 0.32, 5, 1),
 ]
 
+SWEEP_POINTS = [0, 500, 1000, 2000]
 
-def run_cases(service: GraphService, index: VectorIndex) -> tuple[float, float, float]:
-    recalls, sizes, precisions = [], [], []
+
+@dataclass
+class RunSummary:
+    recall: float
+    size: float
+    precision: float
+    found: dict[str, set[str]] = field(default_factory=dict)  # scenario -> expected hits
+
+
+def run_cases(service: GraphService, index: VectorIndex) -> RunSummary:
+    distractor_ids = {n.id for n in service.all_nodes() if n.created_from == "synthetic"}
     total = len(service.all_nodes())
+    recalls, sizes, precisions = [], [], []
+    found: dict[str, set[str]] = {}
     for name, brief, expected, trap in SCENARIOS:
         result = retrieve(brief, service, index)
         got = set(result.node_ids())
         hit = expected & got
+        found[name] = hit
         recalls.append(len(hit) / len(expected))
         sizes.append(len(got))
         precisions.append(len(hit) / max(len(got), 1))
         missing = ", ".join(sorted(expected - got)) or "-"
-        print(f"  {name:30s} recall {len(hit)}/{len(expected)}  map {len(got):2d}/{total}"
-              f"  missing: {missing}")
+        line = f"  {name:30s} recall {len(hit)}/{len(expected)}  map {len(got):3d}/{total}"
+        if distractor_ids:
+            intrusion = sum(1 for a in result.anchors if a.node_id in distractor_ids)
+            pollution = len(got & distractor_ids) / max(len(got), 1)
+            line += (f"  anchor-intrusion {intrusion}/{len(result.anchors)}"
+                     f"  pollution {pollution:.0%}")
+        print(f"{line}  missing: {missing}")
         if expected - got:
             print(f"    trap: {trap}")
     n = len(SCENARIOS)
-    return sum(recalls) / n, sum(sizes) / n, sum(precisions) / n
+    return RunSummary(sum(recalls) / n, sum(sizes) / n, sum(precisions) / n, found)
+
+
+def build_service(n: int) -> GraphService:
+    if n == 0:
+        return GraphService.from_dir(ROOT / "graph")
+    return GraphService.from_dirs(ROOT / "graph", ROOT / "graph-distractors", n)
+
+
+def realism_check(service: GraphService, index: VectorIndex) -> None:
+    """Brief↔distractor sims vs brief↔seed-noise sims: warn when the pool is easy noise.
+
+    Real seed noise sits at ≈0.25-0.40 (known-limits L1). If the distractors' median
+    similarity sits well below the seed noise median, the pool does not exert real
+    anchor pressure and the verdict cannot be trusted.
+    """
+    distractor_ids = {n.id for n in service.all_nodes() if n.created_from == "synthetic"}
+    if not distractor_ids:
+        return
+    total = len(service.all_nodes())
+    pool_sims: list[float] = []
+    noise_sims: list[float] = []
+    for _, brief, expected, _ in SCENARIOS:
+        for node_id, sim in index.query(brief, total):
+            if node_id in distractor_ids:
+                pool_sims.append(sim)
+            elif node_id not in expected:
+                noise_sims.append(sim)
+
+    def dist(values: list[float]) -> str:
+        q1, med, q3 = statistics.quantiles(values, n=4)
+        return f"q1 {q1:.2f} med {med:.2f} q3 {q3:.2f} max {max(values):.2f}"
+
+    print(f"  realism: distractors [{dist(pool_sims)}] vs seed noise [{dist(noise_sims)}]")
+    if statistics.median(pool_sims) < statistics.median(noise_sims) - 0.05:
+        print("  WARNING: distractor sims sit well below real seed noise — the pool is"
+              " too easy, this verdict is not trustworthy")
+
+
+def distractor_sweep(embedder: SentenceTransformersEmbedder) -> None:
+    runs: dict[int, RunSummary] = {}
+    for n in SWEEP_POINTS:
+        service = build_service(n)
+        index = VectorIndex(embedder)
+        index.build(service)
+        print(f"\n--- distractors N={n} ({len(service.all_nodes())} nodes) ---")
+        realism_check(service, index)
+        runs[n] = run_cases(service, index)
+        print(f"==> recall {runs[n].recall:.0%} | map {runs[n].size:.1f}"
+              f" | precision {runs[n].precision:.0%}")
+    print_verdict(runs[0], runs[max(SWEEP_POINTS)])
+
+
+def print_verdict(base: RunSummary, worst: RunSummary) -> None:
+    """Criterion fixed BEFORE measurement (spec §1): per-case survival + mean drop ≤10pts."""
+    dead = {
+        name: sorted(base.found[name] - worst.found[name])
+        for name in base.found
+        if base.found[name] - worst.found[name]
+    }
+    drop = base.recall - worst.recall
+    print(f"\nrecall N=0 {base.recall:.0%} -> N={SWEEP_POINTS[-1]} {worst.recall:.0%}"
+          f" (drop {drop:.0%})")
+    if not dead and drop <= 0.10:
+        print("VERDICT: HOLDS — no per-case regression, mean drop within 10 pts")
+    else:
+        print("VERDICT: SWAP EMBEDDER (multilingual-e5) — see spec §1 criterion")
+        for name, nodes in sorted(dead.items()):
+            print(f"  {name}: lost {', '.join(nodes)}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sweep", action="store_true", help="run the threshold grid sweep")
+    parser.add_argument("--distractors", type=int, default=0, metavar="N",
+                        help="merge the first N pool distractors before running")
+    parser.add_argument("--distractor-sweep", action="store_true",
+                        help=f"run at N={SWEEP_POINTS} and print the verdict")
     args = parser.parse_args()
 
-    service = GraphService.from_dir(ROOT / "graph")
-    index = VectorIndex(SentenceTransformersEmbedder())
+    embedder = SentenceTransformersEmbedder()
+
+    if args.distractor_sweep:
+        distractor_sweep(embedder)
+        return
+
+    service = build_service(args.distractors)
+    index = VectorIndex(embedder)
     index.build(service)
 
     if not args.sweep:
         print(f"config: TAU_ANCHOR={config.TAU_ANCHOR} TAU_KEEP={config.TAU_KEEP} "
               f"TOP_K={config.TOP_K} MAX_HOPS={config.MAX_HOPS}")
-        recall, size, precision = run_cases(service, index)
-        print(f"\n  mean recall {recall:.0%} | mean map {size:.1f} | mean precision {precision:.0%}")
+        summary = run_cases(service, index)
+        print(f"\n  mean recall {summary.recall:.0%} | mean map {summary.size:.1f}"
+              f" | mean precision {summary.precision:.0%}")
         return
 
     print(f"{'grid':14s} TAU_A TAU_K K hops | recall | map   | precision")
@@ -183,8 +284,9 @@ def main() -> None:
         config.TAU_ANCHOR, config.TAU_KEEP = tau_a, tau_k
         config.TOP_K, config.MAX_HOPS = top_k, hops
         print(f"\n--- {name} ---")
-        recall, size, precision = run_cases(service, index)
-        print(f"==> recall {recall:.0%} | map {size:.1f} | precision {precision:.0%}")
+        summary = run_cases(service, index)
+        print(f"==> recall {summary.recall:.0%} | map {summary.size:.1f}"
+              f" | precision {summary.precision:.0%}")
 
 
 if __name__ == "__main__":

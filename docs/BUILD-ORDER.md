@@ -8,7 +8,7 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-10, end of session)
+## Current state (2026-06-11, end of session)
 
 - Repo bootstrapped: structure, pyproject, CI (ruff + pytest, green), pre-commit.
 - Founding docs: `docs/project-kickoff.md` (its §4 schema superseded), MVP design spec
@@ -31,22 +31,40 @@ read_when:
   highlight will reuse. Spec: `docs/specs/2026-06-10-graph-viz-design.md` (amends the MVP
   spec: Context Map medium = interactive viewer; Mermaid deferred to the dossier export).
 
-## Next chantier — Week 2 (retrieval + first web screens)
+- **W2 retrieval + MAPPING + first screens DONE** (2026-06-11, branch `w2-retrieval-web`,
+  subagent-driven from `docs/plans/2026-06-11-week2-retrieval-mapping-web.md`; spec:
+  `docs/specs/2026-06-10-week2-retrieval-mapping-web-design.md`):
+  - `core/retrieval/`: Embedder Protocol (SentenceTransformers lazy via the `embeddings`
+    extra + FakeEmbedder), Chroma cosine index with fingerprint staleness, hybrid scorer
+    (semantic + domain boost + 1–2 hop expansion with edge-path provenance, deterministic
+    type-priority tie-break). Eval cases 1–2 are unit tests: the TPE 2-hop trap passes.
+  - `core/runtime/`: ProjectBrief (the accumulating query), triggers T1/T2/T3 with
+    asked-log + precedence, French template questions, ScopingSession (6-state enum,
+    DESCRIBING→MAPPING active, question cap, guaranteed convergence; hedge answers
+    never confirm a domain).
+  - `web/`: FastAPI session endpoints (map payload rides the message response) + one
+    Alpine/Cytoscape page (chat + live Context Map, anchors vs expanded styling) on the
+    extended `core/viz/payload.py` seam (`only` + `annotations`).
+  - `scripts/retrieval-smoke`: real-model calibration bench over the 6 eval briefs (not
+    in CI — constants in `core/retrieval/config.py` are tuned by reading its output).
+  - 102 hermetic tests, ruff clean. Run the app: `pip install -e ".[embeddings]"` then
+    `uvicorn --factory web.app:create_app --reload`.
 
-**W2 design spec validated** (2026-06-10 brainstorm):
-`docs/specs/2026-06-10-week2-retrieval-mapping-web-design.md` — the build contract for the
-four lots (embeddings+Chroma, hybrid scorer, deterministic MAPPING loop with template
-questions, FastAPI+Alpine first screens). Key decisions: no LLM/agent in the loop (template
-questions in W2, LLM rephrases in W3), query = accumulated ProjectBrief, pivot trigger
-derived from domains (no schema change), map payload rides the message response.
+## Next chantier — Week 3 (LLM providers + grounding + challenge)
 
-**Next step: write the implementation plan** (`docs/plans/`, writing-plans) from that spec,
-then execute subagent-driven on branch `w2-retrieval-web`, TDD — same mechanics as W1.
+Per MVP spec §8: `LLMProvider` Protocol (Mistral default, DeepSeek dev, Mock hermetic) ·
+grounding gate (every claim cites a node ID or is rejected, visibly) · propose/validate/
+apply ledger · CHALLENGING + SCOPING states (already declared, currently raising
+NotImplementedError) · LLM rephrasing of the W2 template questions (templates stay as
+permanent fallback). Brainstorm/plan first — no W3 spec exists yet.
+
+Calibration TODO before or during W3: run `./scripts/retrieval-smoke` once (downloads the
+MiniLM model) and read the rankings on the 6 briefs; adjust `core/retrieval/config.py`
+constants in a dedicated commit if a case ranks poorly.
 
 ## Later
 
-W3 LLM providers (Mistral/DeepSeek/Mock) + grounding gate + challenge · W4 dossier +
-Context Map polish + write-back + scripted demo + eval run. See MVP spec §8.
+W4 dossier + Context Map polish + write-back + scripted demo + eval run. See MVP spec §8.
 
 W4 note (decided in session, 2026-06-10): write-back needs a small TOPOLOGY-extension ADR —
 allow `Project → DEPENDS_ON → System` and `Project → OPERATES_ON → BusinessObject` so an

@@ -63,6 +63,10 @@ Single entry point, e.g. `retrieve(brief: ProjectBrief) -> RetrievalResult`:
 ```
 
 - A node reached both semantically and by expansion keeps the max score and **both reasons**.
+- Anchor ordering is fully deterministic: score desc, then **node type priority** (system >
+  business_object > feature > project > decision > constraint > risk — on an exact score tie,
+  the subject outranks features matching the same words), then node id. Tie-break decided
+  during implementation (2026-06-11, eval case 1); covered by a dedicated unit test.
 - Every result node carries its reason: `semantic(sim=0.62)` and/or
   `expanded(via sys-moteur-autorisation → DEPENDS_ON)`. Reasons feed the Context Map
   (W2) and the LLM context (W3) — noise stays visible and explainable.

@@ -21,6 +21,7 @@ dev = [
     "ruff",
     "pre-commit",
     "httpx",
+    "httpx2",  # starlette's TestClient prefers it; silences the deprecation warning
 ]
 embeddings = [
     "sentence-transformers",

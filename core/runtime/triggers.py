@@ -56,6 +56,9 @@ def detect_trigger(
                 return trigger
 
     known = set(brief.domains) | set(result.derived_domains) | set(brief.excluded_domains)
+    # Pivot choice is deliberately naive: first unknown domain by expansion score. It often
+    # picks an incidental neighbor over the decisive one (known-limits L3) — W3's LLM will
+    # judge relevance; the runtime keeps deciding WHETHER to ask.
     for scored in result.expanded:  # already sorted best-first
         if not scored.expansion_only:
             continue

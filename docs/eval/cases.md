@@ -8,8 +8,15 @@ read_when:
 # Cas d'évaluation — scopegraph vs prompt naïf
 
 Méthode : la même entrée est donnée (a) à un prompt naïf bien écrit (« tu es un assistant de
-cadrage expérimenté… ») et (b) à scopegraph. Réussite = scopegraph cite la dépendance critique
+cadrage expérimenté… »), (a′) au même LLM avec **le graphe entier en contexte** (les 72 nœuds
+en YAML, sans retrieval), et (b) à scopegraph. Réussite = scopegraph cite la dépendance critique
 avec son node ID ; le prompt naïf ne peut pas la connaître ou ne la déduit pas.
+
+Le bras (a′) a été ajouté le 2026-06-11 (docs/known-limits.md L4) : à 72 nœuds, le graphe tient
+dans un contexte LLM, donc (a′) devrait être compétitif avec (b) — l'honnêteté de l'éval exige
+de le mesurer. Face à (a′), les arguments de scopegraph sont le déterminisme, le grounding gate
+(citations vérifiées, zéro hallucination de nœud), le write-back, et la trajectoire d'échelle
+(à 5 000 nœuds, (a′) meurt, la retrieval reste).
 
 ## Cas 1 — BNPL mobile (le scénario démo)
 

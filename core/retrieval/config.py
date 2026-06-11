@@ -1,6 +1,13 @@
 """Retrieval & MAPPING knobs (W2 design spec §3).
 
-Calibrated with scripts/retrieval-smoke against the eval cases — never by intuition.
+Calibrated with scripts/retrieval-eval against the eval cases — never by intuition.
+
+Calibration findings (2026-06-11, docs/known-limits.md L1): real MiniLM anchor sims sit in
+0.30-0.56 and a 2-hop expansion lands near anchor·DECAY² ≈ 0.216 — raising TAU_KEEP above
+~0.21 kills the eval-case-1 TPE chain. The sweep found NO threshold setting that buys
+precision without losing documented traps. Retrieval is recall-first by design; precision
+is the W3 challenge layer's job. Re-run ./scripts/retrieval-eval per-case before touching
+any value here.
 """
 
 EMBED_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"

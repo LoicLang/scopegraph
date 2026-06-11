@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""Layer-2 quality bench: play scoping scenarios through the REAL retriever (never in CI).
+
+Unlike the hermetic pytest suite (mechanics, rigged embedder), this bench measures retrieval
+QUALITY with the real model against a hand-derived ground truth: per-scenario critical-node
+recall, map size, and precision. Findings from the 2026-06-11 run are recorded in
+docs/known-limits.md — re-run this after any constants change and update that doc.
+
+Usage:
+    pip install -e ".[embeddings]"
+    ./scripts/retrieval-eval                # per-scenario report at current config
+    ./scripts/retrieval-eval --sweep        # recall/size/precision across threshold grids
+"""
+
+import argparse
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from core.graph.service import GraphService  # noqa: E402
+from core.retrieval import config  # noqa: E402
+from core.retrieval.index import VectorIndex  # noqa: E402
+from core.retrieval.retriever import retrieve  # noqa: E402
+from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
+
+# Ground truth derived from the seed's DEPENDS_ON / CONSTRAINS / SUPERSEDES edges
+# (see docs/eval/cases.md for the narrative version of cases 1-6).
+SCENARIOS: list[tuple[str, str, set[str], str]] = [
+    (
+        "S1 BNPL mobile",
+        "Ajouter une option de paiement en 3 fois dans l'app mobile.",
+        {
+            "feat-mobile-souscription-credit", "sys-moteur-credit", "obj-contrat-credit",
+            "con-credit-conso-kyc", "sys-app-mobile", "sys-moteur-autorisation",
+            "sys-logiciel-tpe", "dec-releases-tpe-trimestrielles", "dec-scoring-unique",
+        },
+        "TPE @2 hops (zero textual sim) + buried scoring decision",
+    ),
+    (
+        "S2 Benef entreprise",
+        "Permettre aux clients entreprise de creer des beneficiaires depuis leur portail.",
+        {
+            "obj-beneficiaire", "con-carence-beneficiaire-48h", "con-sca-ajout-beneficiaire",
+            "con-verif-sanctions-creation", "dec-ecriture-via-api-benef", "feat-benef-api",
+            "proj-refonte-parcours-beneficiaire", "risk-doublons-beneficiaires",
+        },
+        "inheritance via business object + CANCELLED project as warning",
+    ),
+    (
+        "S3 Cash-back",
+        "Proposer un programme de cash-back lors des paiements chez les commercants partenaires.",
+        {
+            "sys-moteur-autorisation", "dec-gel-evolutions-monetique", "con-pci-dss",
+            "sys-scoring-fraude", "dec-scoring-unique", "obj-transaction-carte",
+        },
+        "dated governance freeze + scope collision",
+    ),
+    (
+        "S4 Plafonds IP premium",
+        "Relever les plafonds de virement instantane pour les clients premium.",
+        {
+            "feat-ip-gestion-plafonds", "dec-plafond-ip-defaut", "con-plafonds-virement-ip",
+            "con-lcb-ft-screening", "risk-contournement-plafonds-ip", "dec-scoring-unique",
+            "sys-passerelle-ip",
+        },
+        "burst risk buried in a risk node",
+    ),
+    (
+        "S5 IA reclamations",
+        "Mettre en place un assistant IA qui redige les reponses aux reclamations clients.",
+        {
+            "con-ai-act", "sys-referentiel-client", "feat-ref-exposition",
+            "con-tracabilite-consultations", "risk-kyc-obsolete", "con-standard-api-interne",
+            "con-rgpd-conservation",
+        },
+        "AI Act + 2-hop traceability; 'reclamations' absent from graph",
+    ),
+    (
+        "S6 Onboarding digital",
+        "Refondre le parcours d'entree en relation 100% digital.",
+        {
+            "feat-ref-creation-client", "obj-dossier-client-kyc", "con-verif-sanctions-creation",
+            "risk-kyc-obsolete", "proj-programme-dsp2", "dec-reutilisation-sca",
+            "risk-indispo-service-sanctions",
+        },
+        "VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM "
+        "(0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)",
+    ),
+    (
+        "S7 Fraude temps reel",
+        "Ameliorer la detection de fraude en temps reel sur les paiements par carte.",
+        {
+            "sys-scoring-fraude", "sys-moteur-autorisation", "dec-scoring-unique",
+            "dec-scoring-par-canal-2021", "con-ai-act", "risk-modele-fraude-derive",
+            "feat-aut-temps-reel", "proj-refonte-scoring-fraude",
+        },
+        "SUPERSEDED decision must surface as history",
+    ),
+    (
+        "S8 VI pros",
+        "Ouvrir l'emission de virements instantanes aux clients professionnels.",
+        {
+            "sys-passerelle-ip", "feat-ip-emission", "con-plafonds-virement-ip",
+            "dec-double-validation-entreprise", "con-lcb-ft-screening", "dec-scoring-unique",
+            "risk-contournement-plafonds-ip", "obj-virement-instantane",
+        },
+        "enterprise double validation + LCB-FT via gateway",
+    ),
+    (
+        "S9 Self-service plafonds carte",
+        "Permettre aux clients de modifier eux-memes leurs plafonds de carte dans l'app.",
+        {
+            "feat-aut-controle-plafonds", "sys-moteur-autorisation",
+            "dec-gel-evolutions-monetique", "con-pci-dss", "sys-app-mobile",
+        },
+        "monetique freeze BLOCKS the project — the pivot question missed it on 2026-06-11",
+    ),
+    (
+        "S10 Oppositions digitales",
+        "Digitaliser le parcours d'opposition de carte bancaire pour les clients.",
+        {
+            "feat-aut-oppositions", "sys-moteur-autorisation", "dec-gel-evolutions-monetique",
+            "con-pci-dss", "sys-app-mobile",
+        },
+        "precise business term + freeze",
+    ),
+    (
+        "S11 Archivage alertes fraude",
+        "Mettre en place un nouvel outil d'archivage reglementaire des alertes de fraude.",
+        {"obj-alerte-fraude", "con-archivage-alertes-fraude", "sys-scoring-fraude"},
+        "niche domain, tiny neighborhood",
+    ),
+]
+
+GRIDS = [
+    ("baseline W2", 0.35, 0.20, 8, 2),
+    ("tight+", 0.40, 0.28, 6, 2),
+    ("tight++", 0.45, 0.32, 5, 2),
+    ("aggressive", 0.48, 0.38, 4, 2),
+    ("1-hop tight++", 0.45, 0.32, 5, 1),
+]
+
+
+def run_cases(service: GraphService, index: VectorIndex) -> tuple[float, float, float]:
+    recalls, sizes, precisions = [], [], []
+    total = len(service.all_nodes())
+    for name, brief, expected, trap in SCENARIOS:
+        result = retrieve(brief, service, index)
+        got = set(result.node_ids())
+        hit = expected & got
+        recalls.append(len(hit) / len(expected))
+        sizes.append(len(got))
+        precisions.append(len(hit) / max(len(got), 1))
+        missing = ", ".join(sorted(expected - got)) or "-"
+        print(f"  {name:30s} recall {len(hit)}/{len(expected)}  map {len(got):2d}/{total}"
+              f"  missing: {missing}")
+        if expected - got:
+            print(f"    trap: {trap}")
+    n = len(SCENARIOS)
+    return sum(recalls) / n, sum(sizes) / n, sum(precisions) / n
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sweep", action="store_true", help="run the threshold grid sweep")
+    args = parser.parse_args()
+
+    service = GraphService.from_dir(ROOT / "graph")
+    index = VectorIndex(SentenceTransformersEmbedder())
+    index.build(service)
+
+    if not args.sweep:
+        print(f"config: TAU_ANCHOR={config.TAU_ANCHOR} TAU_KEEP={config.TAU_KEEP} "
+              f"TOP_K={config.TOP_K} MAX_HOPS={config.MAX_HOPS}")
+        recall, size, precision = run_cases(service, index)
+        print(f"\n  mean recall {recall:.0%} | mean map {size:.1f} | mean precision {precision:.0%}")
+        return
+
+    print(f"{'grid':14s} TAU_A TAU_K K hops | recall | map   | precision")
+    for name, tau_a, tau_k, top_k, hops in GRIDS:
+        config.TAU_ANCHOR, config.TAU_KEEP = tau_a, tau_k
+        config.TOP_K, config.MAX_HOPS = top_k, hops
+        print(f"\n--- {name} ---")
+        recall, size, precision = run_cases(service, index)
+        print(f"==> recall {recall:.0%} | map {size:.1f} | precision {precision:.0%}")
+
+
+if __name__ == "__main__":
+    main()

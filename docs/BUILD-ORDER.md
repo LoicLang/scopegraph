@@ -52,15 +52,38 @@ read_when:
 
 ## Next chantier — Week 3 (LLM providers + grounding + challenge)
 
-Per MVP spec §8: `LLMProvider` Protocol (Mistral default, DeepSeek dev, Mock hermetic) ·
-grounding gate (every claim cites a node ID or is rejected, visibly) · propose/validate/
-apply ledger · CHALLENGING + SCOPING states (already declared, currently raising
-NotImplementedError) · LLM rephrasing of the W2 template questions (templates stay as
-permanent fallback). Brainstorm/plan first — no W3 spec exists yet.
+W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
+`./scripts/retrieval-eval`, findings in `docs/known-limits.md`) showed a recall-first net
+(89 % recall, 13 % precision, no threshold fix possible) — **the challenge layer IS the
+precision stage**. Scope, ordered by measured impact:
 
-Calibration TODO before or during W3: run `./scripts/retrieval-smoke` once (downloads the
-MiniLM model) and read the rankings on the 6 briefs; adjust `core/retrieval/config.py`
-constants in a dedicated commit if a case ranks poorly.
+1. `LLMProvider` Protocol + Mistral (default) / DeepSeek (dev) / Mock (hermetic), JSON
+   contract with one schema-reminder retry (MVP spec §2).
+2. **CHALLENGING + grounding gate + propose/validate ledger** — the LLM reads the
+   over-complete retrieved subgraph, keeps only what it can justify, every claim cites a
+   node ID or is visibly rejected. Answers known-limits **L1** (precision) and shrinks the
+   map to a readable, justified set (**L6**).
+3. **LLM brief enrichment before retrieval** (gated, visible brief additions — never a
+   hidden query rewrite). Answers **L2** (vocabulary bridge: S6 went 0/7 → 5/7 only after
+   a lucky user answer).
+4. **LLM question selection + rephrasing** over the deterministic triggers (templates stay
+   the permanent fallback). Answers **L3** (pivots beside the point) and the slug-exposing
+   phrasing.
+5. **Eval run preparation**: the three-arm protocol is now in `docs/eval/cases.md` —
+   naive (a) vs full-graph-in-context (a′) vs scopegraph (b). Arm (a′) is the honest
+   baseline at 72 nodes (known-limits **L4**: retrieval is a scale bet, not yet an
+   empirical necessity — full eval run stays W4).
+
+Brainstorm/plan first — no W3 spec exists yet. Open points for the brainstorm: SDK choice
+(raw HTTP vs mistralai client) inside `core/llm/` only · how brief enrichments are
+displayed/validated in the UI · challenge output schema and its grounding-gate contract ·
+what the W3 demo must show end-to-end.
+
+## Scale milestone (parked, do not start)
+
+Real retrieval validation needs volume the demo seed must not carry (known-limits L4/L1):
+either ecosystem-foundry output or a disposable synthetic stress graph (300–500 generated
+nodes, never hand-curated, out of the demo). Couple it to the foundry kickoff, after W4.
 
 ## Later
 

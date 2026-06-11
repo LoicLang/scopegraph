@@ -8,7 +8,21 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-11, end of session)
+## Current state (2026-06-12, end of session)
+
+- **W3 lot 0 DONE — distractor stress bench, verdict: SWAP EMBEDDER** (branch
+  `w3-distractor-bench`, subagent-driven from `docs/archive/2026-06-11-distractor-stress-bench.md`,
+  spec `docs/specs/2026-06-11-distractor-stress-bench-design.md`):
+  - ADR 0002 (`created_from: synthetic`) · `core/graph/distractors.py` (pool loader:
+    synthetic-only, pool-closed edges, topology-checked) · `GraphService.from_dirs`
+    (deterministic prefix sampling) · `retrieval-eval --distractors N` /
+    `--distractor-sweep` (anchor intrusion, map pollution, realism check, automatic
+    verdict) · 2000-node committed pool in `graph-distractors/` (10 fictional domain
+    shards + 148 inter-domain edges, agent-generated per spec §3, never in the demo).
+  - 127 hermetic tests, ruff clean.
+  - **Measured (known-limits L4): recall 89 % → 54 % at N=2000, mean anchor intrusion
+    6.6/8, realism check valid. MiniLM's narrow band does not survive scale; the
+    pre-committed criterion fires.**
 
 - Repo bootstrapped: structure, pyproject, CI (ruff + pytest, green), pre-commit.
 - Founding docs: `docs/project-kickoff.md` (its §4 schema superseded), MVP design spec
@@ -57,14 +71,13 @@ W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
 (89 % recall, 13 % precision, no threshold fix possible) — **the challenge layer IS the
 precision stage**. Scope, ordered by measured impact:
 
-0. **Distractor stress bench (de-risks everything else — do first, ~one evening).** Keep
-   the 72-node seed as the untouched truth island; generate 500–2000 plausible
-   banking-IT distractor nodes (`created_from: synthetic`, separate dir, NEVER in the
-   demo); re-run the 11 `retrieval-eval` scenarios against the polluted index. Measures
-   the one genuinely scale-biased result: anchor ranking under noise (known-limits L4).
-   Recall holds → measured scale argument for the demo. Recall collapses → swap embedder
-   (multilingual-e5, the spec's recorded escalation) BEFORE building W3 on sand.
-   Deliverables: `scripts/generate-distractors` + `retrieval-eval --distractors N`.
+0. **Embedder swap (NEW lot 0 — forced by the distractor bench verdict, see L4).**
+   Swap MiniLM → `multilingual-e5` (the W2 spec's recorded escalation) behind the
+   existing Embedder Protocol, re-run `./scripts/retrieval-eval --distractor-sweep`,
+   re-read constants against the new similarity distribution (TAU_* were calibrated on
+   MiniLM's band), update known-limits L4 with the new curve. Gate: the per-case
+   criterion of the distractor spec §1. Do this BEFORE lots 1-4 — W3 must not build on
+   an embedder that loses 6/11 trap cases under realistic pollution.
 1. `LLMProvider` Protocol + Mistral (default) / DeepSeek (dev) / Mock (hermetic), JSON
    contract with one schema-reminder retry (MVP spec §2).
 2. **CHALLENGING + grounding gate + propose/validate ledger** — the LLM reads the
@@ -89,11 +102,11 @@ what the W3 demo must show end-to-end.
 
 ## Scale milestone (split, 2026-06-11 discussion)
 
-The noise-robustness half is now W3 lot 0 (distractor bench above) — measurable without
-foundry. The *realistic-volume* half (messy real-world graph structure, not plausible
-noise) still needs ecosystem-foundry output; couple that final validation to the foundry
-kickoff, after W4. Hand-growing the demo seed stays rejected (fictional-entities rule,
-curation cost, artificial coherence).
+The noise-robustness half is DONE (distractor bench, 2026-06-12 — verdict and curve in
+known-limits L4; re-run after the embedder swap). The *realistic-volume* half (messy
+real-world graph structure, not plausible noise) still needs ecosystem-foundry output;
+couple that final validation to the foundry kickoff, after W4. Hand-growing the demo
+seed stays rejected (fictional-entities rule, curation cost, artificial coherence).
 
 ## Later
 

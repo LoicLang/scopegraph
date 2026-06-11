@@ -89,6 +89,33 @@ and MiniLM's narrow similarity band, nobody knows.
   fictional-entities rule makes large hand-curation a project of its own, and volume
   production is foundry's job.
 
+**MEASURED (2026-06-12, W3 lot 0 — `./scripts/retrieval-eval --distractor-sweep`,
+spec `2026-06-11-distractor-stress-bench-design.md`).** Verdict: **SWAP EMBEDDER**.
+
+| N distractors | recall | map | precision | anchor intrusion | map pollution |
+|---|---|---|---|---|---|
+| 0 | 89 % | 44.5 | 13 % | — | — |
+| 500 | 72 % | 62.2 | 8 % | 5.5/8 | 65 % |
+| 1000 | 60 % | 71.6 | 5 % | 6.2/8 | 75 % |
+| 2000 | **54 %** | 69.5 | 5 % | **6.6/8** | 81 % |
+
+- Realism check passes at every N (distractor sims med 0.27–0.30 vs seed-noise med
+  0.31, same band, no "too easy" warning): the pressure is honest, the verdict valid.
+- Per-case criterion fires hard: 6/11 scenarios lose documented trap nodes at N=2000
+  (S3 cash-back loses the monetique freeze AND `con-pci-dss`; S8 loses the whole IP
+  chain incl. `sys-passerelle-ip`). At N=100 already (smoke), S3 was 0/6 with 7/8
+  distractor anchors.
+- Mechanism confirmed: with TOP_N=20 / TOP_K=8, plausible same-domain distractors
+  crowd the candidate list and steal anchor slots; expansion then starts from the
+  wrong nodes, so the buried chains are never reached. The L1 "narrow similarity
+  band" is the root cause at scale, exactly as hypothesized.
+- Note: the pool deliberately contains near-twins of seed components (e.g. a second
+  fictional authorization engine) — that is what a real ecosystem at scale looks
+  like, and the test is honest because ground-truth nodes remain uniquely identified.
+- **Action (spec's recorded escalation): swap the embedder to multilingual-e5 and
+  re-run this sweep BEFORE building W3 lots 1–4.** Constants stay untouched until the
+  new embedder's sweep is read (L1 doctrine still applies).
+
 ## L5 — Methodology traps in our own bench
 
 - **Aggregate recall hides critical-case death**: an 84 % average looked fine while the

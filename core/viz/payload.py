@@ -18,11 +18,15 @@ def build_payload(
     domains: set[str] | None = None,
     types: set[str] | None = None,
     highlight: set[str] | None = None,
+    only: set[str] | None = None,
+    annotations: dict[str, dict] | None = None,
 ) -> dict:
     """Filterable view of the graph as a JSON-serializable dict.
 
     Filters compose by intersection; edges are kept iff both endpoints are kept.
     `highlight` is display-only: unknown ids raise, filtered-out ids are dropped.
+    `only` restricts to a node subset, applied after all other filters (intersection).
+    `annotations` are display-only extras merged into each matching node's payload dict.
     """
     wanted_highlight = set(highlight or ())
     for node_id in wanted_highlight:
@@ -37,6 +41,8 @@ def build_payload(
         kept = {nid for nid in kept if set(nodes[nid].domains) & domains}
     if types is not None:
         kept = {nid for nid in kept if nodes[nid].type in types}
+    if only is not None:
+        kept &= only
 
     edges = [
         edge
@@ -44,7 +50,10 @@ def build_payload(
         if edge.source_id in kept and edge.target_id in kept
     ]
     return {
-        "nodes": [_node_payload(nodes[nid]) for nid in sorted(kept)],
+        "nodes": [
+            {**_node_payload(nodes[nid]), **(annotations or {}).get(nid, {})}
+            for nid in sorted(kept)
+        ],
         "edges": [
             {
                 "source": edge.source_id,

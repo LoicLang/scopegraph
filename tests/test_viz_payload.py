@@ -67,3 +67,23 @@ def test_summaries_truncated_and_search_includes_aliases(service):
     assert all(len(node["summary"]) <= 200 for node in payload["nodes"])
     assert "monaut" in by_id["sys-moteur-autorisation"]["search"]
     assert "moteur d'autorisation" in by_id["sys-moteur-autorisation"]["search"]
+
+
+def test_only_keeps_subset_and_their_edges(service):
+    payload = build_payload(service, only={"sys-gestion-beneficiaires", "feat-benef-ajout"})
+    ids = {node["id"] for node in payload["nodes"]}
+    assert ids == {"sys-gestion-beneficiaires", "feat-benef-ajout"}
+    for edge in payload["edges"]:
+        assert edge["source"] in ids and edge["target"] in ids
+
+
+def test_annotations_merge_into_node_payload(service):
+    payload = build_payload(
+        service,
+        only={"sys-gestion-beneficiaires"},
+        annotations={"sys-gestion-beneficiaires": {"role": "anchor", "score": 0.91}},
+    )
+    [node] = payload["nodes"]
+    assert node["role"] == "anchor"
+    assert node["score"] == 0.91
+    assert node["label"]  # base payload fields still present

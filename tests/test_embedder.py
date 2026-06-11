@@ -1,4 +1,5 @@
 import math
+import sys
 
 import pytest
 
@@ -43,3 +44,17 @@ def test_unknown_texts_are_deterministic_and_distinct() -> None:
 def test_too_many_fragments_rejected() -> None:
     with pytest.raises(ValueError, match="at most"):
         FakeEmbedder([f"frag-{i}" for i in range(DIM)])
+
+
+def test_importing_st_module_does_not_import_sentence_transformers() -> None:
+    import core.retrieval.st_embedder  # noqa: F401
+
+    assert "sentence_transformers" not in sys.modules
+
+
+def test_missing_package_raises_clear_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    from core.retrieval.st_embedder import SentenceTransformersEmbedder
+
+    monkeypatch.setitem(sys.modules, "sentence_transformers", None)
+    with pytest.raises(RuntimeError, match="sentence-transformers"):
+        SentenceTransformersEmbedder()

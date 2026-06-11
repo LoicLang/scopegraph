@@ -84,6 +84,8 @@ def sample_pool(shards: dict[str, list[Node]], n: int) -> list[Node]:
     """
     if n < 0:
         raise ValueError("n must be >= 0")
+    if not shards:
+        return []
     names = sorted(shards)
     base, extra = divmod(n, len(names))
     sampled: list[Node] = []

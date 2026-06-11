@@ -59,3 +59,9 @@ def test_blank_text_is_422(client: TestClient) -> None:
         client.post(f"/api/session/{session_id}/message", json={"text": "   "}).status_code
         == 422
     )
+
+
+def test_home_serves_the_page(client: TestClient) -> None:
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "scopegraph" in response.text

@@ -1,6 +1,6 @@
 import pytest
 
-from core.graph.models import Constraint, Edge, EdgeType, System
+from core.graph.models import Constraint, Edge, EdgeType, Feature, System
 from core.graph.service import GraphService
 from core.retrieval import config
 from core.retrieval.embedder import FakeEmbedder
@@ -128,3 +128,28 @@ def test_excluded_domains_drop_expanded_nodes() -> None:
     expanded_ids = {s.node_id for s in result.expanded}
     assert "sys-terminal" not in expanded_ids
     assert "sys-moteur" in expanded_ids  # other domains untouched
+
+
+def test_anchor_tie_break_prefers_system_over_feature() -> None:
+    """Exact score ties resolve by node type: the System (the subject) outranks
+    Features that match the same text — executable spec of _TYPE_PRIORITY."""
+    nodes = [
+        Feature(
+            id="feat-espace-client",
+            name="Espace client",
+            description="Fonctionnalité de l'espace client.",
+            domains=["banque-en-ligne"],
+        ),
+        System(
+            id="sys-espace-client",
+            name="Espace client",
+            description="Portail espace client.",
+            owner_team="T",
+            domains=["banque-en-ligne"],
+        ),
+    ]
+    service = GraphService({n.id: n for n in nodes}, [])
+    index = VectorIndex(FakeEmbedder(["espace client"]))
+    index.build(service)
+    result = retrieve("refondre l'espace client", service, index)
+    assert [s.node_id for s in result.anchors] == ["sys-espace-client", "feat-espace-client"]

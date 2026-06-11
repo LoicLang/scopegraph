@@ -1,0 +1,200 @@
+edges:
+
+  # ── DEPENDS_ON : system->system, feature->feature, feature->system (40-55) ──
+
+  # Banque en ligne consomme des services d'autres domaines
+  - {source_id: sys-dbel-agregateur-comptes-externes, target_id: sys-ddsp-aisp-agregateur, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-service-authentification-forte, target_id: sys-ddsp-orchestrateur-sca, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-outil-simulation-financiere, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-moteur-notifications, target_id: sys-dsoc-notification-service, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-portail-web-particuliers, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-gestionnaire-consentements-rgpd, target_id: sys-dref-portail-consentements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-hub-souscription-ligne, target_id: sys-dcre-moteur-decision, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-tableau-de-bord-conseillers, target_id: sys-dref-segmentation-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-coffre-fort-numerique, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+
+  # DSP2 / Open Banking dépend d'autres briques
+  - {source_id: sys-ddsp-gateway-api, target_id: sys-dsoc-registre-api, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-gateway-api, target_id: sys-dsoc-gestion-certs-pki, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-gestionnaire-jetons, target_id: sys-dsoc-coffre-secrets, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-orchestrateur-sca, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-pisp-initiateur, target_id: sys-dpin-routeur-multicanal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-aisp-agregateur, target_id: sys-dpin-referentiel-comptes, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-archiveur-legal-ob, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-detecteur-fraude-openbanking, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-referentiel-comptes-ouverts, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+
+  # Paiement instantané dépend de services transverses
+  - {source_id: sys-dpin-routeur-multicanal, target_id: sys-dsoc-bus-evenements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-moteur-regles-ip, target_id: sys-dsoc-moteur-regles, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-validateur-rib, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-journal-reglementaire, target_id: sys-dedi-reporting-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-detecteur-anomalies, target_id: sys-dlcb-surveillance-vir-intl, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-cache-beneficiaires, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dpin-passerelle-interbancaire, target_id: sys-dsoc-passerelle-swift, type: DEPENDS_ON, created_from: synthetic}
+
+  # Monétique dépend de services transverses
+  - {source_id: sys-dmon-fraudar, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-tokenizer, target_id: sys-dsoc-gestion-cles-chiffrement, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardportal, target_id: sys-dbel-portail-web-particuliers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-clearflow, target_id: sys-dpin-concentrateur-flux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-riskmonitor, target_id: sys-dsoc-supervision-infra, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-3dsgateway, target_id: sys-ddsp-orchestrateur-sca, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-notifcard, target_id: sys-dsoc-notification-service, type: DEPENDS_ON, created_from: synthetic}
+
+  # TPE/Acceptation dépend de services
+  - {source_id: sys-dtpe-fraudwatch, target_id: sys-dmon-fraudar, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-translink, target_id: sys-dmon-cardauth, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-kybcheck, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-clearvault, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-routex, target_id: sys-dpin-passerelle-interbancaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-onboardpro, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-rapporteur, target_id: sys-dedi-reporting-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-secugate, target_id: sys-dsoc-gestion-cles-chiffrement, type: DEPENDS_ON, created_from: synthetic}
+
+  # Crédit dépend de services transverses
+  - {source_id: sys-dcre-moteur-decision, target_id: sys-dref-profilage-risque-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-prevention-fraude-credit, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-archivage-dossiers, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-communication-client, target_id: sys-dedi-moteur-composition, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-consolidation-ifrs9, target_id: sys-dedi-reporting-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-tableau-bord-risque, target_id: sys-dedi-datamart-editique, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-notation-interne, target_id: sys-dref-profilage-risque-client, type: DEPENDS_ON, created_from: synthetic}
+
+  # LCB-FT dépend de services transverses
+  - {source_id: sys-dlcb-rapprochement-identites, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gel-avoirs, target_id: sys-dsoc-bus-evenements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-plateforme-ds, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-tableau-bord-reglementaire, target_id: sys-dedi-reporting-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-orchestrateur-vigilance, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-ref-benef-effectifs, target_id: sys-dref-referentiel-tiers, type: DEPENDS_ON, created_from: synthetic}
+
+  # Éditique/Reporting dépend de socle SI
+  - {source_id: sys-dedi-reporting-reglementaire, target_id: sys-dsoc-entrepot-donnees, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-archiveur-legal, target_id: sys-dsoc-archivage-legale, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-bus-evenements-doc, target_id: sys-dsoc-bus-evenements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-signature-electronique, target_id: sys-dsoc-gestion-certs-pki, type: DEPENDS_ON, created_from: synthetic}
+
+  # Feature-level DEPENDS_ON cross-domain
+  - {source_id: feat-ddsp-init-virement-pisp, target_id: sys-dpin-routeur-multicanal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-scoring-temps-reel, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-scoring-tpe, target_id: sys-dmon-fraudar, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-simulateur-credit-immobilier, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-detection-fraude-documentaire, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-blocage-flux, target_id: sys-dpin-passerelle-interbancaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dpin-filtrage-sanctions, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+
+  # ── CONSTRAINS : (constraint|decision) -> (system|feature|business_object|project) autre domaine (35-50) ──
+
+  # Règles monétique/PCI contraignent d'autres domaines
+  - {source_id: con-dmon-pci-dss-cardauth, target_id: sys-dtpe-secugate, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-pci-chiffrement-pan, target_id: sys-dtpe-translink, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-pci-dss-pinvault, target_id: sys-dsoc-gestion-cles-chiffrement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-hsm-fips-140-2, target_id: sys-dsoc-gestion-cles-chiffrement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-dsp2-sca-ecommerce, target_id: sys-ddsp-orchestrateur-sca, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-archivage-10ans, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-scoring-fraude-centralise, target_id: sys-dtpe-fraudwatch, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-3ds2-obligatoire-ecommerce, target_id: sys-ddsp-orchestrateur-sca, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles DSP2 contraignent d'autres domaines
+  - {source_id: con-ddsp-sca-obligatoire-paiement, target_id: sys-dpin-routeur-multicanal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-ddsp-sca-obligatoire-paiement, target_id: sys-dbel-service-authentification-forte, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-ddsp-tls-1-3-minimum, target_id: sys-dsoc-gestion-certs-pki, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-ddsp-journalisation-immuable, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-ddsp-retention-journaux-5ans, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-ddsp-standard-berlin-group, target_id: sys-dpin-passerelle-interbancaire, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-ddsp-archivage-10-ans, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-ddsp-eidas-mtls, target_id: sys-dsoc-gestion-certs-pki, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles LCB-FT contraignent d'autres domaines
+  - {source_id: con-dlcb-gel-blocage-immediat, target_id: sys-dpin-routeur-multicanal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-gel-blocage-immediat, target_id: sys-dmon-cardauth, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-criblage-avant-paiement, target_id: sys-dpin-routeur-multicanal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-criblage-avant-paiement, target_id: sys-dtpe-fraudwatch, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-disponibilite-criblage-99-9, target_id: sys-dpin-detecteur-anomalies, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-gel-blocage-temps-reel, target_id: sys-dmon-cardauth, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-gel-blocage-temps-reel, target_id: sys-dpin-moteur-regles-ip, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles paiement instantané contraignent d'autres domaines
+  - {source_id: con-dpin-irrevocabilite-ordre, target_id: sys-dmon-clearflow, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dpin-screening-sanctions, target_id: sys-dlcb-listes-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dpin-disponibilite-24-7, target_id: sys-dsoc-supervision-infra, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dpin-iso20022-obligatoire, target_id: sys-dsoc-passerelle-swift, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles Référentiel Client contraignent d'autres domaines
+  - {source_id: con-dref-rgpd-collecte-minimale, target_id: sys-dbel-moteur-personnalisation, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-rgpd-droit-effacement, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-disponibilite-referentiel-99-5, target_id: sys-dpin-cache-beneficiaires, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-kyc-numerique-prioritaire, target_id: sys-dcre-portail-immo, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-referentiel-maitre-unique, target_id: sys-ddsp-referentiel-comptes-ouverts, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles Crédit contraignent d'autres domaines
+  - {source_id: con-dcre-ficp-consultation-obligatoire, target_id: sys-dlcb-orchestrateur-vigilance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-notation-interne-bale, target_id: sys-dedi-reporting-reglementaire, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-conservation-dossier-10ans, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-reporting-corep-automatise, target_id: sys-dedi-reporting-reglementaire, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles Éditique contraignent d'autres domaines
+  - {source_id: con-dedi-pdf-a-archivage, target_id: sys-dmon-archcard, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-signature-eidas, target_id: sys-dcre-gestionnaire-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-conservation-10-ans, target_id: sys-dlcb-plateforme-ds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-signature-eidas-avancee, target_id: sys-dcre-archivage-dossiers, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles TPE contraignent d'autres domaines
+  - {source_id: con-dtpe-pci-dss-scope, target_id: sys-dmon-tokenizer, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-lcb-ft-commercant, target_id: sys-dlcb-orchestrateur-vigilance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-tls-version-minimale, target_id: sys-dsoc-gestion-certs-pki, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles Socle SI contraignent d'autres domaines
+  - {source_id: con-dsoc-chiffrement-transit, target_id: sys-dpin-routeur-multicanal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-mfa-acces-sensible, target_id: sys-dbel-service-authentification-forte, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-rotation-secret-max-90j, target_id: sys-dmon-tokenizer, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-zero-secret-statique, target_id: sys-ddsp-gestionnaire-jetons, type: CONSTRAINS, created_from: synthetic}
+
+  # Règles Banque en ligne contraignent d'autres domaines
+  - {source_id: con-dbel-sca-dsp2-operations-sensibles, target_id: sys-ddsp-orchestrateur-sca, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-transfert-donnees-agregation-hors-ue, target_id: sys-ddsp-aisp-agregateur, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-single-sign-on-portails, target_id: sys-dsoc-gestion-identite, type: CONSTRAINS, created_from: synthetic}
+
+  # ── OPERATES_ON : system|feature -> business_object d'un autre domaine (15-20) ──
+
+  # Systèmes qui opèrent sur des objets d'autres domaines
+  - {source_id: sys-dmon-fraudar, target_id: obj-dlcb-alerte-lcb-ft, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dmon-clearflow, target_id: obj-dpin-ordre-virement-inst, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-aisp-agregateur, target_id: obj-dref-fiche-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-ddsp-pisp-initiateur, target_id: obj-dpin-ordre-virement-inst, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gel-avoirs, target_id: obj-dpin-compte-reglement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gel-avoirs, target_id: obj-dmon-carte-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dcre-moteur-decision, target_id: obj-dref-profil-risque, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dcre-moteur-decision, target_id: obj-dref-dossier-kyc, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dedi-archiveur-legal, target_id: obj-dcre-offre-pret-immobilier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dedi-reporting-reglementaire, target_id: obj-dcre-rapport-stress-test, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-kybcheck, target_id: obj-dlcb-profil-client-lcb, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-fraudwatch, target_id: obj-dmon-score-fraude, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-chargeback360, target_id: obj-dmon-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dref-profilage-risque-client, target_id: obj-dcre-notation-contrepartie, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dref-matching-identite, target_id: obj-dlcb-beneficiaire-effectif, type: OPERATES_ON, created_from: synthetic}
+
+  # Features qui opèrent sur des objets d'autres domaines
+  - {source_id: feat-ddsp-init-virement-pisp, target_id: obj-dpin-ordre-virement-inst, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-scoring-temps-reel, target_id: obj-dlcb-operation-atypique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-detection-fraude-documentaire, target_id: obj-dlcb-declaration-soupcon, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-blocage-flux, target_id: obj-dpin-ordre-virement-inst, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dpin-filtrage-sanctions, target_id: obj-dlcb-liste-sanctions, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-generation-xbrl, target_id: obj-dcre-rapport-stress-test, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-scellement-documents, target_id: obj-ddsp-archive-preuve, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-declaration-perte-carte-web, target_id: obj-dmon-opposition, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-echeancier-pret, target_id: obj-dcre-offre-pret-immobilier, type: OPERATES_ON, created_from: synthetic}
+
+  # ── RELATES_TO : liens transverses avec note (8-12) ──
+
+  - {source_id: sys-dmon-cardauth, target_id: sys-dpin-passerelle-interbancaire, type: RELATES_TO, created_from: synthetic, note: "L'autorisation carte et le moteur de virement instantané partagent le même réseau d'échange interbancaire STET, mais chacun gère sa propre file de traitement prioritaire."}
+  - {source_id: sys-ddsp-portail-tpp, target_id: sys-dbel-portail-web-particuliers, type: RELATES_TO, created_from: synthetic, note: "Le portail TPE Open Banking et l'espace en ligne particuliers coexistent sur la même façade web ; des règles de cohabitation UX ont été formalisées pour éviter la confusion des flux de consentement."}
+  - {source_id: sys-dcre-simulation-collective, target_id: sys-dbel-outil-simulation-financiere, type: RELATES_TO, created_from: synthetic, note: "Les deux simulateurs peuvent être appelés depuis la même expérience digitale ; le simulateur crédit reste la source de vérité tarifaire, le simulateur BEL s'y connecte en lecture."}
+  - {source_id: sys-dlcb-carto-risques, target_id: sys-dref-profilage-risque-client, type: RELATES_TO, created_from: synthetic, note: "La cartographie des risques LCB-FT s'appuie sur le profil de risque client du référentiel pour pondérer les scores métiers ; les deux moteurs restent indépendants pour éviter le couplage réglementaire."}
+  - {source_id: sys-dedi-datamart-editique, target_id: sys-dsoc-entrepot-donnees, type: RELATES_TO, created_from: synthetic, note: "Le datamart éditique et l'entrepôt de données du socle SI partagent les mêmes modèles d'alimentation batch nocturne mais leurs périmètres de données sont étanches par contrat d'interface."}
+  - {source_id: sys-dtpe-loyaltrack, target_id: sys-dmon-loyalty, type: RELATES_TO, created_from: synthetic, note: "Le moteur de fidélité TPE et le module loyalty carte sont deux implémentations concurrentes issues d'un historique de rachat ; une décision d'architecture de convergence est en cours."}
+  - {source_id: sys-dref-onboarding-digital, target_id: sys-dcre-portail-courtiers, type: RELATES_TO, created_from: synthetic, note: "L'onboarding digital référentiel et le portail courtiers crédit consomment tous deux le même service de vérification KYC ; un SLA partagé a été négocié pour garantir la cohérence des délais réglementaires."}
+  - {source_id: sys-dpin-tableau-bord-ip, target_id: sys-dedi-portail-reporting-interne, type: RELATES_TO, created_from: synthetic, note: "Le tableau de bord paiement instantané publie ses indicateurs de volume vers le portail de reporting interne éditique afin d'alimenter les reportings consolidés COMEX."}
+  - {source_id: sys-dlcb-plateforme-ds, target_id: sys-dedi-archiveur-legal, type: RELATES_TO, created_from: synthetic, note: "Les déclarations de soupçon finalisées sont archivées dans l'archiveur légal éditique ; la traçabilité LCB-FT y est scellée selon les exigences TRACFIN pour une conservation de 10 ans."}
+  - {source_id: sys-ddsp-sandbox-tpp, target_id: sys-dsoc-pipeline-ci-cd, type: RELATES_TO, created_from: synthetic, note: "La sandbox TPP DSP2 est provisionnée automatiquement par le pipeline CI/CD du socle SI ; les environnements bac-à-sable sont recréés à chaque release pour garantir leur fidélité à la production."}

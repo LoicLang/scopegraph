@@ -1,0 +1,2555 @@
+nodes:
+
+  # ── Système 1 : Moteur de composition documentaire ──────────────────────────
+  - type: system
+    id: sys-dedi-moteur-composition
+    name: Moteur de Composition Documentaire
+    description: >-
+      Assemble les relevés de compte, avis d'opérations et documents
+      contractuels à partir de gabarits paramétrables. Orchestre la
+      fusion données-modèle et délègue le rendu final aux chaînes
+      d'impression ou de dématérialisation.
+    owner_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-fusion-gabarit
+    name: Fusion données-gabarit
+    description: >-
+      Injecte les variables métier issues du datamart dans les gabarits
+      XSL-FO pour produire un flux PDF/A prêt à l'impression ou
+      à l'archivage numérique.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-gestion-gabarits
+    name: Gestion du référentiel de gabarits
+    description: >-
+      Permet aux équipes métier de versionner, tester et déployer les
+      gabarits sans intervention de la DSI, grâce à un studio de
+      paramétrage intégré avec prévisualisation instantanée.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-ordonnancement-lots
+    name: Ordonnancement des lots documentaires
+    description: >-
+      Planifie et séquence les jobs de production documentaire selon les
+      priorités réglementaires et les fenêtres de traitement batch,
+      avec reprise sur incident automatique.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-suivi-production
+    name: Suivi de production éditique
+    description: >-
+      Expose un tableau de bord temps réel indiquant l'avancement des lots,
+      le nombre de documents générés et les éventuels rejets avec leur
+      code d'erreur.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-rejets-retraitement
+    name: Retraitement des rejets documentaires
+    description: >-
+      Isole les enregistrements en erreur, notifie l'équipe fonctionnelle
+      et propose un circuit de correction manuelle avant relance partielle
+      du lot concerné.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 2 : Plateforme de dématérialisation client ──────────────────────
+  - type: system
+    id: sys-dedi-demat-client
+    name: Plateforme de Dématérialisation Client
+    description: >-
+      Met à disposition des clients les documents contractuels et relevés
+      dans leur espace numérique personnel. Gère le consentement au
+      sans-papier, l'horodatage et la notification multicanale.
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-depot-coffre-fort
+    name: Dépôt en coffre-fort numérique
+    description: >-
+      Transfère chaque document produit vers le coffre-fort numérique du
+      client via une API sécurisée, en s'assurant de l'intégrité par
+      empreinte cryptographique avant confirmation de dépôt.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-notification-disponibilite
+    name: Notification de disponibilité documentaire
+    description: >-
+      Envoie une alerte par courriel ou push mobile au client dès qu'un
+      nouveau document est disponible dans son espace, avec lien de
+      téléchargement sécurisé à durée limitée.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-gestion-consentement
+    name: Gestion du consentement sans-papier
+    description: >-
+      Enregistre et horodate l'accord du client pour la réception
+      électronique exclusive, et gère les rétractations dans les délais
+      légaux applicables.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-telechargement-client
+    name: Téléchargement client en libre-service
+    description: >-
+      Offre une interface de consultation et de téléchargement des
+      documents archivés sur dix ans, avec filtres par type de document
+      et période.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 3 : Moteur de reporting réglementaire ───────────────────────────
+  - type: system
+    id: sys-dedi-reporting-reglementaire
+    name: Moteur de Reporting Réglementaire
+    description: >-
+      Produit et soumet les déclarations prudentielles et statistiques
+      obligatoires (SURFI, FINREP, COREP) à partir du référentiel
+      comptable et des données de risque. Assure la traçabilité complète
+      de chaque envoi.
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-collecte-donnees-surfi
+    name: Collecte des données SURFI
+    description: >-
+      Interroge les systèmes comptables et les référentiels d'encours pour
+      alimenter les tableaux SURFI, en appliquant les règles de retraitement
+      définies par la réglementation Banque de France.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-controles-coherence
+    name: Contrôles de cohérence des états réglementaires
+    description: >-
+      Exécute une batterie de contrôles croisés entre les différentes
+      liasses (FINREP, COREP, SURFI) avant validation définitive pour
+      détecter les écarts inter-états supérieurs aux seuils tolérés.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-soumission-autorite
+    name: Soumission aux autorités de supervision
+    description: >-
+      Transmet les états validés au portail de la Banque de France et à
+      l'ACPR via les protocoles d'échange officiels, et conserve les
+      accusés de réception pour chaque dépôt.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-suivi-echeances
+    name: Suivi du calendrier des échéances réglementaires
+    description: >-
+      Maintient un calendrier partagé des dates de remise avec alertes
+      automatiques aux responsables dès que l'horizon d'échéance approche
+      à moins de cinq jours ouvrés.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-historique-remises
+    name: Historique des remises réglementaires
+    description: >-
+      Conserve l'intégralité des états soumis, versions intermédiaires
+      incluses, pour permettre la reconstitution de toute liasse dans le
+      cadre d'un contrôle sur pièces.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 4 : Datamart éditique ───────────────────────────────────────────
+  - type: system
+    id: sys-dedi-datamart-editique
+    name: Datamart Éditique
+    description: >-
+      Consolide les données de gestion nécessaires à la production
+      documentaire (soldes, mouvements, informations client) dans un
+      schéma en étoile optimisé pour les requêtes batch nocturnes de
+      l'éditique.
+    owner_team: Équipe Data Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-alimentation-datamart
+    name: Alimentation nocturne du datamart
+    description: >-
+      Orchestre les flux ETL depuis le core banking et les référentiels
+      satellites chaque nuit, avec contrôle de volumétrie et alerte en
+      cas de dérive de plus de 2 % par rapport au jour précédent.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-qualite-donnees
+    name: Contrôle qualité des données sources
+    description: >-
+      Applique des règles de validation (complétude, format, plage de
+      valeurs) sur chaque flux entrant et produit un rapport quotidien
+      des anomalies à destination des équipes data.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-exposition-api-data
+    name: Exposition API des données éditiques
+    description: >-
+      Fournit une API REST interne permettant au moteur de composition
+      de consulter les données consolidées sans accès direct aux systèmes
+      sources, garantissant l'isolation et la performance.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-purge-donnees
+    name: Purge et archivage des données historiques
+    description: >-
+      Déplace automatiquement les partitions de plus de sept ans vers un
+      stockage froid selon la politique de conservation réglementaire,
+      avec journalisation des opérations de purge.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 5 : Plateforme d'impression industrielle ────────────────────────
+  - type: system
+    id: sys-dedi-impression-industrielle
+    name: Plateforme d'Impression Industrielle
+    description: >-
+      Reçoit les flux PDF/A du moteur de composition, les achemine vers
+      les imprimantes industrielles partenaires et assure le suivi des
+      accusations de remise jusqu'à la mise sous pli.
+    owner_team: Équipe Production Papier
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-routage-impression
+    name: Routage vers les centres d'impression
+    description: >-
+      Sélectionne le centre d'impression le plus adapté selon les volumes,
+      la géographie de livraison et les contraintes de délai contractuel
+      avec les prestataires.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-suivi-mise-sous-pli
+    name: Suivi de mise sous pli et expédition
+    description: >-
+      Collecte les confirmations de mise sous pli et les numéros de
+      recommandé auprès des prestataires postaux pour chaque lot, et
+      les restitue dans le tableau de bord production.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-retours-npai
+    name: Traitement des retours NPAI
+    description: >-
+      Identifie les plis retournés pour cause d'adresse incorrecte,
+      déclenche une mise en suspens du document et notifie le
+      gestionnaire de compte pour mise à jour de la fiche client.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 6 : Référentiel des modèles de documents ────────────────────────
+  - type: system
+    id: sys-dedi-referentiel-modeles
+    name: Référentiel des Modèles de Documents
+    description: >-
+      Centralise et versionne l'ensemble des modèles documentaires
+      réglementaires et commerciaux. Assure la gouvernance des mises à
+      jour avec circuit de validation métier-juridique avant mise en
+      production.
+    owner_team: Équipe Gouvernance Documentaire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-versionnage-modeles
+    name: Versionnage des modèles documentaires
+    description: >-
+      Gère l'historique complet des versions de chaque modèle, avec
+      comparaison visuelle entre deux révisions et possibilité de
+      restauration en un clic.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-circuit-validation-modeles
+    name: Circuit de validation des modèles
+    description: >-
+      Soumet tout nouveau modèle ou modification à une chaîne d'approbation
+      impliquant les équipes juridique, conformité et communication avant
+      publication effective.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-catalogue-modeles
+    name: Catalogue des modèles actifs
+    description: >-
+      Expose un catalogue consultable listant tous les modèles en
+      production avec leurs métadonnées (famille de document, langue,
+      canal de diffusion, date de dernière révision).
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 7 : Portail de reporting interne ────────────────────────────────
+  - type: system
+    id: sys-dedi-portail-reporting-interne
+    name: Portail de Reporting Interne
+    description: >-
+      Agrège les indicateurs de production éditique et de qualité de
+      données pour les équipes de pilotage. Génère les tableaux de bord
+      hebdomadaires et les rapports d'activité mensuels à destination
+      du COMEX.
+    owner_team: Équipe Pilotage SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-tableau-bord-kpi
+    name: Tableau de bord KPI éditique
+    description: >-
+      Restitue en temps différé les volumes de documents produits, les
+      taux de rejet et les délais de remise pour chaque famille
+      documentaire, avec drill-down jusqu'au lot.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-rapport-mensuel-comex
+    name: Rapport mensuel COMEX
+    description: >-
+      Consolide automatiquement les métriques du mois écoulé dans un
+      modèle de rapport standardisé, prêt à être intégré au pack de
+      gestion du comité exécutif.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-alertes-anomalies-kpi
+    name: Alertes sur anomalies de KPI
+    description: >-
+      Détecte les dépassements de seuil sur les indicateurs clés et
+      notifie par courriel les responsables concernés avec un lien direct
+      vers l'écran de diagnostic.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 8 : Archiveur légal de documents ────────────────────────────────
+  - type: system
+    id: sys-dedi-archiveur-legal
+    name: Archiveur Légal de Documents
+    description: >-
+      Assure la conservation pérenne des documents à valeur probatoire
+      (relevés, conventions de compte, arrêtés de crédit) selon les
+      durées légales applicables et les exigences d'intégrité numérique.
+    owner_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-scellement-documents
+    name: Scellement cryptographique des documents
+    description: >-
+      Appose un cachet électronique qualifié sur chaque document archivé
+      afin de garantir son intégrité et son authenticité sur toute la
+      durée de conservation légale.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-recherche-documents-archives
+    name: Recherche dans les archives légales
+    description: >-
+      Permet aux équipes internes et aux auditeurs d'interroger le fonds
+      documentaire par critères multiples (client, type de document,
+      période) avec restitution sous vingt secondes.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-destruction-controlee
+    name: Destruction contrôlée en fin de durée légale
+    description: >-
+      Déclenche le processus d'effacement certifié des documents dont la
+      durée de conservation est expirée, en produisant un procès-verbal
+      de destruction opposable.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 9 : Bus d'événements documentaires ──────────────────────────────
+  - type: system
+    id: sys-dedi-bus-evenements-doc
+    name: Bus d'Événements Documentaires
+    description: >-
+      Centralise la publication et la souscription des événements liés au
+      cycle de vie des documents (produit, déposé, consulté, téléchargé).
+      Permet le découplage entre producteurs et consommateurs de documents.
+    owner_team: Équipe Intégration Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-publication-evenements
+    name: Publication d'événements documentaires
+    description: >-
+      Expose une API de publication permettant aux systèmes producteurs
+      d'émettre des événements structurés dès qu'un document change
+      d'état dans son cycle de vie.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-souscription-evenements
+    name: Souscription et filtrage d'événements
+    description: >-
+      Permet aux systèmes consommateurs de s'abonner à des flux
+      d'événements filtrés par type de document ou par client, avec
+      garantie de livraison et rejeu en cas de panne.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-audit-trail-evenements
+    name: Piste d'audit des événements documentaires
+    description: >-
+      Conserve l'historique immuable de tous les événements publiés
+      pendant cinq ans, consultable par les auditeurs internes et
+      externes pour reconstituer toute séquence de traitement.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 10 : Moteur de traduction réglementaire ─────────────────────────
+  - type: system
+    id: sys-dedi-traduction-reglementaire
+    name: Moteur de Traduction Réglementaire
+    description: >-
+      Traduit les états comptables bruts en liasses réglementaires
+      normées (XBRL, CSV réglementaire) à partir d'un référentiel de
+      règles de mapping maintenu par l'équipe conformité.
+    owner_team: Équipe Conformité Prudentielle
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-mapping-comptable
+    name: Mapping comptable vers liasses réglementaires
+    description: >-
+      Applique les tables de correspondance plan comptable / axes
+      réglementaires pour convertir les soldes comptables en cellules
+      des états FINREP et COREP.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-generation-xbrl
+    name: Génération des instances XBRL
+    description: >-
+      Produit les fichiers XBRL conformes aux taxonomies publiées par
+      l'ABE à partir des données mappées, en validant syntaxiquement
+      chaque instance avant transmission.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-validation-taxonomie
+    name: Validation par rapport à la taxonomie
+    description: >-
+      Contrôle la conformité de chaque instance XBRL générée face à la
+      version de taxonomie en vigueur et journalise tout écart pour
+      correction avant soumission.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 11 : Gestionnaire de canaux de diffusion ────────────────────────
+  - type: system
+    id: sys-dedi-gestionnaire-canaux
+    name: Gestionnaire de Canaux de Diffusion
+    description: >-
+      Orchestre la diffusion multicanale des documents (impression,
+      coffre-fort, courriel sécurisé) en appliquant les préférences
+      client et les règles métier de priorisation de canal.
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-selection-canal
+    name: Sélection du canal de diffusion
+    description: >-
+      Détermine pour chaque document et chaque client le canal cible
+      (numérique ou papier) en consultant le référentiel de préférences
+      et les règles de bascule par type de document.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-bascule-papier-numerique
+    name: Bascule papier-numérique
+    description: >-
+      Gère la transition d'un client du mode papier vers le mode
+      numérique en synchronisant son consentement entre le référentiel
+      client et les systèmes de diffusion.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-preuve-diffusion
+    name: Preuve de diffusion
+    description: >-
+      Enregistre pour chaque document diffusé la date, le canal utilisé
+      et le résultat de la diffusion (succès, échec, accusé de lecture)
+      pour constituer une trace opposable.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 12 : Plateforme de simulation éditique ──────────────────────────
+  - type: system
+    id: sys-dedi-simulation-editique
+    name: Plateforme de Simulation Éditique
+    description: >-
+      Permet aux équipes métier de prévisualiser le rendu d'un modèle
+      avec des données de jeu d'essai avant mise en production, en
+      reproduisant fidèlement les conditions de production réelle.
+    owner_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-jeux-essai
+    name: Gestion des jeux d'essai
+    description: >-
+      Fournit un catalogue de jeux de données anonymisées couvrant les
+      cas nominaux et les cas limites pour tester les gabarits avant
+      validation.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-previsualisation-rendu
+    name: Prévisualisation du rendu documentaire
+    description: >-
+      Génère en quelques secondes un aperçu PDF fidèle du document final
+      à partir des gabarits candidats et du jeu d'essai sélectionné.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 13 : Référentiel des échéances réglementaires ───────────────────
+  - type: system
+    id: sys-dedi-echeancier-reglementaire
+    name: Référentiel des Échéances Réglementaires
+    description: >-
+      Maintient le calendrier officiel des obligations déclaratives
+      envers la Banque de France, l'ACPR et les autres autorités, et
+      alimente le moteur de suivi des échéances.
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-saisie-echeances
+    name: Saisie et mise à jour des échéances
+    description: >-
+      Permet aux responsables conformité de saisir et de mettre à jour
+      les dates officielles de remise dès publication des circulaires
+      réglementaires.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-alertes-echeances
+    name: Alertes proactives sur les échéances
+    description: >-
+      Envoie des notifications graduées (J-10, J-5, J-2) aux équipes
+      chargées de la production des états pour éviter tout dépassement
+      de délai.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 14 : Moteur de contrôle des données de référence ────────────────
+  - type: system
+    id: sys-dedi-controle-donnees-ref
+    name: Moteur de Contrôle des Données de Référence
+    description: >-
+      Valide en amont de la production documentaire la cohérence des
+      données de référence (coordonnées client, libellés de produits,
+      codes IBAN) pour prévenir les erreurs dans les documents émis.
+    owner_team: Équipe Data Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-validation-iban
+    name: Validation des IBAN dans les documents
+    description: >-
+      Vérifie la conformité de chaque IBAN présent dans un document
+      (clé de contrôle, format pays) avant injection dans le gabarit,
+      et bloque la production si un IBAN est invalide.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-normalisation-adresses
+    name: Normalisation des adresses postales
+    description: >-
+      Applique les règles de formatage La Poste sur les adresses
+      destinataires avant impression pour optimiser le taux de
+      distribution et réduire les NPAI.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-reconciliation-client
+    name: Réconciliation avec le référentiel client
+    description: >-
+      Croise les données éditiques avec le référentiel client central
+      pour détecter les divergences de nom, d'adresse ou de statut
+      avant émission du document.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 15 : Plateforme de signature électronique documentaire ───────────
+  - type: system
+    id: sys-dedi-signature-electronique
+    name: Plateforme de Signature Électronique Documentaire
+    description: >-
+      Gère la signature électronique des documents contractuels émis par
+      la banque (conventions, avenants) selon le cadre eIDAS, en
+      intégrant l'authentification forte du signataire.
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-preparation-signature
+    name: Préparation du dossier à signer
+    description: >-
+      Assemble le document final, lui appose les zones de signature
+      visuelles et génère un lien de signature sécurisé transmis au
+      client via son canal préféré.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-suivi-signature
+    name: Suivi du statut de signature
+    description: >-
+      Suit en temps réel l'avancement du processus de signature et
+      relance automatiquement le client si aucune action n'est effectuée
+      sous quarante-huit heures.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-archivage-document-signe
+    name: Archivage du document signé
+    description: >-
+      Dépose le document signé et le rapport de signature dans l'archiveur
+      légal dès validation, en associant les preuves d'identité du
+      signataire au dossier.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 16 : Connecteur core-banking éditique ───────────────────────────
+  - type: system
+    id: sys-dedi-connecteur-core-banking
+    name: Connecteur Core-Banking Éditique
+    description: >-
+      Adapte les flux de données du core banking vers les formats attendus
+      par le datamart éditique, en gérant les transformations de schéma
+      et les enrichissements de libellés.
+    owner_team: Équipe Intégration Éditique
+    domains: [editique-reporting, socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-extraction-soldes
+    name: Extraction des soldes et mouvements
+    description: >-
+      Interroge le core banking à date d'arrêté pour extraire les soldes
+      par compte et les mouvements de la période, en gérant les décalages
+      de fuseau horaire et les arrêtés de nuit.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-enrichissement-libelles
+    name: Enrichissement des libellés d'opérations
+    description: >-
+      Substitue les codes opération techniques par des libellés
+      compréhensibles par le client final, en s'appuyant sur une table
+      de correspondance maintenue par l'équipe produit.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 17 : Moteur de calcul de frais bancaires ────────────────────────
+  - type: system
+    id: sys-dedi-calcul-frais
+    name: Moteur de Calcul de Frais Bancaires
+    description: >-
+      Calcule les frais à facturer au client sur la période de relevé
+      à partir de la grille tarifaire et des événements survenus sur le
+      compte, et transmet le détail au moteur de composition.
+    owner_team: Équipe Tarification Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-calcul-frais-tenue-compte
+    name: Calcul des frais de tenue de compte
+    description: >-
+      Applique la grille de cotisation mensuelle en tenant compte des
+      éventuelles exonérations contractuelles et des offres groupées
+      souscrites par le client.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-detail-frais-client
+    name: Détail des frais pour relevé client
+    description: >-
+      Produit un tableau détaillé de chaque frais facturé sur la période,
+      avec la date, le libellé et le montant, conforme aux exigences de
+      transparence tarifaire imposées par la réglementation.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 18 : Superviseur de flux éditiques ──────────────────────────────
+  - type: system
+    id: sys-dedi-superviseur-flux
+    name: Superviseur de Flux Éditiques
+    description: >-
+      Monitore en continu l'ensemble des flux entre les composants de la
+      chaîne éditique, détecte les blocages ou retards de traitement et
+      déclenche des alertes opérationnelles en temps réel.
+    owner_team: Équipe Exploitation Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-detection-blocages
+    name: Détection des blocages de flux
+    description: >-
+      Analyse les métriques de débit et de latence sur chaque étape du
+      pipeline documentaire pour identifier les goulots d'étranglement
+      avant qu'ils n'impactent les SLA de remise client.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-relance-automatique
+    name: Relance automatique des traitements en échec
+    description: >-
+      Tente jusqu'à trois relances paramétrables sur les traitements
+      échoués avant d'escalader l'incident vers l'équipe d'exploitation
+      avec un rapport de contexte complet.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 19 : Moteur de personnalisation des relevés ─────────────────────
+  - type: system
+    id: sys-dedi-personnalisation-releves
+    name: Moteur de Personnalisation des Relevés
+    description: >-
+      Adapte le contenu des relevés de compte en fonction du profil du
+      client (convention, segment, langue, accessibilité) pour proposer
+      une communication personnalisée et conforme.
+    owner_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-segmentation-contenu
+    name: Segmentation du contenu par profil client
+    description: >-
+      Sélectionne les blocs de contenu à inclure dans le relevé selon le
+      segment commercial du client (particulier, pro, patrimonial) et
+      les produits détenus.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-multilinguisme
+    name: Gestion du multilinguisme
+    description: >-
+      Génère les documents dans la langue choisie par le client en
+      s'appuyant sur un référentiel de traductions géré par l'équipe
+      communication, avec repli automatique sur le français.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 20 : Plateforme de test de régression éditique ──────────────────
+  - type: system
+    id: sys-dedi-test-regression
+    name: Plateforme de Test de Régression Éditique
+    description: >-
+      Compare automatiquement les sorties documentaires d'une nouvelle
+      version du moteur de composition avec la version de référence pour
+      détecter tout écart de rendu involontaire.
+    owner_team: Équipe Qualité Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-comparaison-pdf
+    name: Comparaison pixel-par-pixel de PDF
+    description: >-
+      Analyse deux versions d'un même document PDF et produit un rapport
+      visuel différentiel mettant en évidence les zones modifiées,
+      ajoutées ou supprimées.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-rapport-regression
+    name: Rapport de régression documentaire
+    description: >-
+      Consolide les écarts détectés sur l'ensemble du jeu de test et
+      classe les régressions par sévérité pour faciliter la décision
+      de mise en production.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 21 : Moteur de pilotage des SLA documentaires ───────────────────
+  - type: system
+    id: sys-dedi-pilotage-sla
+    name: Moteur de Pilotage des SLA Documentaires
+    description: >-
+      Mesure le respect des engagements de service sur la remise des
+      documents (relevés J+1, avis J+0) et produit un tableau de bord
+      contractuel partagé avec les équipes exploitation et métier.
+    owner_team: Équipe Exploitation Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-mesure-sla
+    name: Mesure du respect des SLA
+    description: >-
+      Calcule en fin de journée le taux de respect de chaque SLA
+      documentaire par famille de document et par canal, en comparant
+      l'heure effective de remise à l'heure contractuelle cible.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-historique-sla
+    name: Historique des SLA documentaires
+    description: >-
+      Conserve vingt-quatre mois d'historique de performance SLA pour
+      permettre l'analyse des tendances et la préparation des revues
+      contractuelles annuelles.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 22 : Moteur d'anonymisation des données de test ─────────────────
+  - type: system
+    id: sys-dedi-anonymisation-test
+    name: Moteur d'Anonymisation des Données de Test
+    description: >-
+      Produit des jeux de données éditiques anonymisés à partir de
+      données réelles pour alimenter les environnements de test et de
+      recette sans risque d'exposition d'informations personnelles.
+    owner_team: Équipe Qualité Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-pseudonymisation-client
+    name: Pseudonymisation des données client
+    description: >-
+      Remplace les données à caractère personnel (nom, IBAN, adresse)
+      par des valeurs synthétiques réalistes tout en préservant la
+      cohérence interne du jeu de données pour les tests fonctionnels.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 23 : Gestionnaire de droits d'accès aux archives ────────────────
+  - type: system
+    id: sys-dedi-gestion-droits-archives
+    name: Gestionnaire de Droits d'Accès aux Archives
+    description: >-
+      Contrôle finement les habilitations d'accès aux documents archivés,
+      en s'intégrant au référentiel des identités de la banque et en
+      journalisant chaque consultation pour l'audit.
+    owner_team: Équipe Sécurité SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-habilitations-archives
+    name: Gestion des habilitations aux archives
+    description: >-
+      Permet aux administrateurs fonctionnels d'attribuer et de révoquer
+      les droits d'accès aux fonds documentaires selon le rôle et le
+      périmètre métier de chaque utilisateur.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-journalisation-consultations
+    name: Journalisation des consultations d'archives
+    description: >-
+      Enregistre chaque accès à un document archivé avec l'identité du
+      consultant, la date et l'heure, et la nature de l'opération,
+      pour satisfaire aux exigences de traçabilité RGPD.
+    domains: [editique-reporting, referentiel-client]
+    created_from: synthetic
+
+  # ── Système 24 : Moteur de consolidation comptable reporting ─────────────────
+  - type: system
+    id: sys-dedi-consolidation-comptable
+    name: Moteur de Consolidation Comptable Reporting
+    description: >-
+      Réalise la consolidation des soldes comptables des entités du
+      groupe pour alimenter les états de reporting prudentiel consolidé,
+      en appliquant les retraitements d'élimination inter-sociétés.
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-elimination-interco
+    name: Élimination des flux inter-sociétés
+    description: >-
+      Identifie et neutralise les transactions réciproques entre entités
+      du groupe pour éviter les doubles comptages dans les états
+      consolidés soumis aux autorités de supervision.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-referentiel-entites
+    name: Référentiel des entités consolidées
+    description: >-
+      Maintient la liste des entités intégrées dans le périmètre de
+      consolidation avec leur méthode d'intégration (intégrale,
+      proportionnelle, mise en équivalence) et les dates d'entrée ou
+      de sortie du périmètre.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Système 25 : Moteur de dérogations tarifaires éditiques ─────────────────
+  - type: system
+    id: sys-dedi-derogations-tarifaires
+    name: Moteur de Dérogations Tarifaires Éditiques
+    description: >-
+      Gère les dérogations accordées par les conseillers sur les frais
+      documentaires (exonérations de frais de relevé papier, remises
+      commerciales) et les intègre dans le calcul des frais avant
+      édition du relevé.
+    owner_team: Équipe Tarification Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dedi-saisie-derogations
+    name: Saisie des dérogations tarifaires
+    description: >-
+      Permet aux conseillers habilités de créer une dérogation ponctuelle
+      ou récurrente sur les frais documentaires d'un client, avec
+      définition de la durée de validité.
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Objets métier ────────────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-dedi-releve-compte
+    name: Relevé de compte
+    description: >-
+      Document périodique récapitulant les opérations réalisées sur un
+      compte bancaire durant une période donnée, avec les soldes
+      d'ouverture et de clôture.
+    steward_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-avis-operation
+    name: Avis d'opération
+    description: >-
+      Notification émise à chaque opération significative sur un compte
+      (virement reçu, prélèvement, débit exceptionnel) pour informer
+      le client sans attendre le relevé mensuel.
+    steward_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-etat-reglementaire
+    name: État réglementaire
+    description: >-
+      Liasse de données structurées transmise périodiquement aux autorités
+      de supervision (ACPR, Banque de France) conformément aux obligations
+      déclaratives prudentielles ou statistiques.
+    steward_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-gabarit-documentaire
+    name: Gabarit documentaire
+    description: >-
+      Modèle de mise en page paramétrable définissant la structure visuelle
+      et les zones de données d'une famille de documents, versionné et
+      soumis à un circuit de validation avant déploiement.
+    steward_team: Équipe Gouvernance Documentaire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-lot-impression
+    name: Lot d'impression
+    description: >-
+      Ensemble de documents regroupés pour traitement industriel (mise sous
+      pli, affranchissement), identifié par un code unique et tracé jusqu'à
+      remise au prestataire postal.
+    steward_team: Équipe Production Papier
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-consentement-demat
+    name: Consentement à la dématérialisation
+    description: >-
+      Accord explicite du client pour la réception de ses documents
+      uniquement par voie électronique, avec date d'enregistrement et
+      possibilité de rétractation à tout moment.
+    steward_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-archive-document
+    name: Archive documentaire
+    description: >-
+      Exemplaire conservé d'un document émis, assorti de son empreinte
+      cryptographique et de ses métadonnées légales, stocké pour la durée
+      de conservation réglementaire applicable.
+    steward_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-instance-xbrl
+    name: Instance XBRL
+    description: >-
+      Fichier XML structuré selon la taxonomie ABE représentant un état
+      réglementaire FINREP ou COREP, prêt à être soumis au portail de
+      la Banque de France.
+    steward_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-preuve-diffusion
+    name: Preuve de diffusion
+    description: >-
+      Enregistrement horodaté attestant qu'un document a bien été mis à
+      disposition d'un client par un canal donné, conservé comme pièce
+      justificative opposable.
+    steward_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-grille-tarifaire
+    name: Grille tarifaire documentaire
+    description: >-
+      Référentiel des frais applicables aux services documentaires
+      (relevé papier, duplicata, archivage), versionnée et associée à
+      des dates d'entrée en vigueur.
+    steward_team: Équipe Tarification Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-rapport-production
+    name: Rapport de production éditique
+    description: >-
+      Synthèse quotidienne des volumes de documents produits, des taux
+      de succès et des anomalies rencontrées, distribuée automatiquement
+      aux responsables de l'équipe exploitation.
+    steward_team: Équipe Exploitation Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-convention-compte
+    name: Convention de compte
+    description: >-
+      Document contractuel définissant les conditions générales et
+      particulières de fonctionnement d'un compte bancaire, signé
+      électroniquement ou sur papier par le client.
+    steward_team: Équipe Gouvernance Documentaire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-avenant-convention
+    name: Avenant à la convention de compte
+    description: >-
+      Modification contractuelle apportée à une convention en vigueur,
+      nécessitant un nouveau processus de signature et d'archivage légal.
+    steward_team: Équipe Gouvernance Documentaire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-calendrier-remises
+    name: Calendrier des remises réglementaires
+    description: >-
+      Planning officiel répertoriant toutes les échéances déclaratives
+      de l'année pour chaque autorité de supervision, avec les équipes
+      responsables de chaque remise.
+    steward_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-rapport-derogations
+    name: Rapport de dérogations tarifaires
+    description: >-
+      Synthèse mensuelle des dérogations accordées, ventilée par
+      conseiller, agence et nature de frais, à usage du contrôle de
+      gestion et du management commercial.
+    steward_team: Équipe Tarification Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-log-evenement-doc
+    name: Log d'événement documentaire
+    description: >-
+      Enregistrement individuel d'un changement d'état d'un document dans
+      son cycle de vie, publié sur le bus d'événements et conservé pour
+      audit.
+    steward_team: Équipe Intégration Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dedi-document-signe
+    name: Document signé électroniquement
+    description: >-
+      Exemplaire d'un document contractuel portant la signature
+      électronique qualifiée du client et le cachet du prestataire de
+      confiance, archivé avec son rapport de signature.
+    steward_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Projets ──────────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-dedi-migration-xsl-fo
+    name: Migration des gabarits vers XSL-FO 2.0
+    description: >-
+      Refonte technique des gabarits documentaires pour adopter la norme
+      XSL-FO 2.0, permettant un rendu plus fidèle sur les nouveaux formats
+      de page et une meilleure maintenabilité.
+    status: done
+    owner_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-demat-releves
+    name: Dématérialisation des relevés de compte
+    description: >-
+      Programme de bascule des clients du relevé papier vers le relevé
+      numérique dans le coffre-fort, avec campagnes de communication
+      et accompagnement des agences.
+    status: ongoing
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-conformite-surfi-2024
+    name: Mise en conformité SURFI 2024
+    description: >-
+      Adaptation du moteur de reporting réglementaire aux nouvelles
+      exigences SURFI publiées par la Banque de France en janvier 2024,
+      avec tests de recette en environnement miroir.
+    status: done
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-coffre-fort-v2
+    name: Refonte du coffre-fort numérique client v2
+    description: >-
+      Remplacement de la solution de coffre-fort tiers par une solution
+      maison offrant une meilleure intégration et des coûts d'exploitation
+      réduits, tout en maintenant les certifications légales.
+    status: ongoing
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-archivage-electronique
+    name: Mise en place de l'archivage électronique légal
+    description: >-
+      Déploiement de la solution d'archivage à valeur probatoire pour
+      l'ensemble des documents contractuels, en remplacement de la
+      conservation papier dans les agences.
+    status: done
+    owner_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-reporting-xbrl
+    name: Passage au reporting XBRL pour le FINREP
+    description: >-
+      Migration du format de remise des états FINREP du format CSV
+      propriétaire vers XBRL, conformément au calendrier imposé par
+      l'ABE et la Banque de France.
+    status: done
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-optimisation-batch
+    name: Optimisation des batchs de production nocturne
+    description: >-
+      Réduction de la durée des fenêtres de traitement nocturne par
+      parallélisation des lots documentaires et optimisation des requêtes
+      sur le datamart éditique.
+    status: done
+    owner_team: Équipe Exploitation Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-signature-electronique-avenant
+    name: Signature électronique des avenants contractuels
+    description: >-
+      Extension du dispositif de signature électronique aux avenants de
+      convention de compte, éliminant la signature papier en agence pour
+      ce type de document.
+    status: ongoing
+    owner_team: Équipe Canaux Numériques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-refonte-portail-reporting
+    name: Refonte du portail de reporting interne
+    description: >-
+      Remplacement de l'ancien portail de tableaux de bord éditiques par
+      une solution en self-service BI permettant aux équipes métier de
+      construire leurs propres vues sans intervention DSI.
+    status: ongoing
+    owner_team: Équipe Pilotage SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-normalisation-adresses
+    name: Normalisation des adresses pour réduction des NPAI
+    description: >-
+      Intégration d'un moteur de normalisation postale dans le flux
+      éditique pour diminuer le taux de plis non distribuables et
+      réduire les coûts de réexpédition.
+    status: done
+    owner_team: Équipe Data Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-accessibilite-documents
+    name: Accessibilité des documents pour clients déficients visuels
+    description: >-
+      Mise en conformité des relevés et documents contractuels avec les
+      normes d'accessibilité numérique (PDF balisé, contraste, texte
+      alternatif) pour les clients en situation de handicap visuel.
+    status: ongoing
+    owner_team: Équipe Éditique Cœur
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-consolidation-entites
+    name: Extension du périmètre de consolidation comptable
+    description: >-
+      Intégration de deux nouvelles filiales acquises dans le périmètre
+      de consolidation du reporting prudentiel, avec cartographie de
+      leurs plans comptables respectifs.
+    status: ongoing
+    owner_team: Équipe Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-bus-evenements-v2
+    name: Migration vers le bus d'événements v2
+    description: >-
+      Remplacement de la messagerie interne basée sur des fichiers de
+      queue par un bus d'événements standardisé pour découpler les
+      composants de la chaîne éditique.
+    status: done
+    owner_team: Équipe Intégration Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-test-regression-automatise
+    name: Automatisation des tests de régression éditique
+    description: >-
+      Mise en place d'un pipeline de comparaison automatique des rendus
+      PDF à chaque déploiement pour prévenir les régressions visuelles
+      non détectées.
+    status: ongoing
+    owner_team: Équipe Qualité Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-chiffrement-archives
+    name: Chiffrement des archives documentaires au repos
+    description: >-
+      Déploiement du chiffrement AES-256 sur l'ensemble des volumes de
+      stockage de l'archiveur légal pour renforcer la protection des
+      données personnelles au repos.
+    status: done
+    owner_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-tableau-bord-sla
+    name: Tableau de bord de suivi des SLA documentaires
+    description: >-
+      Construction d'un dashboard temps réel permettant au management
+      de suivre les SLA de remise des relevés et états réglementaires
+      en un seul écran.
+    status: done
+    owner_team: Équipe Exploitation Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-integration-core-banking-v3
+    name: Intégration core banking v3 pour l'éditique
+    description: >-
+      Adaptation du connecteur core banking suite à la montée de version
+      majeure du système central, pour garantir la continuité des flux
+      alimentant le datamart éditique.
+    status: done
+    owner_team: Équipe Intégration Éditique
+    domains: [editique-reporting, socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-purge-donnees-rgpd
+    name: Purge automatisée des données RGPD
+    description: >-
+      Mise en place d'un processus automatique d'effacement certifié des
+      données personnelles dans les archives documentaires à l'expiration
+      des durées légales de conservation.
+    status: ongoing
+    owner_team: Équipe Archivage Légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dedi-traduction-taxonomie-abe
+    name: Mise à jour taxonomie ABE 2025
+    description: >-
+      Intégration de la nouvelle taxonomie ABE 2025 dans le moteur de
+      traduction réglementaire, avec recette complète sur les états
+      FINREP et COREP avant la première remise officielle.
+    status: ongoing
+    owner_team: Équipe Conformité Prudentielle
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Décisions ────────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-dedi-pdf-a-standard
+    title: Adoption du format PDF/A comme standard d'archivage
+    statement: >-
+      Tous les documents produits par la chaîne éditique seront générés
+      au format PDF/A-2b pour garantir leur lisibilité sur le long terme
+      sans dépendance à des polices ou ressources externes.
+    rationale: >-
+      Le format PDF/A est reconnu par les normes ISO et les autorités
+      judiciaires françaises comme format d'archivage légal fiable, ce
+      qui simplifie la recevabilité des pièces en cas de litige.
+    date: "2021-03-15"
+    decided_by: Comité Architecture Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-demat-priorite-canal
+    title: Priorité au canal numérique pour les nouveaux clients
+    statement: >-
+      Tout nouveau client ouvrant un compte à partir du 1er janvier 2022
+      sera inscrit par défaut en mode dématérialisé, avec possibilité de
+      demander le papier sur démarche explicite.
+    rationale: >-
+      Cette approche inverse le mode de bascule par défaut et accélère
+      la réduction des coûts d'impression tout en étant conforme aux
+      obligations légales d'information du client.
+    date: "2021-11-08"
+    decided_by: Direction Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-xbrl-seul-format-regulatoire
+    title: XBRL comme unique format de remise réglementaire
+    statement: >-
+      À compter de l'exercice 2023, les états FINREP et COREP seront
+      exclusivement soumis en XBRL ; les remises CSV parallèles sont
+      supprimées.
+    rationale: >-
+      La convergence sur un seul format simplifie la chaîne de production,
+      réduit les risques d'incohérence entre les deux formats et s'aligne
+      sur l'exigence de l'ABE qui n'accepte plus que le XBRL.
+    date: "2022-09-20"
+    decided_by: Comité Reporting Prudentiel
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-archivage-internalise
+    title: Internalisation de l'archivage documentaire légal
+    statement: >-
+      La conservation des documents à valeur probatoire sera assurée par
+      une solution maison plutôt que par le prestataire tiers utilisé
+      jusqu'en 2022.
+    rationale: >-
+      L'audit de 2021 a révélé des lacunes dans les SLA du prestataire et
+      un coût élevé de sortie des données ; l'internalisation permet de
+      mieux maîtriser les durées de conservation et les certifications.
+    date: "2022-04-12"
+    decided_by: Comité Transformation Numérique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-bus-evenements-standard
+    title: Adoption d'un bus d'événements standardisé pour l'éditique
+    statement: >-
+      Les échanges entre composants de la chaîne éditique passeront par
+      un bus d'événements centralisé au format CloudEvents, supprimant
+      les intégrations point-à-point historiques.
+    rationale: >-
+      La multiplication des connecteurs bilatéraux rendait la maintenance
+      coûteuse et les pannes difficiles à diagnostiquer ; un bus unique
+      apporte visibilité et reprise sur incident standardisée.
+    date: "2023-01-30"
+    decided_by: Comité Architecture SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-duree-conservation-10-ans
+    title: Conservation des relevés sur dix ans
+    statement: >-
+      Les relevés de compte archivés seront conservés pendant dix ans
+      à compter de la date d'émission, dépassant le minimum légal de
+      cinq ans pour couvrir les risques de litiges tardifs.
+    rationale: >-
+      L'analyse des contentieux historiques montre que des réclamations
+      clients interviennent jusqu'à huit ans après les opérations ; la
+      conservation sur dix ans réduit le risque de ne pas pouvoir
+      produire les pièces justificatives.
+    date: "2020-06-03"
+    decided_by: Direction Juridique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-signature-eidas-avancee
+    title: Recours à la signature électronique avancée pour les avenants
+    statement: >-
+      Les avenants à la convention de compte seront signés via un
+      dispositif de signature électronique avancée eIDAS, appuyé sur
+      l'authentification forte du client déjà en place.
+    rationale: >-
+      Le niveau avancé offre une valeur probatoire suffisante pour les
+      avenants contractuels sans alourdir le parcours client comme le
+      ferait une signature qualifiée.
+    date: "2023-07-18"
+    decided_by: Direction Juridique et Conformité
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-suppression-fax-notif
+    title: Suppression du canal fax pour les notifications réglementaires
+    statement: >-
+      Les notifications de mise à disposition de documents aux clients
+      professionnels ne sont plus envoyées par fax ; seuls le courriel
+      et le push mobile sont maintenus.
+    rationale: >-
+      Le fax ne permettait pas de générer une preuve de diffusion
+      fiable et représentait un coût d'infrastructure disproportionné
+      pour un volume résiduel d'utilisateurs.
+    date: "2022-02-28"
+    decided_by: Direction des Opérations
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-gabarit-central
+    title: Centralisation de la gestion des gabarits dans un référentiel unique
+    statement: >-
+      Tous les gabarits documentaires, quel que soit leur type ou leur
+      canal, seront gérés dans un référentiel central unique avec
+      circuit de validation commun.
+    rationale: >-
+      La coexistence de plusieurs référentiels de gabarits entraînait des
+      divergences de mise en page et des surcoûts de maintenance ;
+      la centralisation garantit la cohérence de la charte graphique.
+    date: "2021-05-10"
+    decided_by: Comité Architecture Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-controle-coherence-inter-etats
+    title: Contrôle croisé obligatoire entre états réglementaires avant soumission
+    statement: >-
+      Aucun état réglementaire ne peut être soumis à l'autorité de
+      supervision sans que les contrôles de cohérence inter-états aient
+      été exécutés et validés par le responsable reporting.
+    rationale: >-
+      Suite à un incident de 2020 où des incohérences entre COREP et
+      FINREP ont entraîné une demande de re-soumission par l'ACPR, un
+      verrou applicatif a été décidé pour prévenir tout renouvellement.
+    date: "2020-11-24"
+    decided_by: Direction de la Conformité
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-frais-transparence
+    title: Affichage du détail des frais sur le relevé mensuel
+    statement: >-
+      Le relevé mensuel de tout client présentant des frais sur la période
+      inclura obligatoirement un tableau récapitulatif détaillé de
+      chaque ligne de frais facturée.
+    rationale: >-
+      La réglementation sur la transparence tarifaire et les remontées du
+      médiateur bancaire ont conduit à rendre obligatoire cet affichage
+      pour améliorer la compréhension client et réduire les litiges.
+    date: "2019-12-01"
+    decided_by: Direction Retail et Juridique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-batch-fenetre-nocturne
+    title: Fenêtre de traitement batch limitée à quatre heures
+    statement: >-
+      Les traitements de production documentaire nocturne doivent se
+      terminer avant 5h00 du matin pour libérer les ressources serveur
+      avant les opérations de début de journée.
+    rationale: >-
+      Les dépassements de fenêtre batch causaient des retards en cascade
+      sur l'ensemble des applications de front-office en début de matinée;
+      la contrainte de 5h impose une discipline d'optimisation continue.
+    date: "2022-10-05"
+    decided_by: Comité Exploitation et Architecture
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-donnees-test-anonymisees
+    title: Obligation d'anonymisation pour les données de test éditiques
+    statement: >-
+      Aucune donnée réelle de client ne peut être utilisée dans les
+      environnements de test ou de recette ; seules les données produites
+      par le moteur d'anonymisation sont autorisées.
+    rationale: >-
+      Un audit RGPD de 2021 a identifié des copies de données réelles
+      dans les environnements de recette ; cette décision formalise
+      l'interdiction et impose le recours à l'outil d'anonymisation.
+    date: "2021-09-14"
+    decided_by: DPO et Direction de la Sécurité SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-sla-releve-j1
+    title: SLA de remise des relevés à J+1 ouvré
+    statement: >-
+      Les relevés mensuels doivent être disponibles dans l'espace client
+      numérique ou remis en boîte aux lettres au plus tard le lendemain
+      ouvré de la date d'arrêté du compte.
+    rationale: >-
+      L'engagement J+1 est un engagement commercial inscrit dans les
+      conventions de compte et constitue un différenciateur concurrentiel
+      sur le marché des particuliers.
+    date: "2020-03-02"
+    decided_by: Direction Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-multilinguisme-frontaliers
+    title: Support du multilinguisme pour les clients frontaliers
+    statement: >-
+      Les documents destinés aux clients résidant dans les zones
+      frontalières seront proposés en français et dans la langue du
+      pays voisin (allemand, luxembourgeois, catalan) selon la région.
+    rationale: >-
+      La proportion significative de clients frontaliers dans certaines
+      agences justifie l'investissement en traduction pour améliorer
+      la satisfaction et réduire les appels au service client.
+    date: "2023-04-17"
+    decided_by: Direction Régionale et Communication
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-echeancier-officiel-rh
+    title: Mise à jour de l'échéancier réglementaire dans les 48h suivant publication
+    statement: >-
+      Toute modification du calendrier officiel de remise publiée par une
+      autorité de supervision doit être répercutée dans le référentiel
+      des échéances dans un délai maximum de quarante-huit heures.
+    rationale: >-
+      Un retard de mise à jour de l'échéancier avait conduit à un manqué
+      de date de remise en 2019 ; le délai de 48h formalise la
+      responsabilité de l'équipe reporting.
+    date: "2020-01-20"
+    decided_by: Responsable Reporting Réglementaire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-api-rest-datamart
+    title: Accès au datamart éditique exclusivement via API REST
+    statement: >-
+      Les composants de la chaîne éditique ne peuvent accéder aux données
+      du datamart que par l'API REST exposée à cet effet ; les accès
+      directs à la base de données sont interdits.
+    rationale: >-
+      L'interdiction des accès directs permet de maîtriser les évolutions
+      de schéma sans impacter les consommateurs et de garantir les
+      contrôles d'accès centralisés au niveau de l'API.
+    date: "2023-06-22"
+    decided_by: Comité Architecture Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-destruction-certification
+    title: Certification de destruction pour les archives expirées
+    statement: >-
+      Tout effacement d'archives documentaires en fin de durée légale doit
+      faire l'objet d'un procès-verbal de destruction certifié et conservé
+      pendant cinq ans supplémentaires.
+    rationale: >-
+      L'absence de trace de destruction exposait la banque à des risques
+      de contestation sur la suppression de données personnelles ; le
+      PV certifié constitue une preuve d'exécution conforme au RGPD.
+    date: "2022-07-11"
+    decided_by: DPO et Direction Juridique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-derogation-plafond-conseiller
+    title: Plafond mensuel de dérogations par conseiller
+    statement: >-
+      Chaque conseiller est limité à dix dérogations tarifaires par mois
+      sur les frais documentaires ; tout dépassement déclenche une
+      validation obligatoire par le directeur d'agence.
+    rationale: >-
+      L'absence de plafond avait entraîné des usages non maîtrisés de
+      dérogations dans certaines agences, avec un impact mesurable sur
+      les revenus de frais ; le plafond instaure une discipline commerciale.
+    date: "2023-02-08"
+    decided_by: Direction Commerciale Retail
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-format-releve-csv-interne
+    title: Format CSV interne pour les échanges datamart-composition
+    statement: >-
+      Les extractions de données du datamart vers le moteur de composition
+      utilisent un format CSV délimité par pipes défini dans le standard
+      interne v2, sans exception.
+    rationale: >-
+      La prolifération de formats d'échange internes avait causé des
+      erreurs de parsing intermittentes ; la standardisation sur un seul
+      format réduit les incidents de production.
+    date: "2021-07-29"
+    decided_by: Comité Architecture Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-chiffrement-transit
+    title: Chiffrement obligatoire des flux documentaires en transit
+    statement: >-
+      Tous les flux transportant des données personnelles dans la chaîne
+      éditique (vers les prestataires d'impression, vers le coffre-fort)
+      doivent être chiffrés en transit via TLS 1.2 minimum.
+    rationale: >-
+      L'audit sécurité de 2020 avait relevé des flux non chiffrés entre
+      la plateforme éditique et le prestataire d'impression ; la décision
+      généralise le chiffrement sur l'ensemble des canaux sortants.
+    date: "2020-09-07"
+    decided_by: Direction de la Sécurité SI
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dedi-test-regression-obligatoire
+    title: Tests de régression éditique obligatoires avant tout déploiement
+    statement: >-
+      Aucun composant de la chaîne éditique ne peut être déployé en
+      production sans que la plateforme de test de régression ait validé
+      l'absence d'écart de rendu par rapport à la version précédente.
+    rationale: >-
+      Un déploiement non contrôlé en 2022 avait modifié le rendu du
+      relevé client sans validation préalable, entraînant des réclamations
+      massives ; la porte de qualité obligatoire prévient tout renouvellement.
+    date: "2022-12-05"
+    decided_by: Comité Qualité Éditique
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Contraintes ──────────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-dedi-conservation-10-ans
+    title: Conservation des relevés pendant dix ans
+    statement: >-
+      Les relevés de compte et documents contractuels doivent être conservés
+      dans l'archiveur légal pendant une durée minimale de dix ans à compter
+      de la date d'émission, conformément à la politique interne.
+    source: Politique interne de conservation documentaire
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-remise-j1
+    title: Délai de remise des relevés à J+1
+    statement: >-
+      Le relevé mensuel doit être mis à disposition du client (voie
+      numérique ou postale) au plus tard le lendemain ouvré de la date
+      d'arrêté du compte, sans exception pour les arrêtés de fin de mois.
+    source: Convention de compte type
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-pdf-a-archivage
+    title: Format PDF/A obligatoire pour l'archivage
+    statement: >-
+      Tout document archivé à valeur probatoire doit être au format
+      PDF/A-2b pour garantir son intégrité et sa lisibilité à long terme
+      sans dépendance à des ressources externes.
+    source: Standard d'archivage électronique interne
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-tls-flux-externes
+    title: Chiffrement TLS 1.2 minimum sur les flux documentaires externes
+    statement: >-
+      Tout flux transportant des documents ou données personnelles vers
+      un prestataire externe ou un coffre-fort tiers doit utiliser TLS
+      1.2 ou supérieur.
+    source: Politique de sécurité des flux SI
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-anonymisation-recette
+    title: Données de test obligatoirement anonymisées
+    statement: >-
+      Les environnements de test et de recette de la chaîne éditique ne
+      peuvent contenir de données réelles de clients ; seules les données
+      produites par le moteur d'anonymisation homologué sont autorisées.
+    source: Injonction DPO 2021
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-xbrl-taxonomie-abe
+    title: Conformité obligatoire à la taxonomie ABE en vigueur
+    statement: >-
+      Chaque instance XBRL soumise à la Banque de France doit être
+      conforme à la version de taxonomie ABE officiellement en vigueur
+      à la date de remise, sans exception.
+    source: Règlement ABE sur le reporting prudentiel
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-fenetre-batch-5h
+    title: Clôture des batchs avant 5h00
+    statement: >-
+      Les traitements de production documentaire nocturne doivent
+      impérativement se terminer avant 5h00 du matin pour ne pas
+      empiéter sur les fenêtres de traitement des applications front-office.
+    source: Plan d'exploitation SI
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-integrite-archive
+    title: Intégrité cryptographique des archives
+    statement: >-
+      Chaque document archivé doit porter un cachet électronique qualifié
+      ou une empreinte SHA-256 vérifiable ; toute altération doit être
+      détectable et signalée immédiatement.
+    source: Standard d'archivage électronique interne
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-consentement-preuve
+    title: Preuve du consentement à la dématérialisation conservée
+    statement: >-
+      L'accord explicite du client pour la réception électronique doit
+      être enregistré avec horodatage et conservé pendant toute la durée
+      de la relation client plus deux ans.
+    source: Code de la consommation, art. L221-5
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-tracabilite-consultations
+    title: Journalisation de toute consultation d'archive
+    statement: >-
+      Chaque accès à un document archivé doit être enregistré dans un
+      journal d'audit immuable avec l'identité du consultant, la date
+      et l'heure, conformément au RGPD.
+    source: RGPD Art. 32
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-validation-iban-avant-emission
+    title: Validation IBAN obligatoire avant émission
+    statement: >-
+      Aucun document contenant un IBAN ne peut être émis sans que la
+      validité de cet IBAN (clé de contrôle, format) ait été vérifiée
+      par le moteur de contrôle des données de référence.
+    source: Politique qualité documentaire
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-regression-obligatoire
+    title: Validation de non-régression avant déploiement
+    statement: >-
+      Aucun composant éditique ne peut passer en production sans résultat
+      de non-régression documentaire validé par l'équipe qualité.
+    source: Processus de déploiement éditique
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-detail-frais-releve
+    title: Affichage obligatoire du détail des frais
+    statement: >-
+      Tout relevé comportant au moins une ligne de frais doit inclure
+      un tableau récapitulatif détaillant chaque frais facturé sur la
+      période, conformément aux obligations de transparence tarifaire.
+    source: Loi Macron - transparence tarifaire bancaire
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-purge-rgpd
+    title: Effacement certifié à l'expiration de la durée légale
+    statement: >-
+      Les documents archivés dont la durée de conservation légale est
+      expirée doivent être effacés de manière certifiée avec production
+      d'un procès-verbal de destruction.
+    source: RGPD Art. 17 - Droit à l'effacement
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-langue-client
+    title: Document dans la langue du client
+    statement: >-
+      Tout document destiné à un client ayant déclaré une langue préférée
+      doit être produit dans cette langue dès lors qu'une traduction
+      homologuée est disponible dans le référentiel.
+    source: Politique de service client multilingue
+    severity: low
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-echeances-maj-48h
+    title: Mise à jour de l'échéancier réglementaire sous 48h
+    statement: >-
+      Toute modification d'un calendrier de remise publiée par une
+      autorité de supervision doit être répercutée dans le référentiel
+      des échéances dans les quarante-huit heures suivant la publication.
+    source: Procédure de veille réglementaire
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-api-seul-acces-datamart
+    title: Accès au datamart éditique exclusivement via API
+    statement: >-
+      Les accès directs à la base de données du datamart éditique sont
+      interdits ; seule l'API REST officielle peut être utilisée par les
+      composants de la chaîne.
+    source: Standard d'architecture SI interne
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-plafond-derogations
+    title: Plafond de dix dérogations tarifaires par conseiller et par mois
+    statement: >-
+      Chaque conseiller ne peut accorder plus de dix dérogations sur les
+      frais documentaires par mois calendaire ; au-delà, une validation
+      hiérarchique est requise.
+    source: Directive commerciale DRC-2023-04
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-signature-eidas
+    title: Signature électronique conforme eIDAS avancée
+    statement: >-
+      Les avenants contractuels signés électroniquement doivent utiliser
+      un dispositif de signature avancée au sens du règlement eIDAS,
+      appuyé sur l'authentification forte du client.
+    source: Règlement eIDAS (UE) 910/2014
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-surfi-delai-remise
+    title: Délai de remise SURFI respecté au jour près
+    statement: >-
+      Les états SURFI doivent être soumis à la Banque de France dans
+      le délai exact prescrit par la circulaire applicable, sans
+      dérogation possible sauf force majeure signalée à l'autorité.
+    source: Circulaire Banque de France sur le reporting statistique
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-coherence-inter-etats
+    title: Contrôle de cohérence inter-états obligatoire
+    statement: >-
+      Aucun état réglementaire ne peut être soumis sans avoir passé
+      avec succès les contrôles de cohérence entre les liasses FINREP,
+      COREP et SURFI.
+    source: Procédure de validation reporting prudentiel
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-format-csv-interne
+    title: Format CSV interne pipes v2 pour les échanges datamart-composition
+    statement: >-
+      Les fichiers d'extraction du datamart vers le moteur de composition
+      respectent strictement le format CSV délimité par pipes défini dans
+      le standard interne v2 ; tout autre format est rejeté à la réception.
+    source: Standard d'échange éditique interne v2
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-supervision-temps-reel
+    title: Supervision en temps réel de la chaîne éditique
+    statement: >-
+      L'ensemble des composants de la chaîne éditique doit exposer ses
+      métriques de santé au superviseur de flux en temps réel, avec
+      détection de blocage sous cinq minutes.
+    source: Exigences SLA exploitation éditique
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-log-evenements-5-ans
+    title: Conservation des logs d'événements documentaires pendant cinq ans
+    statement: >-
+      Le bus d'événements documentaires doit conserver l'historique de
+      tous les événements publiés pendant cinq ans pour permettre la
+      reconstitution de toute séquence de traitement à des fins d'audit.
+    source: Charte d'audit interne SI
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-pilotage-sla-mensuel
+    title: Rapport de performance SLA documentaire mensuel obligatoire
+    statement: >-
+      Un rapport de performance des SLA documentaires doit être produit
+      automatiquement en fin de mois et distribué aux responsables
+      métier et exploitation.
+    source: Contrat de service interne DSI-Métier
+    severity: low
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-npai-traitement-48h
+    title: Traitement des NPAI sous quarante-huit heures ouvrées
+    statement: >-
+      Les retours NPAI signalés par le prestataire postal doivent être
+      traités (mise en suspens du document, notification du gestionnaire)
+      dans un délai maximum de quarante-huit heures ouvrées.
+    source: Procédure qualité courrier client
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-circuit-validation-modele
+    title: Circuit de validation métier-juridique pour tout nouveau modèle
+    statement: >-
+      La mise en production d'un nouveau modèle documentaire ou d'une
+      modification significative requiert l'approbation formelle des
+      équipes juridique et conformité dans le circuit de validation.
+    source: Procédure de gouvernance documentaire
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-disponibilite-archiveur
+    title: Disponibilité de l'archiveur légal à 99,9 %
+    statement: >-
+      L'archiveur légal de documents doit respecter un taux de
+      disponibilité mensuel de 99,9 % pour garantir la continuité du
+      dépôt et de la consultation des documents à valeur probatoire.
+    source: Plan de continuité d'activité
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-habilitations-principe-moindre-privilege
+    title: Principe du moindre privilège pour l'accès aux archives
+    statement: >-
+      Les droits d'accès aux fonds documentaires archivés sont accordés
+      selon le principe du moindre privilège : chaque utilisateur ne
+      dispose que des droits strictement nécessaires à ses fonctions.
+    source: Politique de sécurité du SI
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-donnees-comptables-j1-disponibles
+    title: Données comptables disponibles pour l'éditique à J+1 6h00
+    statement: >-
+      Le connecteur core banking doit avoir alimenté le datamart éditique
+      avec les données de la veille au plus tard à 6h00 du matin pour
+      permettre le démarrage des jobs de production documentaire.
+    source: Plan d'exploitation SI
+    severity: high
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-multilinguisme-frontaliers
+    title: Support des langues frontalières documenté et validé
+    statement: >-
+      Les traductions utilisées dans les documents multilingues doivent
+      être approuvées par un traducteur professionnel et validées par
+      l'équipe juridique locale avant intégration dans le référentiel.
+    source: Politique multilingue clientèle frontalière
+    severity: low
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-relance-signature-48h
+    title: Relance automatique de signature sous quarante-huit heures
+    statement: >-
+      Si un client n'a pas signé électroniquement son avenant dans les
+      quarante-huit heures suivant l'envoi du lien, une relance
+      automatique est déclenchée avant escalade au conseiller.
+    source: Procédure de signature électronique
+    severity: low
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dedi-accessibilite-pdf-balise
+    title: Documents PDF accessibles pour les clients déficients visuels
+    statement: >-
+      Tout relevé ou document contractuel diffusé en version numérique
+      doit être produit en PDF balisé conforme au niveau AA des critères
+      WCAG 2.1 pour répondre aux obligations d'accessibilité numérique.
+    source: RGAA 4.1 et loi du 11 février 2005 sur le handicap
+    severity: medium
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  # ── Risques ──────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-dedi-depassement-fenetre-batch
+    title: Dépassement de la fenêtre de traitement nocturne
+    statement: >-
+      Une croissance non anticipée des volumes documentaires ou une
+      dégradation des performances du datamart pourrait entraîner un
+      dépassement de la fenêtre batch de 5h00, retardant la disponibilité
+      des relevés et des applications front-office.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Alertes de dépassement de durée à J-15 % de la fenêtre
+      - Plan de délestage prioritaire des lots non critiques
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-indisponibilite-coffre-fort
+    title: Indisponibilité du coffre-fort numérique client
+    statement: >-
+      Une panne de la plateforme de dématérialisation empêcherait le
+      dépôt des relevés numériques, obligeant un basculement en urgence
+      vers le canal papier avec impact sur les délais et les coûts.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Bascule automatique sur impression papier en cas d'indisponibilité
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-retard-remise-reglementaire
+    title: Retard de remise d'un état réglementaire
+    statement: >-
+      Un incident sur le moteur de reporting ou un retard de livraison
+      des données sources pourrait empêcher la soumission d'un état
+      réglementaire dans le délai imposé, exposant la banque à une
+      sanction de l'autorité de supervision.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Alertes J-5 et J-2 sur les échéances critiques
+      - Procédure de remise manuelle d'urgence documentée
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-regression-rendu
+    title: Régression de rendu documentaire non détectée
+    statement: >-
+      Un déploiement mal contrôlé pourrait modifier involontairement le
+      rendu visuel des relevés ou des documents contractuels, entraînant
+      des réclamations client et un risque de non-conformité légale.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Tests de régression automatisés obligatoires avant déploiement
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-donnees-personnelles-test
+    title: Exposition de données personnelles en environnement de test
+    statement: >-
+      L'utilisation accidentelle de données réelles dans un environnement
+      de recette constituerait une violation RGPD avec obligation de
+      notification à la CNIL.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Contrôle automatique de détection de données réelles en recette
+      - Formation obligatoire des équipes sur la politique de test
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-perte-archive-integrite
+    title: Compromission de l'intégrité des archives légales
+    statement: >-
+      Une altération non détectée d'un document archivé remettrait en
+      cause sa valeur probatoire et pourrait invalider son utilisation
+      dans le cadre d'une procédure judiciaire.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Vérification périodique des empreintes cryptographiques sur échantillon
+      - Sauvegarde redondante géographiquement distribuée
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-taux-npai-eleve
+    title: Taux élevé de plis non distribuables
+    statement: >-
+      Un référentiel d'adresses mal maintenu peut entraîner un taux de
+      NPAI significatif, avec des coûts de réexpédition et un risque que
+      certains clients ne reçoivent pas leurs relevés dans les délais.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Normalisation automatique des adresses avant impression
+      - Alertes sur dépassement du seuil de NPAI par lot
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-gabarit-non-conforme
+    title: Gabarit documentaire non conforme déployé en production
+    statement: >-
+      Un gabarit modifié sans passer par le circuit de validation
+      complet pourrait contenir des erreurs juridiques ou de mise en
+      page, avec un risque de réclamation client ou de sanction
+      réglementaire.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Blocage technique du déploiement sans approbation du circuit
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-dette-technique-gabarits
+    title: Dette technique sur les anciens gabarits non migrés
+    statement: >-
+      Une partie des gabarits historiques n'a pas encore été migrée vers
+      XSL-FO 2.0, maintenant une dépendance à des outils obsolètes
+      susceptibles de ne plus être maintenus.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Plan de migration priorisé avec inventaire des gabarits legacy
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-incoherence-inter-etats
+    title: Incohérence non détectée entre états réglementaires
+    statement: >-
+      Un défaut dans les règles de contrôle croisé pourrait permettre
+      la soumission d'états présentant des incohérences passées inaperçues,
+      exposant la banque à une demande de re-soumission ou à une remarque
+      de l'autorité de supervision.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Revue annuelle des règles de contrôle par l'équipe reporting
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-dependance-prestataire-impression
+    title: Dépendance à un prestataire d'impression unique
+    statement: >-
+      La concentration du volume d'impression sur un seul prestataire
+      industriel expose la chaîne éditique à un risque de rupture de
+      service en cas de panne ou de faillite du prestataire.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Contrat de prestataire de secours activable sous quarante-huit heures
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-evolution-taxonomie-non-anticipee
+    title: Évolution de taxonomie ABE non intégrée à temps
+    statement: >-
+      Une mise à jour tardive de la taxonomie ABE dans le moteur XBRL
+      entraînerait la soumission d'instances non conformes, avec rejet
+      par le portail de la Banque de France.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Veille réglementaire sur les publications ABE avec alerte automatique
+      - Recette anticipée sur environnement miroir
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-surcharge-datamart
+    title: Surcharge du datamart en période de clôture
+    statement: >-
+      Les clôtures de fin de trimestre concentrent les volumes de
+      traitement et peuvent saturer le datamart éditique, retardant
+      l'alimentation du moteur de composition et mettant en danger
+      les SLA de remise.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Partitionnement des requêtes critiques sur des plages horaires dédiées
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-consentement-perdu
+    title: Perte du consentement à la dématérialisation en cas de migration
+    statement: >-
+      Une migration de système mal exécutée pourrait entraîner la perte
+      des enregistrements de consentement, obligeant à ré-expédier en
+      papier et à reconstituer les preuves.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Double archivage des consentements dans le référentiel client et l'archiveur légal
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-fuite-donnees-impression
+    title: Fuite de données personnelles chez le prestataire d'impression
+    statement: >-
+      Le transfert de flux de données personnelles vers le prestataire
+      d'impression industrielle représente un risque de violation de
+      données si le prestataire est lui-même victime d'une intrusion.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Chiffrement des flux transmis au prestataire
+      - Audit de sécurité annuel du prestataire
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-signature-lien-expire
+    title: Lien de signature électronique expiré avant action du client
+    statement: >-
+      Un client qui n'ouvre pas son lien de signature dans le délai de
+      validité configuré se retrouve dans l'impossibilité de signer sans
+      qu'un nouveau lien lui soit envoyé, bloquant l'opération.
+    likelihood: medium
+    impact: low
+    mitigations:
+      - Relance automatique à 48h avant expiration du lien
+    domains: [editique-reporting]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dedi-volumetrie-croissance-demat
+    title: Croissance non anticipée des volumes de dématérialisation
+    statement: >-
+      Le succès de la campagne de bascule numérique pourrait entraîner
+      une augmentation rapide des volumes stockés dans le coffre-fort,
+      dépassant les capacités prévues et nécessitant une extension non
+      budgétée.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Révision trimestrielle des prévisions de capacité coffre-fort
+    domains: [editique-reporting]
+    created_from: synthetic
+
+edges:
+
+  # ── PART_OF : feature -> system parent ──────────────────────────────────────
+  - {source_id: feat-dedi-fusion-gabarit, target_id: sys-dedi-moteur-composition, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-gestion-gabarits, target_id: sys-dedi-moteur-composition, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-ordonnancement-lots, target_id: sys-dedi-moteur-composition, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-production, target_id: sys-dedi-moteur-composition, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-rejets-retraitement, target_id: sys-dedi-moteur-composition, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-depot-coffre-fort, target_id: sys-dedi-demat-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-notification-disponibilite, target_id: sys-dedi-demat-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-gestion-consentement, target_id: sys-dedi-demat-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-telechargement-client, target_id: sys-dedi-demat-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-collecte-donnees-surfi, target_id: sys-dedi-reporting-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-controles-coherence, target_id: sys-dedi-reporting-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-soumission-autorite, target_id: sys-dedi-reporting-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-echeances, target_id: sys-dedi-reporting-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-historique-remises, target_id: sys-dedi-reporting-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-alimentation-datamart, target_id: sys-dedi-datamart-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-qualite-donnees, target_id: sys-dedi-datamart-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-exposition-api-data, target_id: sys-dedi-datamart-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-purge-donnees, target_id: sys-dedi-datamart-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-routage-impression, target_id: sys-dedi-impression-industrielle, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-mise-sous-pli, target_id: sys-dedi-impression-industrielle, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-retours-npai, target_id: sys-dedi-impression-industrielle, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-versionnage-modeles, target_id: sys-dedi-referentiel-modeles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-circuit-validation-modeles, target_id: sys-dedi-referentiel-modeles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-catalogue-modeles, target_id: sys-dedi-referentiel-modeles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-tableau-bord-kpi, target_id: sys-dedi-portail-reporting-interne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-rapport-mensuel-comex, target_id: sys-dedi-portail-reporting-interne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-alertes-anomalies-kpi, target_id: sys-dedi-portail-reporting-interne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-scellement-documents, target_id: sys-dedi-archiveur-legal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-recherche-documents-archives, target_id: sys-dedi-archiveur-legal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-destruction-controlee, target_id: sys-dedi-archiveur-legal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-publication-evenements, target_id: sys-dedi-bus-evenements-doc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-souscription-evenements, target_id: sys-dedi-bus-evenements-doc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-audit-trail-evenements, target_id: sys-dedi-bus-evenements-doc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-mapping-comptable, target_id: sys-dedi-traduction-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-generation-xbrl, target_id: sys-dedi-traduction-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-validation-taxonomie, target_id: sys-dedi-traduction-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-selection-canal, target_id: sys-dedi-gestionnaire-canaux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-bascule-papier-numerique, target_id: sys-dedi-gestionnaire-canaux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-preuve-diffusion, target_id: sys-dedi-gestionnaire-canaux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-jeux-essai, target_id: sys-dedi-simulation-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-previsualisation-rendu, target_id: sys-dedi-simulation-editique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-saisie-echeances, target_id: sys-dedi-echeancier-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-alertes-echeances, target_id: sys-dedi-echeancier-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-validation-iban, target_id: sys-dedi-controle-donnees-ref, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-normalisation-adresses, target_id: sys-dedi-controle-donnees-ref, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-reconciliation-client, target_id: sys-dedi-controle-donnees-ref, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-preparation-signature, target_id: sys-dedi-signature-electronique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-signature, target_id: sys-dedi-signature-electronique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-archivage-document-signe, target_id: sys-dedi-signature-electronique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-extraction-soldes, target_id: sys-dedi-connecteur-core-banking, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-enrichissement-libelles, target_id: sys-dedi-connecteur-core-banking, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-calcul-frais-tenue-compte, target_id: sys-dedi-calcul-frais, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-detail-frais-client, target_id: sys-dedi-calcul-frais, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-detection-blocages, target_id: sys-dedi-superviseur-flux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-relance-automatique, target_id: sys-dedi-superviseur-flux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-segmentation-contenu, target_id: sys-dedi-personnalisation-releves, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-multilinguisme, target_id: sys-dedi-personnalisation-releves, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-comparaison-pdf, target_id: sys-dedi-test-regression, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-rapport-regression, target_id: sys-dedi-test-regression, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-mesure-sla, target_id: sys-dedi-pilotage-sla, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-historique-sla, target_id: sys-dedi-pilotage-sla, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-pseudonymisation-client, target_id: sys-dedi-anonymisation-test, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-habilitations-archives, target_id: sys-dedi-gestion-droits-archives, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-journalisation-consultations, target_id: sys-dedi-gestion-droits-archives, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-elimination-interco, target_id: sys-dedi-consolidation-comptable, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-referentiel-entites, target_id: sys-dedi-consolidation-comptable, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dedi-saisie-derogations, target_id: sys-dedi-derogations-tarifaires, type: PART_OF, created_from: synthetic}
+
+  # ── OPERATES_ON : feature|system -> business_object ─────────────────────────
+  - {source_id: feat-dedi-fusion-gabarit, target_id: obj-dedi-gabarit-documentaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-fusion-gabarit, target_id: obj-dedi-releve-compte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-ordonnancement-lots, target_id: obj-dedi-lot-impression, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-production, target_id: obj-dedi-rapport-production, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-depot-coffre-fort, target_id: obj-dedi-releve-compte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-depot-coffre-fort, target_id: obj-dedi-convention-compte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-gestion-consentement, target_id: obj-dedi-consentement-demat, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-soumission-autorite, target_id: obj-dedi-etat-reglementaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-historique-remises, target_id: obj-dedi-etat-reglementaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dedi-reporting-reglementaire, target_id: obj-dedi-instance-xbrl, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-scellement-documents, target_id: obj-dedi-archive-document, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-destruction-controlee, target_id: obj-dedi-archive-document, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-generation-xbrl, target_id: obj-dedi-instance-xbrl, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-validation-taxonomie, target_id: obj-dedi-instance-xbrl, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-preuve-diffusion, target_id: obj-dedi-preuve-diffusion, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-preparation-signature, target_id: obj-dedi-avenant-convention, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-archivage-document-signe, target_id: obj-dedi-document-signe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-detail-frais-client, target_id: obj-dedi-releve-compte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-calcul-frais-tenue-compte, target_id: obj-dedi-grille-tarifaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-saisie-derogations, target_id: obj-dedi-rapport-derogations, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-audit-trail-evenements, target_id: obj-dedi-log-evenement-doc, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-saisie-echeances, target_id: obj-dedi-calendrier-remises, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-rapport-mensuel-comex, target_id: obj-dedi-rapport-production, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-routage-impression, target_id: obj-dedi-lot-impression, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-suivi-mise-sous-pli, target_id: obj-dedi-lot-impression, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-versionnage-modeles, target_id: obj-dedi-gabarit-documentaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-circuit-validation-modeles, target_id: obj-dedi-gabarit-documentaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dedi-archiveur-legal, target_id: obj-dedi-archive-document, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dedi-archiveur-legal, target_id: obj-dedi-document-signe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dedi-mesure-sla, target_id: obj-dedi-rapport-production, type: OPERATES_ON, created_from: synthetic}
+
+  # ── DEPENDS_ON : system->system, feature->feature, feature->system ───────────
+  - {source_id: sys-dedi-moteur-composition, target_id: sys-dedi-datamart-editique, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-moteur-composition, target_id: sys-dedi-referentiel-modeles, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-demat-client, target_id: sys-dedi-bus-evenements-doc, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-reporting-reglementaire, target_id: sys-dedi-traduction-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-reporting-reglementaire, target_id: sys-dedi-echeancier-reglementaire, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-datamart-editique, target_id: sys-dedi-connecteur-core-banking, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-impression-industrielle, target_id: sys-dedi-moteur-composition, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-gestionnaire-canaux, target_id: sys-dedi-demat-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dedi-gestionnaire-canaux, target_id: sys-dedi-impression-industrielle, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-fusion-gabarit, target_id: feat-dedi-exposition-api-data, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-soumission-autorite, target_id: feat-dedi-controles-coherence, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-soumission-autorite, target_id: feat-dedi-generation-xbrl, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-generation-xbrl, target_id: feat-dedi-mapping-comptable, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-archivage-document-signe, target_id: sys-dedi-archiveur-legal, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-depot-coffre-fort, target_id: feat-dedi-scellement-documents, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-alimentation-datamart, target_id: feat-dedi-extraction-soldes, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-detail-frais-client, target_id: feat-dedi-calcul-frais-tenue-compte, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dedi-comparaison-pdf, target_id: feat-dedi-fusion-gabarit, type: DEPENDS_ON, created_from: synthetic}
+
+  # ── CONSTRAINS : constraint|decision -> system|feature|business_object|project
+  - {source_id: con-dedi-conservation-10-ans, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-remise-j1, target_id: sys-dedi-moteur-composition, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-remise-j1, target_id: feat-dedi-ordonnancement-lots, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-pdf-a-archivage, target_id: feat-dedi-fusion-gabarit, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-pdf-a-archivage, target_id: sys-dedi-archiveur-legal, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-tls-flux-externes, target_id: sys-dedi-impression-industrielle, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-tls-flux-externes, target_id: sys-dedi-demat-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-anonymisation-recette, target_id: sys-dedi-anonymisation-test, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-xbrl-taxonomie-abe, target_id: feat-dedi-generation-xbrl, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-fenetre-batch-5h, target_id: feat-dedi-ordonnancement-lots, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-integrite-archive, target_id: feat-dedi-scellement-documents, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-consentement-preuve, target_id: feat-dedi-gestion-consentement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-tracabilite-consultations, target_id: feat-dedi-journalisation-consultations, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-validation-iban-avant-emission, target_id: feat-dedi-fusion-gabarit, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-regression-obligatoire, target_id: proj-dedi-migration-xsl-fo, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-detail-frais-releve, target_id: feat-dedi-detail-frais-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-purge-rgpd, target_id: feat-dedi-destruction-controlee, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-purge-rgpd, target_id: proj-dedi-purge-donnees-rgpd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-signature-eidas, target_id: sys-dedi-signature-electronique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-surfi-delai-remise, target_id: feat-dedi-soumission-autorite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-coherence-inter-etats, target_id: feat-dedi-controles-coherence, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-api-seul-acces-datamart, target_id: sys-dedi-datamart-editique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-plafond-derogations, target_id: feat-dedi-saisie-derogations, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-habilitations-principe-moindre-privilege, target_id: sys-dedi-gestion-droits-archives, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dedi-donnees-comptables-j1-disponibles, target_id: feat-dedi-alimentation-datamart, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-pdf-a-standard, target_id: feat-dedi-fusion-gabarit, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-demat-priorite-canal, target_id: proj-dedi-demat-releves, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-xbrl-seul-format-regulatoire, target_id: sys-dedi-traduction-reglementaire, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-archivage-internalise, target_id: proj-dedi-archivage-electronique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-bus-evenements-standard, target_id: sys-dedi-bus-evenements-doc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-gabarit-central, target_id: sys-dedi-referentiel-modeles, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-donnees-test-anonymisees, target_id: sys-dedi-anonymisation-test, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-test-regression-obligatoire, target_id: proj-dedi-test-regression-automatise, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-chiffrement-transit, target_id: sys-dedi-impression-industrielle, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dedi-api-rest-datamart, target_id: sys-dedi-datamart-editique, type: CONSTRAINS, created_from: synthetic}

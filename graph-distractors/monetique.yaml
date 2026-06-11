@@ -1,0 +1,1796 @@
+nodes:
+
+  # ── Systèmes (25) ────────────────────────────────────────────────────────
+
+  - type: system
+    id: sys-dmon-cardauth
+    name: Moteur d'autorisation CARDAUTH
+    description: Traite en temps réel les demandes d'autorisation carte émises par le réseau d'acceptation. Applique les règles de plafonds, de blocage et de routage réseau avant transmission de la réponse à l'acquéreur.
+    owner_team: Équipe Monétique Cœur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardauth-autorisation-temps-reel
+    name: Autorisation carte temps réel
+    description: Valide chaque transaction en moins de 500 ms en interrogeant le solde disponible et les règles produit associées à la carte présentée.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardauth-controle-plafonds
+    name: Vérification des plafonds de dépense
+    description: Cumule les montants journaliers et mensuels pour chaque porteur et refuse l'autorisation si le plafond paramétré pour le produit est atteint.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardauth-gestion-oppositions
+    name: Prise en compte des oppositions
+    description: Consulte le référentiel des cartes opposées avant tout accord d'autorisation afin de bloquer les transactions sur cartes perdues, volées ou résiliées.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-clearflow
+    name: Clearflow — Moteur de compensation
+    description: Consolide et transmet les flux de compensation journaliers vers les chambres de compensation partenaires. Gère le rapprochement des positions et la génération des fichiers d'échange.
+    owner_team: Équipe Compensation & Règlement
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-clearflow-collecte-flux
+    name: Collecte des flux de transaction
+    description: Agrège en fin de journée l'ensemble des transactions autorisées et les prépare pour l'envoi vers la chambre de compensation selon le format d'échange réglementaire.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-clearflow-rapprochement
+    name: Rapprochement des positions
+    description: Compare les soldes calculés localement avec les confirmations reçues de la chambre de compensation et déclenche une alerte en cas d'écart non justifié.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-clearflow-rejet-traitement
+    name: Traitement des rejets de compensation
+    description: Identifie les transactions rejetées par la chambre de compensation, génère les avis de rejet à destination du back-office et déclenche le processus de réclamation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-cardlife
+    name: CardLife — Gestion du cycle de vie carte
+    description: Pilote l'intégralité du cycle de vie des cartes de paiement, de la commande à la résiliation, en passant par la personnalisation et le renouvellement. Interface avec le prestataire de personnalisation physique.
+    owner_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardlife-emission-carte
+    name: Émission et commande de carte
+    description: Orchestre la création du dossier carte, la génération du numéro PAN, la demande de personnalisation et l'envoi postal au titulaire.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardlife-renouvellement
+    name: Renouvellement automatique
+    description: Détecte à 90 jours les cartes arrivant à expiration et lance automatiquement le processus de commande d'une carte de renouvellement avec transfert du profil porteur.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardlife-resiliation
+    name: Résiliation et clôture carte
+    description: Traite les demandes de résiliation en positionnant l'opposition, en archivant les données porteur et en notifiant les systèmes aval de la fin de validité.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-pinvault
+    name: PINVault — Coffre-fort des codes PIN
+    description: Stocke et gère les codes PIN des porteurs dans une enclave chiffrée conforme PCI HSM. Répond aux requêtes de vérification PIN émises par les TPE en mode offline.
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pinvault-verification-pin
+    name: Vérification du code PIN
+    description: Déchiffre le PIN encrypté transmis par le terminal et le compare au PIN de référence stocké dans le HSM, sans jamais exposer la valeur en clair hors de l'enclave.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pinvault-changement-pin
+    name: Changement de PIN à distance
+    description: Permet au porteur de modifier son PIN via l'application mobile ou le serveur vocal, sous réserve d'une authentification forte préalable validée par le module SCA.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pinvault-generation-pin
+    name: Génération du PIN initial
+    description: Produit aléatoirement le PIN initial lors de la commande d'une nouvelle carte et le transmet de façon sécurisée au prestataire d'impression via un canal chiffré dédié.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-fraudar
+    name: Fraudar — Détection de fraude carte
+    description: Analyse en temps réel chaque demande d'autorisation à l'aide d'un modèle de scoring comportemental et géographique. Produit un score de risque transmis à CARDAUTH pour décision d'autorisation ou de blocage.
+    owner_team: Équipe Fraude & Sécurité
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-fraudar-scoring-temps-reel
+    name: Scoring de fraude en temps réel
+    description: Calcule un indice de suspicion pour chaque transaction en moins de 80 ms en croisant le comportement historique du porteur avec les patterns de fraude connus.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-fraudar-mise-a-jour-modele
+    name: Mise à jour du modèle comportemental
+    description: Réentraîne hebdomadairement le modèle de scoring à partir des transactions confirmées frauduleuses et des faux positifs signalés par les conseillers.
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-fraudar-alertes-porteur
+    name: Alertes fraude porteur
+    description: Envoie une notification push ou SMS au porteur lorsqu'une transaction présente un score de risque élevé, avec option de validation ou de blocage immédiat.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-tokenizer
+    name: Tokenizer — Service de tokenisation
+    description: Génère et gère des tokens de paiement conformes EMV pour les portefeuilles mobiles et les paiements récurrents. Assure la correspondance sécurisée entre token et PAN dans une base dédiée.
+    owner_team: Équipe Monétique Digitale
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-tokenizer-generation-token
+    name: Génération de token EMV
+    description: Produit un token conforme à la spécification EMV Payment Tokenisation lors de l'enrôlement d'une carte dans un portefeuille numérique, avec une durée de vie et un périmètre d'usage configurables.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-tokenizer-revocation
+    name: Révocation de token
+    description: Invalide immédiatement un token compromis ou expiré et empêche toute tentative d'autorisation ultérieure sur ce token, sans impact sur le PAN sous-jacent.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-tokenizer-detokenisation
+    name: Détokenisation sécurisée
+    description: Restitue le PAN original à partir d'un token, uniquement pour les systèmes internes habilités tels que le back-office règlement ou le module de réclamation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-netlink
+    name: Netlink — Passerelle réseaux internationaux
+    description: Assure la connectivité avec les réseaux de paiement internationaux partenaires pour la transmission des autorisations et des flux de compensation transfrontaliers.
+    owner_team: Équipe Connectivité Réseaux
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-netlink-transmission-iso
+    name: Transmission ISO 8583
+    description: Encode et décode les messages financiers au format ISO 8583 pour l'échange des autorisations avec les réseaux partenaires dans le respect des variantes propres à chaque réseau.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-netlink-gestion-sessions
+    name: Gestion des sessions réseau
+    description: Maintient les connexions persistantes avec chaque réseau partenaire, surveille leur disponibilité et déclenche le basculement vers un circuit de secours en cas d'indisponibilité détectée.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-netlink-reconciliation
+    name: Réconciliation des échanges transfrontaliers
+    description: Compare quotidiennement les journaux de transactions transmises aux réseaux avec les accusés de réception reçus pour détecter les pertes de messages et les doublons.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-backcard
+    name: BackCard — Back-office carte
+    description: Portail de gestion opérationnelle des cartes, utilisé par les conseillers et le back-office pour traiter les réclamations, les blocages manuels et les demandes de duplicata de relevé.
+    owner_team: Équipe Opérations Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-backcard-gestion-reclamations
+    name: Gestion des réclamations carte
+    description: Permet aux opérateurs d'ouvrir, d'instruire et de clôturer des dossiers de réclamation liés à des transactions contestées, avec traçabilité complète des actions réalisées.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-backcard-blocage-manuel
+    name: Blocage manuel de carte
+    description: Autorise un conseiller habilité à positionner une opposition immédiate sur une carte depuis le portail, avec journalisation de la raison et de l'identifiant de l'opérateur.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-backcard-duplicata-releve
+    name: Édition de duplicata de relevé
+    description: Génère à la demande un relevé de compte carte pour une période donnée et l'envoie au format PDF chiffré à l'adresse électronique enregistrée pour le porteur.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-paramcard
+    name: ParamCard — Référentiel produits carte
+    description: Centralise la configuration des produits carte (plafonds par défaut, options, frais, réseaux acceptés) et distribue ce référentiel aux systèmes consommateurs via une API REST versionnée.
+    owner_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-paramcard-configuration-produit
+    name: Configuration du produit carte
+    description: Permet aux équipes produit de définir ou de modifier les paramètres d'un produit carte (plafonds, réseaux, options incluses) sans intervention technique, via une interface de paramétrage dédiée.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-paramcard-diffusion-referentiel
+    name: Diffusion du référentiel produit
+    description: Expose les configurations produit actives via une API interrogée par CARDAUTH, CardLife et BackCard pour garantir la cohérence des règles appliquées à chaque porteur.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-notifcard
+    name: NotifCard — Moteur de notifications carte
+    description: Orchestre l'envoi des notifications temps réel aux porteurs (alertes de débit, confirmation d'autorisation, alertes fraude) via push mobile, SMS et email selon les préférences du client.
+    owner_team: Équipe Expérience Porteur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-notifcard-alerte-debit
+    name: Alerte de débit immédiate
+    description: Envoie une notification au porteur dans les deux secondes suivant l'accord d'une autorisation, avec le montant, le commerçant et le solde résiduel disponible.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-feeengine
+    name: FeeEngine — Moteur de tarification carte
+    description: Calcule et comptabilise les frais liés aux transactions carte (commission d'interchange, frais de retrait, frais de change) selon les grilles tarifaires contractuelles en vigueur.
+    owner_team: Équipe Facturation Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-feeengine-calcul-interchange
+    name: Calcul des frais d'interchange
+    description: Détermine pour chaque transaction le montant de la commission d'interchange due au réseau, selon la catégorie du commerçant, le type de carte et la zone géographique.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-feeengine-frais-change
+    name: Application des frais de change
+    description: Majore les transactions en devise étrangère du taux de change du jour et des frais de conversion paramétrés pour le produit carte, avec affichage du détail dans le relevé.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-feeengine-reconciliation-tarifs
+    name: Réconciliation des tarifs
+    description: Rapproche mensuellement les frais facturés avec les contrats d'interchange signés avec les réseaux et identifie les écarts nécessitant une régularisation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-chargeback
+    name: ChargeBack — Gestion des impayés et litiges
+    description: Traite le cycle de vie complet des opérations de chargeback initiées par les porteurs ou imposées par les réseaux, depuis la réception de la contestation jusqu'à la décision finale de remboursement ou de rejet.
+    owner_team: Équipe Litiges Monétiques
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-chargeback-reception-contestation
+    name: Réception et qualification des contestations
+    description: Réceptionne les demandes de chargeback, les qualifie selon le code de raison réseau applicable et les route vers le traitement automatique ou vers l'instruction manuelle.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-chargeback-arbitrage-reseau
+    name: Arbitrage réseau
+    description: Soumet les dossiers non résolus en première instance à la procédure d'arbitrage du réseau et suit les délais de réponse imposés pour éviter les décisions par défaut défavorables.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-chargeback-remboursement-porteur
+    name: Remboursement porteur
+    description: Déclenche le crédit sur le compte du porteur à l'issue d'un chargeback accepté et transmet la confirmation au système de gestion de compte pour comptabilisation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-emvconfig
+    name: EMVConfig — Paramétrage EMV et NFC
+    description: Centralise les profils de configuration EMV (AIDs, clés publiques, paramètres contact et sans contact) distribués aux terminaux de paiement lors de leur déploiement et de leurs mises à jour.
+    owner_team: Équipe Standards Monétiques
+    domains: [monetique, tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-emvconfig-gestion-aids
+    name: Gestion des identifiants d'application (AID)
+    description: Maintient le catalogue des AIDs acceptés par les produits carte émis et synchronise ce catalogue avec les profils terminal lors de chaque mise à jour de configuration.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-emvconfig-cles-publiques
+    name: Distribution des clés publiques EMV
+    description: Gère le cycle de vie des clés publiques utilisées pour l'authentification dynamique des cartes (DDA/CDA) et les distribue aux terminaux avant expiration des clés courantes.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-emvconfig-parametres-nfc
+    name: Paramétrage sans contact NFC
+    description: Configure les seuils de paiement sans contact, les limites de cumul sans PIN et les paramètres CDCVM pour chaque gamme de carte et chaque marché géographique.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-cardreport
+    name: CardReport — Reporting réglementaire carte
+    description: Produit les rapports statistiques et réglementaires liés à l'activité carte (volumes de transactions, taux de fraude, taux de disponibilité) à destination des autorités de supervision et de la direction.
+    owner_team: Équipe Conformité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardreport-rapport-fraude
+    name: Rapport de fraude réglementaire
+    description: Consolide trimestriellement les indicateurs de fraude (taux, montants, typologies) au format requis par le superviseur bancaire et les transmet dans le délai réglementaire.
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardreport-tableau-de-bord
+    name: Tableau de bord activité carte
+    description: Alimente quotidiennement un tableau de bord décisionnel avec les volumes de transactions, les taux d'autorisation et les principales métriques de qualité de service.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardreport-rapport-disponibilite
+    name: Rapport de disponibilité des services
+    description: Mesure et rapporte le taux de disponibilité de chaque composant critique de la chaîne monétique pour alimenter les engagements de niveau de service contractuels.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-3dsgateway
+    name: 3DS Gateway — Authentification 3-D Secure
+    description: Orchestre le protocole 3-D Secure v2 pour l'authentification des porteurs lors des paiements en ligne. Gère les challenges biométriques, les flux frictionless et la communication avec les serveurs ACS des réseaux.
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-3dsgateway-flux-frictionless
+    name: Authentification frictionless 3DS2
+    description: Évalue les signaux de risque transmis par le marchand pour accorder une authentification sans challenge supplémentaire lorsque le niveau de confiance est suffisant.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-3dsgateway-challenge-biometrique
+    name: Challenge biométrique porteur
+    description: Déclenche un challenge d'authentification forte (empreinte digitale, reconnaissance faciale) via l'application mobile du porteur pour les transactions à risque élevé.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-3dsgateway-rapport-tentatives
+    name: Journalisation des tentatives d'authentification
+    description: Conserve un journal horodaté de chaque tentative d'authentification 3DS avec le résultat, le type de challenge et les données de risque transmises par le marchand.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-loyalty
+    name: LoyaltyCard — Programme de fidélité carte
+    description: Gère l'attribution, le suivi et l'utilisation des points de fidélité liés aux transactions carte. Calcule le cashback et les avantages associés aux produits premium selon les règles du programme en vigueur.
+    owner_team: Équipe Fidélisation
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-loyalty-attribution-points
+    name: Attribution des points de fidélité
+    description: Calcule le nombre de points attribués pour chaque transaction éligible selon le barème du produit carte et les éventuels multipliants liés aux promotions en cours.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-loyalty-cashback
+    name: Calcul et versement du cashback
+    description: Détermine mensuellement le montant de cashback acquis par le porteur et déclenche le crédit automatique sur le compte bancaire associé à la carte.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-loyalty-expiration-points
+    name: Gestion de l'expiration des points
+    description: Surveille la date de péremption des points dormants et notifie le porteur 30 jours avant l'expiration pour l'inciter à les utiliser avant leur annulation automatique.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-cardportal
+    name: CardPortal — Portail selfcare porteur
+    description: Interface web et mobile permettant aux porteurs de consulter leurs transactions, de gérer leurs paramètres de carte (plafonds, options, PIN) et de déclarer une opposition en autonomie.
+    owner_team: Équipe Expérience Porteur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardportal-consultation-transactions
+    name: Consultation de l'historique de transactions
+    description: Affiche les transactions carte des douze derniers mois avec filtrage par date, montant et type d'opération, avec export possible au format CSV.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardportal-opposition-selfcare
+    name: Opposition carte en selfcare
+    description: Permet au porteur de bloquer sa carte en ligne à tout moment sans contact avec un conseiller, avec confirmation immédiate et numéro de dossier pour suivi.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardportal-gestion-options
+    name: Activation et désactivation d'options
+    description: Donne au porteur la maîtrise de l'activation ou de la désactivation de chaque option souscrite (paiement sans contact, paiement en ligne, retrait à l'étranger) depuis son espace personnel.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-archcard
+    name: ArchCard — Archivage transactions carte
+    description: Conserve pendant dix ans l'intégralité des transactions carte autorisées et refusées dans un espace de stockage sécurisé et immuable, avec interface de requêtage pour les audits et les contentieux.
+    owner_team: Équipe Données & Conformité
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-archcard-archivage-transactions
+    name: Archivage des journaux de transaction
+    description: Ingère quotidiennement le flux de transactions de CARDAUTH et de Clearflow et les conserve dans un stockage à écriture unique pour garantir l'intégrité des données archivées.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-archcard-requetage-audit
+    name: Requêtage à des fins d'audit
+    description: Fournit une interface de recherche aux équipes d'audit et de conformité pour retrouver les transactions sur des critères multiples (PAN, date, montant, commerçant) dans le respect des habilitations.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-archcard-purge-reglementaire
+    name: Purge réglementaire
+    description: Déclenche automatiquement la suppression définitive des données porteur arrivées au terme de leur durée légale de conservation, avec production d'un certificat de destruction.
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Systèmes restants ────────────────────────────────────────────────────
+
+  - type: system
+    id: sys-dmon-prepaidmgr
+    name: PrepaidMgr — Gestion des cartes prépayées
+    description: Assure la création, le chargement et le suivi des soldes des cartes prépayées émises pour les offres cadeaux, les cartes voyage et les comptes de dépenses professionnelles.
+    owner_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-prepaidmgr-chargement-solde
+    name: Chargement du solde prépayé
+    description: Crédite le solde d'une carte prépayée sur ordre du titulaire ou d'un tiers habilité, après vérification de l'identité et des plafonds de chargement réglementaires.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-prepaidmgr-consultation-solde
+    name: Consultation du solde disponible
+    description: Permet au porteur de consulter son solde résiduel via le portail selfcare, une borne dédiée ou le serveur vocal, sans frais supplémentaire.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-prepaidmgr-expiration-carte
+    name: Traitement de l'expiration prépayée
+    description: Gère le remboursement du solde résiduel ou son transfert vers un nouveau support à l'expiration d'une carte prépayée, selon les conditions générales du produit.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-carbilan
+    name: CarBilan — Bilan mensuel porteur
+    description: Produit et envoie chaque mois le relevé de compte carte au format électronique ou papier selon les préférences du porteur, avec détail de chaque transaction et récapitulatif des frais.
+    owner_team: Équipe Édition Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-carbilan-generation-releve
+    name: Génération du relevé mensuel
+    description: Consolide l'ensemble des transactions du mois, y compris les rejets de compensation et les frais, pour produire un relevé lisible au format PDF signé électroniquement.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-carbilan-envoi-releve
+    name: Distribution du relevé porteur
+    description: Achemine le relevé mensuel vers le canal préféré du porteur (email sécurisé, espace en ligne, envoi postal) dans le délai contractuel suivant la clôture du cycle de facturation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-cardprovision
+    name: CardProvision — Provisionnement mobile
+    description: Gère l'enrôlement des cartes dans les portefeuilles mobiles (contactless HCE et SE) en orchestrant les échanges de clés et de profils avec les gestionnaires de portefeuille tiers.
+    owner_team: Équipe Monétique Digitale
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardprovision-enrolement-hce
+    name: Enrôlement HCE portefeuille mobile
+    description: Orchestre la création du profil carte virtuel dans le portefeuille de l'appareil mobile du porteur, en collaboration avec Tokenizer pour la génération du token de paiement associé.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardprovision-synchronisation-profil
+    name: Synchronisation du profil porteur
+    description: Met à jour le profil carte dans le portefeuille mobile lorsque des paramètres clés changent (plafond, résiliation, renouvellement) pour maintenir la cohérence entre le support physique et le support digital.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-audittrail
+    name: AuditTrail — Journal d'audit monétique
+    description: Enregistre de façon inaltérable l'ensemble des actions sensibles réalisées sur les systèmes monétiques (modifications de paramètres, oppositions, accès aux données porteur) pour répondre aux exigences d'audit.
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-audittrail-collecte-evenements
+    name: Collecte des événements d'audit
+    description: Agrège en temps réel les événements produits par chaque système monétique via un bus d'événements centralisé et les indexe dans le journal d'audit immuable.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-audittrail-recherche-evenements
+    name: Recherche dans le journal d'audit
+    description: Offre aux auditeurs internes et aux équipes de conformité une interface de recherche facettée sur l'ensemble des événements enregistrés, avec export horodaté pour les contrôles externes.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-riskmonitor
+    name: RiskMonitor — Surveillance des risques opérationnels
+    description: Surveille en continu les indicateurs de risque opérationnel de la chaîne monétique (taux de rejet, latences, erreurs réseau) et déclenche des alertes vers les équipes d'astreinte en cas de dépassement de seuil.
+    owner_team: Équipe Production Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-riskmonitor-surveillance-latences
+    name: Surveillance des latences d'autorisation
+    description: Mesure en continu le temps de réponse de CARDAUTH et alerte l'astreinte si le percentile 95 dépasse le seuil contractuel de 800 ms sur une fenêtre glissante de 5 minutes.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-riskmonitor-tableau-incidents
+    name: Tableau de bord incidents en cours
+    description: Centralise les incidents ouverts sur les systèmes monétiques avec leur gravité, leur durée d'ouverture et les actions de remédiation en cours pour faciliter la coordination en cas de crise.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-cardtest
+    name: CardTest — Plateforme de tests monétiques
+    description: Fournit un environnement de simulation complet (banque acquéreur et émetteur fictives, réseau simulé) pour valider les développements et les nouvelles configurations avant mise en production.
+    owner_team: Équipe Qualité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardtest-simulation-reseau
+    name: Simulation du réseau de paiement
+    description: Émule le comportement des réseaux de paiement internationaux pour permettre de tester les cas nominaux et les cas d'erreur sans impact sur l'infrastructure de production.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-cardtest-jeux-de-test
+    name: Gestion des jeux de données de test
+    description: Maintient un catalogue de cartes, de porteurs et de commerçants fictifs permettant de couvrir l'ensemble des scénarios de test définis dans le référentiel de cas d'usage monétiques.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dmon-pgw
+    name: PayGateway — Passerelle e-commerce
+    description: Point d'entrée unique pour les paiements par carte sur les canaux internet des marchands partenaires. Valide les données carte, orchestre l'authentification 3DS et transmet l'autorisation à CARDAUTH.
+    owner_team: Équipe Monétique Digitale
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pgw-validation-donnees-carte
+    name: Validation des données carte saisies
+    description: Vérifie le format du numéro de carte, la date d'expiration et le cryptogramme visuel avant toute transmission vers le moteur d'authentification 3DS ou d'autorisation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pgw-paiement-recurrent
+    name: Gestion du paiement récurrent
+    description: Stocke sous forme de token le profil de carte d'un acheteur enregistré pour permettre des paiements ultérieurs sans nouvelle saisie, dans le respect du consentement recueilli.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dmon-pgw-timeout-reseau
+    name: Gestion des timeouts réseau
+    description: Détecte les réponses tardives ou absentes en provenance de CARDAUTH et produit une réponse d'erreur normalisée vers le marchand, avec journalisation pour investigation ultérieure.
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Business Objects (17) ─────────────────────────────────────────────────
+
+  - type: business_object
+    id: obj-dmon-carte-paiement
+    name: Carte de paiement
+    description: Support physique ou virtuel permettant au porteur d'initier des transactions auprès de commerçants ou d'automates. Caractérisée par son numéro PAN, sa date d'expiration, son cryptogramme et son profil produit.
+    steward_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-autorisation
+    name: Autorisation de paiement
+    description: Message financier émis par l'émetteur pour accepter ou refuser une transaction initiée par un porteur, portant le montant, la devise, le code réponse et l'identifiant de traçabilité.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-transaction-carte
+    name: Transaction carte
+    description: Enregistrement d'une opération d'achat ou de retrait réalisée avec une carte de paiement, incluant les données de la demande d'autorisation et le résultat définitif de la compensation.
+    steward_team: Équipe Compensation & Règlement
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-porteur
+    name: Porteur de carte
+    description: Personne physique titulaire d'une carte de paiement, identifiée par son numéro de client dans le référentiel et disposant d'un ou plusieurs profils carte actifs.
+    steward_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-produit-carte
+    name: Produit carte
+    description: Configuration commerciale définissant les caractéristiques d'une gamme de carte (plafonds par défaut, réseaux acceptés, options incluses, tarification) rattachée à un portefeuille client cible.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-token-paiement
+    name: Token de paiement
+    description: Alias sécurisé du numéro PAN d'une carte, utilisé pour les paiements mobiles et récurrents afin de limiter l'exposition des données sensibles lors des échanges avec les marchands.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-flux-compensation
+    name: Flux de compensation
+    description: Ensemble des transactions agréées transmises en lot à la chambre de compensation pour calcul des positions nettes entre établissements émetteurs et acquéreurs.
+    steward_team: Équipe Compensation & Règlement
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-code-pin
+    name: Code PIN
+    description: Code secret à quatre ou six chiffres associé à une carte de paiement, stocké chiffré dans PINVault et servant à authentifier le porteur lors des paiements et des retraits.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-score-fraude
+    name: Score de fraude
+    description: Valeur numérique calculée par Fraudar pour chaque transaction, représentant la probabilité que l'opération soit frauduleuse ; utilisée par CARDAUTH pour moduler la décision d'autorisation.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-opposition
+    name: Opposition carte
+    description: Instruction de blocage positionnée sur une carte à la suite d'une déclaration de perte, de vol ou de contestation du porteur, empêchant toute nouvelle autorisation sur ce support.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-dossier-chargeback
+    name: Dossier de chargeback
+    description: Dossier documentaire regroupant les preuves et les échanges relatifs à une contestation de transaction, instruit par l'équipe litiges jusqu'à la décision finale du réseau ou de l'arbitrage.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-releve-carte
+    name: Relevé de compte carte
+    description: Document mensuel récapitulatif des transactions, des remboursements et des frais imputés à une carte de paiement, produit par CarBilan et conservé dans ArchCard.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-profil-emv
+    name: Profil EMV
+    description: Jeu de paramètres EMV (AIDs, clés, règles de décision terminale) associé à un produit carte et distribué aux terminaux pour gouverner le comportement de la puce lors des transactions de contact.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-frais-interchange
+    name: Frais d'interchange
+    description: Commission financière facturée par l'émetteur à l'acquéreur pour chaque transaction compensée, calculée par FeeEngine selon les barèmes du réseau et le type de carte.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-alerte-fraude
+    name: Alerte de fraude
+    description: Notification générée par Fraudar lorsqu'une transaction dépasse le seuil de score configurable, transmise au porteur et aux équipes opérationnelles pour action immédiate.
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-session-3ds
+    name: Session 3-D Secure
+    description: Contexte d'authentification créé par 3DS Gateway pour une tentative de paiement en ligne, regroupant les données de risque, le résultat du challenge et le jeton d'authentification transmis au marchand.
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dmon-carte-prepayee
+    name: Carte prépayée
+    description: Instrument de paiement à valeur stockée émis par PrepaidMgr, rechargeable jusqu'à un plafond réglementaire, sans découvert autorisé et sans rattachement à un compte courant.
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Projets (19) ─────────────────────────────────────────────────────────
+
+  - type: project
+    id: proj-dmon-migration-cardauth-v3
+    name: Migration CARDAUTH v3
+    description: Refonte majeure du moteur d'autorisation pour adopter une architecture microservices, améliorer la résilience et réduire les temps de réponse sous charge maximale.
+    status: ongoing
+    owner_team: Équipe Monétique Cœur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-tokenisation-hce
+    name: Déploiement de la tokenisation HCE
+    description: Mise en place du service de tokenisation pour les portefeuilles mobiles HCE, permettant aux porteurs d'utiliser leur carte via leur smartphone sur tout terminal NFC sans contact.
+    status: done
+    owner_team: Équipe Monétique Digitale
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-refonte-3ds2
+    name: Passage au protocole 3-D Secure v2
+    description: Remplacement du protocole 3DS v1 par la version 2.x pour se conformer aux exigences d'authentification forte DSP2 et améliorer l'expérience d'achat en ligne des porteurs.
+    status: done
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-clearflow-sepa
+    name: Raccordement Clearflow aux chambres SEPA
+    description: Extension du moteur de compensation pour intégrer les chambres de compensation SEPA Card Clearing et traiter les flux transfrontaliers en zone euro sans conversion de format.
+    status: done
+    owner_team: Équipe Compensation & Règlement
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-fraude-ml-v2
+    name: Nouveau modèle ML de détection de fraude
+    description: Remplacement du modèle de scoring de fraude basé sur des règles expertes par un modèle d'apprentissage automatique entraîné sur l'historique de cinq ans de transactions.
+    status: done
+    owner_team: Équipe Fraude & Sécurité
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-backcard-refonte-ux
+    name: Refonte UX du back-office carte
+    description: Modernisation de l'interface BackCard pour améliorer la productivité des opérateurs, intégrer les nouvelles fonctions de gestion des litiges et réduire le temps de traitement moyen des réclamations.
+    status: ongoing
+    owner_team: Équipe Opérations Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-pinvault-migration-hsm
+    name: Migration du parc HSM PINVault
+    description: Renouvellement du parc de modules de sécurité matérielle (HSM) arrivés en fin de vie, avec migration à chaud des clés cryptographiques et tests de bascule sans interruption de service.
+    status: done
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-prepaid-b2b
+    name: Carte prépayée B2B dépenses professionnelles
+    description: Lancement d'une gamme de cartes prépayées dédiées aux dépenses professionnelles des PME, avec plafonds personnalisables par salarié et interface de reporting pour le gestionnaire.
+    status: ongoing
+    owner_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-notifcard-push
+    name: Notifications push temps réel
+    description: Remplacement des SMS d'alerte par des notifications push applicatives pour réduire les coûts d'envoi et améliorer le délai de remise des alertes de transaction aux porteurs équipés de l'application mobile.
+    status: done
+    owner_team: Équipe Expérience Porteur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-emvconfig-nfc-plafond
+    name: Relèvement du plafond sans contact
+    description: Mise à jour des paramètres EMV NFC pour relever le plafond de paiement sans contact à 50 euros conformément aux nouvelles recommandations réglementaires, avec déploiement sur l'ensemble de la flotte terminale.
+    status: done
+    owner_team: Équipe Standards Monétiques
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-paramcard-api-v2
+    name: Refonte API ParamCard v2
+    description: Nouvelle version de l'API de diffusion du référentiel produit avec support de la pagination, des webhooks de changement de configuration et d'un contrat OpenAPI formel.
+    status: ongoing
+    owner_team: Équipe Produit Carte
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-chargeback-automatisation
+    name: Automatisation du premier niveau de chargeback
+    description: Mise en place de règles de traitement automatique pour les catégories de chargeback les plus fréquentes afin de réduire la charge manuelle de l'équipe litiges de 40 %.
+    status: ongoing
+    owner_team: Équipe Litiges Monétiques
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-loyalty-cashback-refonte
+    name: Refonte moteur cashback
+    description: Remplacement du calcul de cashback en batch mensuel par un calcul incrémental en temps quasi réel, avec créditage automatique à chaque transaction éligible.
+    status: ongoing
+    owner_team: Équipe Fidélisation
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-audittrail-immuabilite
+    name: Renforcement de l'immuabilité du journal d'audit
+    description: Ajout d'une signature cryptographique chaînée sur chaque entrée du journal AuditTrail pour rendre impossible toute modification ou suppression non détectée.
+    status: done
+    owner_team: Équipe Sécurité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-archcard-dix-ans
+    name: Extension de l'archivage à dix ans
+    description: Extension de la durée de rétention des archives de transaction de sept à dix ans pour satisfaire aux nouvelles exigences de conservation imposées par le régulateur sectoriel.
+    status: done
+    owner_team: Équipe Données & Conformité
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-cardportal-mobile
+    name: Application mobile CardPortal
+    description: Développement de l'application mobile native iOS et Android du portail selfcare carte, avec support de la biométrie pour l'authentification et des notifications push embarquées.
+    status: done
+    owner_team: Équipe Expérience Porteur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-feeengine-grille-tarifaire-2025
+    name: Mise à jour grille tarifaire 2025
+    description: Intégration dans FeeEngine des nouvelles grilles d'interchange publiées par les réseaux pour l'exercice 2025, avec simulation d'impact et recette avant mise en production.
+    status: done
+    owner_team: Équipe Facturation Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-cardtest-automatisation
+    name: Automatisation de la recette monétique
+    description: Mise en place d'une suite de tests automatisés sur la plateforme CardTest couvrant les principaux scénarios d'autorisation, de compensation et de chargeback pour accélérer les cycles de livraison.
+    status: ongoing
+    owner_team: Équipe Qualité Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dmon-riskmonitor-alerting
+    name: Refonte du système d'alerting opérationnel
+    description: Remplacement des alertes par email de RiskMonitor par un système d'escalade structuré avec niveaux de gravité, rotation d'astreinte et intégration à l'outil de gestion d'incidents.
+    status: ongoing
+    owner_team: Équipe Production Monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Décisions (22) ────────────────────────────────────────────────────────
+
+  - type: decision
+    id: dec-dmon-token-emv-standard
+    title: Adoption du standard EMV Payment Tokenisation
+    statement: La tokenisation des cartes dans les portefeuilles mobiles s'appuie exclusivement sur le standard EMV Payment Tokenisation et non sur des implémentations propriétaires.
+    rationale: Ce standard garantit l'interopérabilité avec les principaux réseaux de paiement et simplifie les audits PCI DSS en réduisant le périmètre des données de carte sensibles.
+    date: "2023-03-14"
+    decided_by: Comité d'architecture monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-scoring-fraude-centralise
+    title: Scoring de fraude centralisé dans Fraudar
+    statement: La décision de scoring de fraude est prise exclusivement par Fraudar ; aucun système monétique ne peut implémenter sa propre logique de scoring en parallèle.
+    rationale: Éviter la prolifération de règles de fraude non coordonnées qui conduirait à des décisions contradictoires et à une maintenance éclatée des modèles.
+    date: "2022-09-01"
+    decided_by: Comité risques & fraude
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-3ds2-obligatoire-ecommerce
+    title: 3DS v2 obligatoire pour tous les paiements e-commerce
+    statement: Tout paiement carte initié via PayGateway doit être soumis au flux 3-D Secure v2 ; l'exemption d'authentification forte n'est autorisée que pour les transactions à faible risque qualifiées par le module TRA.
+    rationale: Conformité avec les exigences d'authentification forte de la DSP2 et réduction de la responsabilité de l'émetteur en cas de fraude sur les transactions authentifiées.
+    date: "2021-12-01"
+    decided_by: Comité conformité DSP2
+    domains: [monetique, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-clearflow-batch-nuit
+    title: Traitement de compensation en batch nocturne
+    statement: La compensation des transactions est réalisée en un seul batch nocturne à 23h00, sans traitement intermédiaire dans la journée, sauf exception réglementaire.
+    rationale: Architecture plus simple à maintenir et moins coûteuse que le temps réel ; compatible avec les cycles opérationnels des chambres de compensation partenaires actuelles.
+    date: "2020-06-15"
+    decided_by: Direction technique monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-pinvault-hsm-on-premise
+    title: Maintien des HSM PINVault en infrastructure propre
+    statement: Les HSM qui hébergent les codes PIN restent sur l'infrastructure physique de la banque et ne migrent pas vers un service HSM cloud, même certifié.
+    rationale: La localisation physique des équipements HSM est exigée par la politique de sécurité interne et facilite le contrôle exclusif des clés maîtresses par les équipes sécurité.
+    date: "2021-04-20"
+    decided_by: RSSI
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-api-paramcard-versioning
+    title: Versionnement sémantique de l'API ParamCard
+    statement: Toute modification de rupture de l'API ParamCard entraîne l'incrémentation du numéro de version majeure ; la version précédente est maintenue en parallèle pendant six mois minimum.
+    rationale: Éviter les régressions silencieuses sur les systèmes consommateurs tels que CARDAUTH et CardLife lors des mises à jour du référentiel produit.
+    date: "2023-07-10"
+    decided_by: Comité d'architecture monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-chargeback-delai-60j
+    title: Délai d'initiation du chargeback à 60 jours
+    statement: La banque accepte d'initier une procédure de chargeback dans un délai maximal de 60 jours à compter de la date de transaction contestée, indépendamment du délai réseau applicable.
+    rationale: Ce délai interne plus court que certains délais réseau réduit le risque d'irrecevabilité et améliore la satisfaction client en accélérant le traitement des contestations.
+    date: "2022-02-28"
+    decided_by: Comité opérations litiges
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-netlink-circuit-secours
+    title: Double circuit réseau avec bascule automatique
+    statement: Chaque connexion vers un réseau de paiement international dispose d'un circuit de secours activé automatiquement si la latence du circuit principal dépasse 200 ms ou en cas d'indisponibilité.
+    rationale: Garantir la continuité des autorisations internationales sans intervention manuelle lors des incidents réseau, en conformité avec le SLA d'autorisation de 99,99 %.
+    date: "2021-11-05"
+    decided_by: Direction production informatique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-archivage-immuable
+    title: Stockage immuable pour l'archivage des transactions
+    statement: Les données archivées dans ArchCard sont stockées sur un support à écriture unique (WORM) ou son équivalent logiciel, rendant impossible toute modification après ingestion.
+    rationale: Garantir l'intégrité des preuves de transaction pour les audits réglementaires et les contentieux, en conformité avec les exigences d'archivage légal.
+    date: "2023-01-09"
+    decided_by: Comité gouvernance des données
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-loyalty-calcul-temps-reel
+    title: Calcul du cashback en temps quasi réel
+    statement: Le calcul du cashback passe d'un traitement mensuel à un calcul incrémental déclenché à chaque transaction éligible, avec créditage dans les 24 heures.
+    rationale: Amélioration mesurée de l'engagement des porteurs sur les programmes à cashback immédi when les points ou crédits sont visibles rapidement après chaque achat.
+    date: "2024-03-20"
+    decided_by: Comité produit fidélisation
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-fraude-seuil-blocage-auto
+    title: Seuil de blocage automatique à 850 sur 1000
+    statement: Toute transaction dont le score Fraudar dépasse 850 est automatiquement refusée sans intervention humaine ; les transactions dans la plage 700-850 sont soumises à validation porteur via NotifCard.
+    rationale: Calibrage issu de l'analyse ROC du modèle v2 ; ce seuil minimise les faux négatifs coûteux tout en limitant les faux positifs à un taux acceptable pour la satisfaction client.
+    date: "2024-01-15"
+    decided_by: Comité risques & fraude
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-cardportal-biometrie
+    title: Biométrie obligatoire pour les opérations sensibles
+    statement: Les opérations sensibles réalisées depuis le portail mobile (opposition, changement de PIN, modification de plafond) requièrent une authentification biométrique ou un second facteur fort.
+    rationale: Renforcer la sécurité des opérations irréversibles tout en maintenant une expérience fluide grâce à la biométrie embarquée dans les smartphones modernes.
+    date: "2023-09-12"
+    decided_by: Comité sécurité produits digitaux
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-prepaid-plafond-reglementaire
+    title: Plafond réglementaire des cartes prépayées à 10 000 €
+    statement: Le solde cumulé d'une carte prépayée ne peut pas dépasser 10 000 euros, conformément au seuil réglementaire applicable aux instruments de monnaie électronique.
+    rationale: Respect de la directive monnaie électronique et limitation du risque LCB-FT associé aux instruments de paiement anonymes ou à identification allégée.
+    date: "2020-11-30"
+    decided_by: Direction conformité
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-feeengine-rapprochement-mensuel
+    title: Rapprochement tarifaire mensuel avec les réseaux
+    statement: FeeEngine produit un rapport de rapprochement mensuel des frais d'interchange facturés versus les barèmes contractuels, soumis à validation par l'équipe facturation avant clôture comptable.
+    rationale: Identifier rapidement les écarts de facturation réseau, qui peuvent représenter plusieurs centaines de milliers d'euros annuels en cas d'application de taux incorrects.
+    date: "2022-05-18"
+    decided_by: Direction financière monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-cardtest-env-isole
+    title: Environnement CardTest strictement isolé de la production
+    statement: La plateforme CardTest ne partage aucun composant réseau, aucune base de données ni aucun compte de service avec l'environnement de production monétique.
+    rationale: Prévenir tout risque de contamination des données de production par des données de test et garantir que les tests réseaux fictifs n'atteignent pas les chambres de compensation réelles.
+    date: "2021-08-03"
+    decided_by: Comité d'architecture monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-audittrail-retention-7ans
+    title: Rétention du journal d'audit à 7 ans
+    statement: Les événements enregistrés dans AuditTrail sont conservés pendant sept ans à compter de leur date d'enregistrement, durée alignée sur les obligations légales de conservation des journaux.
+    rationale: Couvrir la durée maximale de prescription applicable aux litiges financiers et garantir la disponibilité des preuves pour les contrôles réglementaires a posteriori.
+    date: "2022-12-01"
+    decided_by: Comité gouvernance des données
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-notifcard-fallback-sms
+    title: SMS comme canal de secours pour les alertes critiques
+    statement: En cas d'indisponibilité du canal push, NotifCard bascule automatiquement vers l'envoi d'un SMS pour les alertes de niveau critique (fraude détectée, opposition réussie).
+    rationale: Garantir la réception des alertes les plus importantes indépendamment de l'état du canal push, au prix d'un coût d'envoi supérieur assumé pour ces seuls événements critiques.
+    date: "2023-06-07"
+    decided_by: Comité produit expérience porteur
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-carbilan-format-pdf-signe
+    title: Relevés carte en PDF signé électroniquement
+    statement: Tous les relevés de compte carte produits par CarBilan sont signés numériquement avec un certificat qualifié pour garantir leur valeur probante en cas de contestation.
+    rationale: Un relevé signé électroniquement a la même valeur légale qu'un document papier et supprime la nécessité de conserver des exemplaires physiques en archive.
+    date: "2022-10-17"
+    decided_by: Direction juridique & conformité
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-emvconfig-deploiement-ota
+    title: Mise à jour EMV par télé-paramétrage (OTA)
+    statement: Les mises à jour de configuration EMV sont déployées sur les terminaux de paiement partenaires par télé-paramétrage OTA via EMVConfig, sans déplacement physique de technicien.
+    rationale: Réduire le délai de déploiement des nouvelles clés publiques et des paramètres NFC de plusieurs semaines à moins de 48 heures sur l'ensemble de la flotte terminale partenaire.
+    date: "2023-04-25"
+    decided_by: Comité d'architecture monétique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-riskmonitor-seuil-latence
+    title: Seuil d'alerte latence CARDAUTH à 800 ms (P95)
+    statement: RiskMonitor déclenche une alerte de niveau critique si le percentile 95 du temps de réponse de CARDAUTH dépasse 800 ms sur une fenêtre glissante de cinq minutes.
+    rationale: Ce seuil est calibré pour permettre à l'astreinte d'intervenir avant que le SLA d'autorisation de 99,99 % ne soit compromis, tout en évitant les fausses alertes sur pics transitoires.
+    date: "2024-02-08"
+    decided_by: Direction production informatique
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-pgw-tokenisation-paiments-recurrents
+    title: Tokenisation obligatoire pour les paiements récurrents e-commerce
+    statement: PayGateway ne stocke aucun numéro PAN pour les paiements récurrents ; seul un token EMV issu de Tokenizer peut être conservé par le marchand pour initier des transactions ultérieures.
+    rationale: Réduire le périmètre PCI DSS des marchands partenaires et éliminer le risque de compromission massive de numéros de carte stockés côté marchand.
+    date: "2023-11-14"
+    decided_by: Comité sécurité produits digitaux
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dmon-cardprovision-enrolement-consentement
+    title: Consentement explicite obligatoire à l'enrôlement mobile
+    statement: CardProvision exige un consentement explicite du porteur, distinct du consentement général aux conditions générales, avant tout enrôlement d'une carte dans un portefeuille numérique.
+    rationale: Conformité avec les exigences de traitement des données personnelles et de consentement spécifique applicables à la création de tokens de paiement mobiles.
+    date: "2022-07-04"
+    decided_by: Délégué à la protection des données
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Contraintes (33) ─────────────────────────────────────────────────────
+
+  - type: constraint
+    id: con-dmon-pci-dss-cardauth
+    title: CARDAUTH dans le périmètre PCI DSS
+    statement: CARDAUTH manipule des données PAN en clair pendant le traitement de l'autorisation et est soumis à l'intégralité des exigences PCI DSS avec audit annuel obligatoire par un QSA agréé.
+    source: PCI Security Standards Council
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-pci-dss-pinvault
+    title: PINVault soumis aux exigences PCI PIN
+    statement: PINVault est soumis aux exigences PCI PIN Security Requirements qui imposent des contrôles stricts sur la génération, la distribution, le stockage et la vérification des codes PIN.
+    source: PCI Security Standards Council
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-sla-autorisation
+    title: Disponibilité CARDAUTH à 99,99 %
+    statement: Le moteur d'autorisation doit maintenir un taux de disponibilité d'au moins 99,99 % mesuré mensuellement, ce qui correspond à moins de 4,4 minutes d'indisponibilité par mois.
+    source: Contrat de niveau de service réseau
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-latence-max-autorisation
+    title: Latence maximale d'autorisation à 500 ms
+    statement: CARDAUTH doit répondre à 99 % des demandes d'autorisation en moins de 500 millisecondes depuis la réception du message ISO 8583 jusqu'à l'envoi de la réponse au réseau.
+    source: Accord bilatéral réseau de paiement
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-rgpd-donnees-porteur
+    title: Conservation RGPD des données porteur
+    statement: Les données à caractère personnel des porteurs collectées dans le cadre de la relation carte ne peuvent être conservées au-delà de cinq ans après la résiliation de la carte, sauf obligation légale contraire.
+    source: Règlement RGPD (UE) 2016/679
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-dsp2-sca-ecommerce
+    title: Authentification forte obligatoire au-delà de 30 €
+    statement: Tout paiement par carte en ligne dont le montant dépasse 30 euros doit faire l'objet d'une authentification forte du porteur via 3DS Gateway, sauf exemption TRA dûment documentée.
+    source: DSP2 — RTS sur l'authentification forte
+    severity: high
+    domains: [monetique, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-pci-chiffrement-pan
+    title: Chiffrement des PAN au repos et en transit
+    statement: Les numéros PAN doivent être chiffrés en AES-256 au repos dans toutes les bases de données et transmis exclusivement via des canaux TLS 1.2 minimum entre les composants du système monétique.
+    source: PCI DSS v4.0 — Exigence 3 et 4
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-archivage-10ans
+    title: Conservation des journaux de transaction pendant 10 ans
+    statement: Les journaux de transactions carte traités par CARDAUTH et Clearflow doivent être conservés pendant dix ans dans ArchCard pour satisfaire aux obligations légales en matière de preuve.
+    source: Code monétaire et financier — art. L521-3
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-compensation-j1
+    title: Transmission des flux de compensation avant J+1 6h00
+    statement: Clearflow doit transmettre les fichiers de compensation de la journée à la chambre de compensation au plus tard à 6h00 le lendemain, faute de quoi des pénalités de retard sont applicables.
+    source: Règlement de la chambre de compensation partenaire
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-nfc-plafond-50euros
+    title: Plafond sans contact à 50 € sans PIN
+    statement: Le paiement sans contact sans saisie du PIN est autorisé jusqu'à 50 euros par transaction conformément aux règles réseau applicables en zone SEPA depuis le 15 mai 2021.
+    source: Décision SEPA Cards Standardisation
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-nfc-cumul-sans-pin
+    title: Plafond cumulé sans contact sans PIN à 150 €
+    statement: Le terminal doit exiger la saisie du PIN lorsque le cumul de transactions sans contact sans PIN depuis la dernière présentation du code dépasse 150 euros, conformément aux règles réseau.
+    source: EMV Contactless Specifications v2.9
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-rapportage-fraude-trimestriel
+    title: Rapport de fraude trimestriel au superviseur
+    statement: CardReport doit transmettre un rapport de fraude au format réglementaire au superviseur bancaire dans les 30 jours suivant la fin de chaque trimestre civil.
+    source: Recommandation BCE sur la sécurité des paiements
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-hsm-fips-140-2
+    title: HSM certifiés FIPS 140-2 niveau 3
+    statement: Les modules de sécurité matérielle utilisés par PINVault doivent être certifiés FIPS 140-2 au niveau 3 minimum pour la protection cryptographique des clés PIN.
+    source: Politique de sécurité des systèmes d'information bancaire
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-iso-8583-version
+    title: Conformité ISO 8583:1993 avec extensions réseau
+    statement: Netlink doit implémenter la version 1993 de la norme ISO 8583 augmentée des extensions propriétaires documentées dans les spécifications techniques de chaque réseau partenaire.
+    source: Spécifications techniques réseaux partenaires
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-prepaid-lcb-ft
+    title: Vérification LCB-FT pour les chargements prépayés
+    statement: Tout chargement d'une carte prépayée au-delà de 1 000 euros en une seule opération ou 2 500 euros sur un mois glissant doit déclencher une vérification LCB-FT renforcée.
+    source: Lignes directrices ACPR — monnaie électronique
+    severity: high
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-tokenizer-pci-scope
+    title: Tokenizer dans le périmètre PCI DSS
+    statement: Le service Tokenizer maintient la correspondance entre tokens et PANs dans une base dédiée qui entre dans le périmètre PCI DSS et nécessite un accès strictement restreint aux systèmes habilités.
+    source: PCI DSS v4.0 — Exigence 3.5
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-chargeback-delai-reseau
+    title: Délais réseau non négociables pour le chargeback
+    statement: Les délais d'initiation et de réponse au chargeback imposés par les réseaux de paiement sont contractuellement contraignants ; tout dépassement entraîne l'irrecevabilité automatique du dossier.
+    source: Règlements opérationnels des réseaux de paiement
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-loyalty-plafond-cashback
+    title: Plafond annuel de cashback par porteur à 500 €
+    statement: Le montant de cashback versé à un porteur ne peut excéder 500 euros par année civile pour tout produit carte, afin de respecter les contraintes fiscales liées aux avantages en nature.
+    source: Politique produit fidélisation
+    severity: low
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-carbilan-delai-envoi
+    title: Relevé carte envoyé au plus tard le 5 du mois suivant
+    statement: CarBilan doit produire et envoyer le relevé mensuel de chaque porteur au plus tard le 5e jour du mois suivant la clôture du cycle de facturation.
+    source: Conditions générales de la convention de compte
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-backcard-habilitation-operateur
+    title: Double habilitation pour les blocages manuels
+    statement: Toute opposition manuelle positionnée via BackCard doit être initiée par un opérateur de niveau N1 et validée par un superviseur N2, sauf en cas d'urgence documentée.
+    source: Procédure opérationnelle back-office carte
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-3ds-timeout
+    title: Timeout 3DS Gateway à 10 secondes
+    statement: Si 3DS Gateway ne reçoit pas de réponse du serveur ACS dans les 10 secondes, la transaction doit être basculée en mode dégradé selon les règles du réseau, sans abandon systématique.
+    source: Spécifications EMV 3DS v2.3
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-emvconfig-cles-expiration
+    title: Renouvellement des clés publiques EMV avant expiration
+    statement: EMVConfig doit initier la procédure de renouvellement des clés publiques au moins 90 jours avant leur date d'expiration pour garantir leur disponibilité sur l'ensemble de la flotte terminale.
+    source: EMV Issuer and Application Security Guidelines
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-audittrail-integrite
+    title: Intégrité cryptographique du journal d'audit
+    statement: Chaque entrée du journal AuditTrail doit être signée cryptographiquement et chaînée à l'entrée précédente pour rendre détectable toute altération ou suppression a posteriori.
+    source: Politique de sécurité des journaux d'audit
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-netlink-tls-13
+    title: TLS 1.3 minimum pour les connexions réseaux
+    statement: Toutes les connexions entre Netlink et les réseaux de paiement partenaires doivent utiliser TLS 1.3 au minimum ; les négociations vers des versions antérieures doivent être refusées.
+    source: Politique sécurité des échanges financiers
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-fraudar-faux-positifs
+    title: Taux de faux positifs Fraudar inférieur à 0,5 %
+    statement: Le modèle de scoring Fraudar ne doit pas générer un taux de refus abusif supérieur à 0,5 % des transactions légitimes sur une fenêtre glissante de 30 jours, sous peine de révision du seuil.
+    source: Objectif qualité de service porteur
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-pgw-pci-scope
+    title: PayGateway hors périmètre PAN grâce à la tokenisation
+    statement: PayGateway doit être architecturé de façon à ne jamais stocker ni journaliser les numéros PAN en clair, en s'appuyant exclusivement sur Tokenizer pour la persistance des références de carte.
+    source: PCI DSS v4.0 — Exigence 3.3
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-cardlife-personnalisation-delai
+    title: Délai de personnalisation carte à 5 jours ouvrés
+    statement: Le prestataire de personnalisation physique s'engage à produire et expédier une carte dans les 5 jours ouvrés suivant la réception d'un fichier de commande valide depuis CardLife.
+    source: Contrat de prestation de personnalisation carte
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-riskmonitor-astreinte
+    title: Couverture d'astreinte 24/7 pour les alertes critiques
+    statement: Les alertes de niveau critique émises par RiskMonitor doivent être prises en charge par l'astreinte dans un délai maximal de 15 minutes, y compris la nuit, les week-ends et les jours fériés.
+    source: Convention de service production monétique
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-clearflow-format-iso-20022
+    title: Migration du format de compensation vers ISO 20022
+    statement: Clearflow devra adopter le format ISO 20022 pour les échanges avec les chambres de compensation d'ici la date de transition obligatoire fixée par les réseaux SEPA.
+    source: Calendrier de migration SEPA ISO 20022
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-cardportal-accessibilite
+    title: Accessibilité RGAA niveau AA pour CardPortal
+    statement: L'interface web de CardPortal doit satisfaire aux critères du référentiel RGAA niveau AA, rendant les fonctions selfcare accessibles aux porteurs en situation de handicap.
+    source: Loi n° 2005-102 — obligations d'accessibilité numérique
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-prepaid-identification-allegee
+    title: Identification allégée pour les cartes prépayées jusqu'à 250 €
+    statement: Les cartes prépayées avec une valeur maximale chargeable de 250 euros peuvent être délivrées sous régime d'identification allégée sans vérification documentaire complète de l'identité.
+    source: Directive monnaie électronique II — art. 12
+    severity: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-pinmailer-impression-securisee
+    title: Impression PIN par prestataire agréé PCI PIN
+    statement: La production des courriers PIN est exclusivement confiée à un prestataire certifié PCI PIN, soumis à audit annuel par l'équipe sécurité et lié par un accord de confidentialité renforcé.
+    source: PCI PIN Security Requirements v3
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dmon-cardauth-isolation-reseau
+    title: Isolement réseau de CARDAUTH du SI général
+    statement: Les composants de CARDAUTH sont déployés dans un segment réseau dédié, accessible uniquement via des flux filtrés et journalisés, sans accès Internet direct ni connexion aux postes de travail bureautiques.
+    source: Politique de segmentation réseau PCI DSS
+    severity: high
+    domains: [monetique]
+    created_from: synthetic
+
+  # ── Risques (17) ─────────────────────────────────────────────────────────
+
+  - type: risk
+    id: risk-dmon-indisponibilite-cardauth
+    title: Indisponibilité du moteur d'autorisation
+    statement: Une panne de CARDAUTH entraîne le blocage de toutes les transactions carte, avec impact direct sur la satisfaction client et risque de pénalités contractuelles liées au SLA réseau.
+    likelihood: low
+    impact: high
+    mitigations: [Architecture haute disponibilité avec bascule automatique sur site secondaire en moins de 60 secondes.]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-compromission-hsm
+    title: Compromission des clés HSM PINVault
+    statement: Une compromission des clés maîtresses stockées dans les HSM de PINVault exposerait les codes PIN de l'ensemble du parc de cartes actives, avec obligation de renouvellement massif.
+    likelihood: low
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-fraude-ml-derive
+    title: Dérive silencieuse du modèle de fraude
+    statement: Le modèle de scoring Fraudar peut se dégrader progressivement entre deux cycles de réentraînement, augmentant les faux négatifs et laissant passer des transactions frauduleuses.
+    likelihood: medium
+    impact: medium
+    mitigations: [Surveillance mensuelle du taux de fraude post-autorisation avec alerte automatique si dérive supérieure à 0,1 point.]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-retard-compensation
+    title: Retard de transmission des flux de compensation
+    statement: Un incident sur Clearflow ou sur la connectivité vers la chambre de compensation peut entraîner un retard de transmission, exposant la banque à des pénalités de retard et à des problèmes de trésorerie.
+    likelihood: low
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-attaque-autorisation
+    title: Attaque par rejeu sur le canal d'autorisation
+    statement: Des attaquants sophistiqués pourraient tenter de rejouer des messages d'autorisation capturés afin de valider des transactions sans présentation de la carte, exploitant des failles dans la vérification des numéros de séquence.
+    likelihood: low
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-saturation-fraudar
+    title: Saturation de Fraudar en pic de transaction
+    statement: Lors des périodes de pic de transactions (soldes, fêtes), le volume peut dépasser la capacité de calcul du modèle ML, entraînant des dégradations de latence et des décisions par défaut moins précises.
+    likelihood: medium
+    impact: medium
+    mitigations: [Plan de capacité annuel avec test de charge avant chaque période de pic identifiée.]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-non-conformite-pci
+    title: Non-conformité PCI DSS lors de l'audit annuel
+    statement: Des évolutions non maîtrisées de l'architecture ou des écarts dans les pratiques opérationnelles peuvent entraîner des observations critiques lors de l'audit QSA annuel avec risque de perte de certification.
+    likelihood: medium
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-rupture-prestataire-personnalisation
+    title: Rupture de service du prestataire de personnalisation
+    statement: Une défaillance du prestataire chargé de la personnalisation physique des cartes entraînerait des retards d'émission et pourrait bloquer les ouvertures de compte carte pendant plusieurs semaines.
+    likelihood: low
+    impact: medium
+    mitigations: ["Contrat de continuité avec un prestataire de secours qualifié et maintien d'un stock de cartes personnalisées génériques pour les cas d'urgence."]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-vol-token
+    title: Compromission de tokens de paiement actifs
+    statement: La compromission de la base de correspondance token/PAN dans Tokenizer permettrait à un attaquant de détokeniser massivement des numéros de carte et d'initier des transactions frauduleuses.
+    likelihood: low
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-obsolescence-iso8583
+    title: Obsolescence du format ISO 8583 sur Netlink
+    statement: Les réseaux partenaires migrent progressivement vers ISO 20022 ; l'absence d'adaptation de Netlink dans les délais impartis entraînerait une interruption des échanges transfrontaliers.
+    likelihood: medium
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-fraude-prepayee
+    title: Utilisation frauduleuse des cartes prépayées
+    statement: Le régime d'identification allégée applicable aux cartes prépayées de faible valeur peut être exploité pour fragmenter des flux illicites ou contourner les contrôles LCB-FT.
+    likelihood: medium
+    impact: medium
+    domains: [monetique, lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-indisponibilite-3ds
+    title: Indisponibilité de 3DS Gateway en paiement e-commerce
+    statement: Une panne de 3DS Gateway empêche toute authentification forte des paiements en ligne, obligeant à basculer en mode dégradé avec acceptation de responsabilité élargie pour la banque émettrice.
+    likelihood: low
+    impact: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-erreur-paramcard
+    title: Erreur de paramétrage dans ParamCard
+    statement: Une configuration erronée d'un produit carte dans ParamCard (plafond à zéro, réseau désactivé) peut bloquer les porteurs concernés sans alerte immédiate jusqu'à la première transaction refusée.
+    likelihood: medium
+    impact: medium
+    mitigations: [Contrôles de cohérence automatiques avant publication de chaque configuration et procédure de rollback en moins de 30 minutes.]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-perte-message-reseau
+    title: Perte de messages d'autorisation sur Netlink
+    statement: Des incidents réseau transitoires peuvent entraîner la perte de messages d'autorisation sans que l'émetteur ni l'acquéreur ne soient avertis, créant des transactions en suspens non réconciliées.
+    likelihood: medium
+    impact: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-delai-chargeback
+    title: Dépassement des délais de chargeback réseau
+    statement: Un sous-effectif ou un afflux inhabituel de contestations peut conduire à dépasser les délais réseau de chargeback, rendant irrecevables des dossiers légitimes et générant une perte financière définitive.
+    likelihood: medium
+    impact: medium
+    mitigations: [Tableau de bord quotidien des délais résiduels avec escalade automatique vers le responsable litiges si le délai tombe sous 5 jours ouvrés.]
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-saturation-archcard
+    title: Saturation de la capacité d'archivage ArchCard
+    statement: La croissance des volumes de transactions sur dix ans peut conduire à saturer la capacité de stockage d'ArchCard, avec risque d'interruption de l'ingestion et de perte de données archivables.
+    likelihood: low
+    impact: medium
+    domains: [monetique]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dmon-fuite-donnees-porteur
+    title: Fuite de données personnelles de porteurs
+    statement: Une vulnérabilité dans CardPortal ou BackCard pourrait permettre à un attaquant d'accéder aux données personnelles de porteurs, entraînant une notification obligatoire à la CNIL et un préjudice réputationnel.
+    likelihood: low
+    impact: high
+    domains: [monetique]
+    created_from: synthetic
+
+edges:
+
+  # ── PART_OF : une arête par feature vers son système parent ──────────────
+  - {source_id: feat-dmon-cardauth-autorisation-temps-reel, target_id: sys-dmon-cardauth, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardauth-controle-plafonds, target_id: sys-dmon-cardauth, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardauth-gestion-oppositions, target_id: sys-dmon-cardauth, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-collecte-flux, target_id: sys-dmon-clearflow, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-rapprochement, target_id: sys-dmon-clearflow, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-rejet-traitement, target_id: sys-dmon-clearflow, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-emission-carte, target_id: sys-dmon-cardlife, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-renouvellement, target_id: sys-dmon-cardlife, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-resiliation, target_id: sys-dmon-cardlife, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pinvault-verification-pin, target_id: sys-dmon-pinvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pinvault-changement-pin, target_id: sys-dmon-pinvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pinvault-generation-pin, target_id: sys-dmon-pinvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-scoring-temps-reel, target_id: sys-dmon-fraudar, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-mise-a-jour-modele, target_id: sys-dmon-fraudar, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-alertes-porteur, target_id: sys-dmon-fraudar, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-generation-token, target_id: sys-dmon-tokenizer, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-revocation, target_id: sys-dmon-tokenizer, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-detokenisation, target_id: sys-dmon-tokenizer, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-netlink-transmission-iso, target_id: sys-dmon-netlink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-netlink-gestion-sessions, target_id: sys-dmon-netlink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-netlink-reconciliation, target_id: sys-dmon-netlink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-backcard-gestion-reclamations, target_id: sys-dmon-backcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-backcard-blocage-manuel, target_id: sys-dmon-backcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-backcard-duplicata-releve, target_id: sys-dmon-backcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-paramcard-configuration-produit, target_id: sys-dmon-paramcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-paramcard-diffusion-referentiel, target_id: sys-dmon-paramcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-notifcard-alerte-debit, target_id: sys-dmon-notifcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-feeengine-calcul-interchange, target_id: sys-dmon-feeengine, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-feeengine-frais-change, target_id: sys-dmon-feeengine, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-feeengine-reconciliation-tarifs, target_id: sys-dmon-feeengine, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-chargeback-reception-contestation, target_id: sys-dmon-chargeback, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-chargeback-arbitrage-reseau, target_id: sys-dmon-chargeback, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-chargeback-remboursement-porteur, target_id: sys-dmon-chargeback, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-emvconfig-gestion-aids, target_id: sys-dmon-emvconfig, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-emvconfig-cles-publiques, target_id: sys-dmon-emvconfig, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-emvconfig-parametres-nfc, target_id: sys-dmon-emvconfig, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardreport-rapport-fraude, target_id: sys-dmon-cardreport, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardreport-tableau-de-bord, target_id: sys-dmon-cardreport, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardreport-rapport-disponibilite, target_id: sys-dmon-cardreport, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-3dsgateway-flux-frictionless, target_id: sys-dmon-3dsgateway, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-3dsgateway-challenge-biometrique, target_id: sys-dmon-3dsgateway, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-3dsgateway-rapport-tentatives, target_id: sys-dmon-3dsgateway, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-loyalty-attribution-points, target_id: sys-dmon-loyalty, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-loyalty-cashback, target_id: sys-dmon-loyalty, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-loyalty-expiration-points, target_id: sys-dmon-loyalty, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardportal-consultation-transactions, target_id: sys-dmon-cardportal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardportal-opposition-selfcare, target_id: sys-dmon-cardportal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardportal-gestion-options, target_id: sys-dmon-cardportal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-archcard-archivage-transactions, target_id: sys-dmon-archcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-archcard-requetage-audit, target_id: sys-dmon-archcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-archcard-purge-reglementaire, target_id: sys-dmon-archcard, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-prepaidmgr-chargement-solde, target_id: sys-dmon-prepaidmgr, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-prepaidmgr-consultation-solde, target_id: sys-dmon-prepaidmgr, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-prepaidmgr-expiration-carte, target_id: sys-dmon-prepaidmgr, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-carbilan-generation-releve, target_id: sys-dmon-carbilan, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-carbilan-envoi-releve, target_id: sys-dmon-carbilan, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardprovision-enrolement-hce, target_id: sys-dmon-cardprovision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardprovision-synchronisation-profil, target_id: sys-dmon-cardprovision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-audittrail-collecte-evenements, target_id: sys-dmon-audittrail, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-audittrail-recherche-evenements, target_id: sys-dmon-audittrail, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-riskmonitor-surveillance-latences, target_id: sys-dmon-riskmonitor, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-riskmonitor-tableau-incidents, target_id: sys-dmon-riskmonitor, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardtest-simulation-reseau, target_id: sys-dmon-cardtest, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-cardtest-jeux-de-test, target_id: sys-dmon-cardtest, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pgw-validation-donnees-carte, target_id: sys-dmon-pgw, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pgw-paiement-recurrent, target_id: sys-dmon-pgw, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dmon-pgw-timeout-reseau, target_id: sys-dmon-pgw, type: PART_OF, created_from: synthetic}
+
+  # ── OPERATES_ON (30) ─────────────────────────────────────────────────────
+  - {source_id: feat-dmon-cardauth-autorisation-temps-reel, target_id: obj-dmon-autorisation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardauth-controle-plafonds, target_id: obj-dmon-carte-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardauth-gestion-oppositions, target_id: obj-dmon-opposition, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardauth, target_id: obj-dmon-transaction-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-collecte-flux, target_id: obj-dmon-flux-compensation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-rapprochement, target_id: obj-dmon-flux-compensation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-clearflow-rejet-traitement, target_id: obj-dmon-transaction-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-emission-carte, target_id: obj-dmon-carte-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-renouvellement, target_id: obj-dmon-carte-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardlife-resiliation, target_id: obj-dmon-opposition, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-pinvault-generation-pin, target_id: obj-dmon-code-pin, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-pinvault-verification-pin, target_id: obj-dmon-code-pin, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-scoring-temps-reel, target_id: obj-dmon-score-fraude, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-fraudar-alertes-porteur, target_id: obj-dmon-alerte-fraude, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-generation-token, target_id: obj-dmon-token-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-revocation, target_id: obj-dmon-token-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-tokenizer-detokenisation, target_id: obj-dmon-carte-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-chargeback-reception-contestation, target_id: obj-dmon-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-chargeback-remboursement-porteur, target_id: obj-dmon-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-emvconfig-gestion-aids, target_id: obj-dmon-profil-emv, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-emvconfig-cles-publiques, target_id: obj-dmon-profil-emv, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-3dsgateway-flux-frictionless, target_id: obj-dmon-session-3ds, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-3dsgateway-challenge-biometrique, target_id: obj-dmon-session-3ds, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-loyalty-cashback, target_id: obj-dmon-transaction-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-carbilan-generation-releve, target_id: obj-dmon-releve-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-carbilan-envoi-releve, target_id: obj-dmon-releve-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-feeengine-calcul-interchange, target_id: obj-dmon-frais-interchange, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dmon-paramcard, target_id: obj-dmon-produit-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardportal-consultation-transactions, target_id: obj-dmon-transaction-carte, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dmon-prepaidmgr-chargement-solde, target_id: obj-dmon-carte-prepayee, type: OPERATES_ON, created_from: synthetic}
+
+  # ── DEPENDS_ON (15) ──────────────────────────────────────────────────────
+  - {source_id: sys-dmon-cardauth, target_id: sys-dmon-paramcard, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardauth, target_id: sys-dmon-fraudar, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardauth, target_id: sys-dmon-pinvault, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardauth, target_id: sys-dmon-netlink, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dmon-cardauth-autorisation-temps-reel, target_id: feat-dmon-fraudar-scoring-temps-reel, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-clearflow, target_id: sys-dmon-cardauth, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-carbilan, target_id: sys-dmon-clearflow, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-cardprovision, target_id: sys-dmon-tokenizer, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-pgw, target_id: sys-dmon-3dsgateway, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-pgw, target_id: sys-dmon-cardauth, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dmon-pgw-paiement-recurrent, target_id: feat-dmon-tokenizer-generation-token, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-notifcard, target_id: sys-dmon-cardauth, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-feeengine, target_id: sys-dmon-clearflow, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dmon-chargeback, target_id: sys-dmon-cardauth, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dmon-archcard-archivage-transactions, target_id: feat-dmon-clearflow-collecte-flux, type: DEPENDS_ON, created_from: synthetic}
+
+  # ── CONSTRAINS (20) ──────────────────────────────────────────────────────
+  - {source_id: con-dmon-pci-dss-cardauth, target_id: sys-dmon-cardauth, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-pci-dss-pinvault, target_id: sys-dmon-pinvault, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-sla-autorisation, target_id: sys-dmon-cardauth, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-latence-max-autorisation, target_id: feat-dmon-cardauth-autorisation-temps-reel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-rgpd-donnees-porteur, target_id: feat-dmon-archcard-purge-reglementaire, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-dsp2-sca-ecommerce, target_id: sys-dmon-3dsgateway, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-pci-chiffrement-pan, target_id: sys-dmon-tokenizer, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-archivage-10ans, target_id: sys-dmon-archcard, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-compensation-j1, target_id: feat-dmon-clearflow-collecte-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-nfc-plafond-50euros, target_id: feat-dmon-emvconfig-parametres-nfc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-rapportage-fraude-trimestriel, target_id: feat-dmon-cardreport-rapport-fraude, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-hsm-fips-140-2, target_id: sys-dmon-pinvault, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-prepaid-lcb-ft, target_id: feat-dmon-prepaidmgr-chargement-solde, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-tokenizer-pci-scope, target_id: sys-dmon-tokenizer, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dmon-chargeback-delai-reseau, target_id: feat-dmon-chargeback-arbitrage-reseau, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-token-emv-standard, target_id: sys-dmon-tokenizer, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-scoring-fraude-centralise, target_id: sys-dmon-fraudar, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-3ds2-obligatoire-ecommerce, target_id: feat-dmon-pgw-validation-donnees-carte, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-clearflow-batch-nuit, target_id: feat-dmon-clearflow-collecte-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dmon-pinvault-hsm-on-premise, target_id: sys-dmon-pinvault, type: CONSTRAINS, created_from: synthetic}

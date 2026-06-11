@@ -1,0 +1,2624 @@
+nodes:
+
+  # === SYSTEMS (25 total) ===
+
+  - type: system
+    id: sys-dsoc-bus-evenements
+    name: Bus d'événements HERMES
+    description: >-
+      Plateforme de messagerie asynchrone centrale qui distribue les événements
+      métier entre les applications du socle SI. Garantit la traçabilité et
+      l'ordre de livraison des messages critiques.
+    owner_team: Équipe Intégration Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-pub-evenement
+    name: Publication d'événement
+    description: >-
+      Permet à une application productrice d'émettre un événement typé vers le
+      bus HERMES avec garantie d'au-moins-une-livraison. Les producteurs
+      fournissent un schéma Avro versionné lors de l'enregistrement du topic.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-souscription-topic
+    name: Souscription à un topic
+    description: >-
+      Enregistre un consommateur sur un ou plusieurs topics du bus et gère le
+      décalage de lecture (offset). En cas d'échec de traitement, le message
+      est redirigé vers la file de lettres mortes après trois tentatives.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-replay-evenements
+    name: Rejeu d'événements
+    description: >-
+      Rejoue les événements d'un topic à partir d'un horodatage donné, utile
+      pour reconstruire l'état d'un consommateur après une panne. L'accès est
+      restreint aux équipes disposant du rôle replay-operator.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-coffre-secrets
+    name: Coffre-fort de secrets ARKAN
+    description: >-
+      Gestionnaire centralisé de secrets applicatifs : mots de passe, clés API,
+      certificats TLS et jetons de service. Toute rotation de secret déclenche
+      automatiquement une notification aux applications abonnées.
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-injection-secret
+    name: Injection de secret en environnement
+    description: >-
+      Pousse dynamiquement le secret requis dans la variable d'environnement ou
+      le volume partagé du conteneur au démarrage du pod. Évite le stockage en
+      clair dans les manifests d'infrastructure.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-rotation-certificat
+    name: Rotation automatique de certificat TLS
+    description: >-
+      Renouvelle les certificats TLS internes trente jours avant expiration et
+      distribue le nouveau certificat à l'ensemble des ingress concernés sans
+      interruption de service.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-registre-api
+    name: Registre d'API KATALOG
+    description: >-
+      Catalogue central des contrats d'interface exposés par le socle. Stocke
+      les spécifications OpenAPI, les politiques de rate-limiting et la matrice
+      de compatibilité des versions.
+    owner_team: Équipe Gouvernance API
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-publication-spec
+    name: Publication de spécification OpenAPI
+    description: >-
+      Importe et valide une spécification OpenAPI 3.1 avant de la publier dans
+      le catalogue. Un lint automatique vérifie la présence des champs
+      obligatoires : contact, licence, versioning sémantique.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-portail-dev
+    name: Portail développeur
+    description: >-
+      Expose aux équipes consommatrices la documentation interactive des API
+      disponibles avec bac à sable d'essai. L'accès est authentifié via le
+      SSO fédéré du groupe.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-deprecation-api
+    name: Gestion de la dépréciation d'API
+    description: >-
+      Marque une version d'API comme dépréciée et déclenche des notifications
+      automatiques vers tous les consommateurs enregistrés. Un délai minimal
+      de soixante jours est imposé avant suppression effective.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-identite
+    name: Annuaire d'identité NEXID
+    description: >-
+      Service d'identité fédérée pour les applications internes : authentification
+      OIDC, provisionnement SCIM des comptes techniques et gestion des groupes
+      d'autorisation par domaine métier.
+    owner_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-auth-oidc
+    name: Authentification OIDC
+    description: >-
+      Délivre des jetons d'accès signés après vérification des credentiels
+      applicatifs. Supporte les flux client_credentials et authorization_code
+      avec PKCE selon le profil de l'application.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-provision-compte
+    name: Provisionnement de compte technique
+    description: >-
+      Crée ou désactive les comptes de service via l'API SCIM à la demande des
+      équipes, avec approbation obligatoire d'un responsable de domaine. La
+      suppression est logique pendant quatre-vingt-dix jours avant archivage.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-federation-sso
+    name: Fédération SSO multi-domaine
+    description: >-
+      Établit la confiance entre NEXID et les fournisseurs d'identité externes
+      via SAML 2.0. Permet aux collaborateurs de filiales d'accéder aux outils
+      du socle sans compte supplémentaire.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-supervision-infra
+    name: Plateforme de supervision VIGIL
+    description: >-
+      Centralise les métriques d'infrastructure et les alertes opérationnelles
+      pour l'ensemble du socle SI. Intègre un moteur de corrélation pour
+      réduire le bruit d'alerte lors des incidents complexes.
+    owner_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-collecte-metriques
+    name: Collecte de métriques système
+    description: >-
+      Scrute les endpoints Prometheus exposés par chaque composant et agrège
+      les séries temporelles dans la base de données de métriques. La
+      rétention des données brutes est fixée à treize mois.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-alerting-seuil
+    name: Alerting par seuil
+    description: >-
+      Évalue des règles d'alerte paramétrables sur les métriques collectées
+      et notifie les équipes de garde via les canaux configurés. Les alertes
+      critiques déclenchent automatiquement une entrée dans l'outil ITSM.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-tableau-bord-sla
+    name: Tableau de bord SLA
+    description: >-
+      Affiche en temps réel le taux de disponibilité et les indicateurs de
+      performance de chaque service selon les engagements contractuels. Les
+      dépassements sont signalés en rouge avec horodatage de début de dérive.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-orchestrateur-jobs
+    name: Orchestrateur de traitements KRONOS
+    description: >-
+      Planifie et exécute les traitements batch du socle : clôtures comptables,
+      purges réglementaires et synchronisations inter-systèmes. Gère les
+      dépendances entre jobs et les stratégies de reprise sur erreur.
+    owner_team: Équipe Batch Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-planification-job
+    name: Planification de job
+    description: >-
+      Enregistre un traitement avec son expression cron, ses ressources cibles
+      et sa stratégie de retry. Supporte les fenêtres d'exécution avec
+      exclusion des jours non ouvrés selon le calendrier bancaire.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-suivi-execution
+    name: Suivi d'exécution de traitement
+    description: >-
+      Conserve l'historique complet des exécutions d'un job : durée, code de
+      retour, volume traité et logs structurés. Les échecs déclenchent une
+      notification vers l'équipe propriétaire dans un délai de cinq minutes.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-dependance-jobs
+    name: Gestion des dépendances entre jobs
+    description: >-
+      Modélise les prérequis entre traitements sous forme de graphe orienté
+      acyclique. Si un job amont échoue, les jobs dépendants sont mis en
+      attente jusqu'à résolution manuelle ou reprise automatique.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-archivage-legale
+    name: Système d'archivage légal ARCHON
+    description: >-
+      Conserve les traces et documents à valeur probante selon les durées
+      légales applicables au secteur bancaire. Utilise un coffre à scellement
+      horodaté conforme au standard ETSI pour garantir l'intégrité des archives.
+    owner_team: Équipe Conformité Archivage
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-depot-archive
+    name: Dépôt d'archive
+    description: >-
+      Réceptionne un document ou un flux de données, calcule son empreinte
+      cryptographique et l'enregistre dans le coffre avec horodatage certifié.
+      L'identifiant d'archive retourné permet la vérification ultérieure.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-verification-integrite
+    name: Vérification d'intégrité d'archive
+    description: >-
+      Recalcule l'empreinte du document archivé et la compare à la valeur
+      scellée. En cas d'écart, une alerte de falsification est émise et
+      l'accès au document est suspendu le temps de l'investigation.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-purge-reglementaire
+    name: Purge réglementaire
+    description: >-
+      Supprime définitivement les archives dont la durée légale de conservation
+      est échue, après validation par le responsable conformité. Produit un
+      procès-verbal de destruction horodaté et signé électroniquement.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-referentiel-nomenclature
+    name: Référentiel de nomenclature NOMEX
+    description: >-
+      Source de vérité pour tous les codes de référence partagés du socle :
+      codes pays ISO, codes devise, typologies de comptes et listes de valeurs
+      réglementaires. Expose une API de consultation versionnée.
+    owner_team: Équipe Données Référence
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-consultation-code
+    name: Consultation de code de référence
+    description: >-
+      Retourne la valeur et le libellé d'un code de référence à partir de son
+      identifiant et de la version de nomenclature demandée. Les codes obsolètes
+      restent accessibles en lecture pour les historiques.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-gestion-liste-valeurs
+    name: Gestion de liste de valeurs
+    description: >-
+      Permet aux gestionnaires de données de créer, modifier ou archiver des
+      entrées dans une liste de valeurs contrôlées. Chaque modification
+      génère une version immuable avec l'identité du modificateur.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-passerelle-swift
+    name: Passerelle SWIFT CORVUS
+    description: >-
+      Connecteur certifié SWIFTNet pour l'échange de messages financiers
+      inter-banques. Assure la conversion de format entre les messages
+      ISO 20022 internes et les formats propriétaires du réseau SWIFT.
+    owner_team: Équipe Correspondance Bancaire
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-emission-swift
+    name: Émission de message SWIFT
+    description: >-
+      Construit, valide et achemine un message vers SWIFTNet depuis les
+      applications internes. La validation syntaxique et sémantique est
+      effectuée avant soumission pour éviter les rejets réseau.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-reception-swift
+    name: Réception et routage de message SWIFT
+    description: >-
+      Reçoit les messages entrants depuis SWIFTNet, les convertit au format
+      ISO 20022 interne et les distribue à l'application destinataire via
+      le bus d'événements HERMES.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-reconciliation-swift
+    name: Réconciliation SWIFT
+    description: >-
+      Compare les accusés de réception SWIFTNet aux messages émis et signale
+      les écarts de statut après le délai de réponse contractuel. Un tableau
+      de bord dédié liste les messages en attente de confirmation.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-config
+    name: Gestion de configuration CONFIGURA
+    description: >-
+      Centralise les paramètres de configuration de toutes les applications
+      du socle avec gestion de profils par environnement. Supporte le rechargement
+      à chaud des configurations sans redémarrage applicatif.
+    owner_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-lecture-config
+    name: Lecture de configuration applicative
+    description: >-
+      Fournit à une application ses paramètres de configuration pour
+      l'environnement courant via une API REST ou un SDK natif. Les
+      valeurs sensibles sont masquées dans les logs de débogage.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-deploiement-config
+    name: Déploiement de configuration
+    description: >-
+      Pousse une nouvelle version de configuration vers les instances
+      cibles avec option de rollback automatique si les health-checks
+      échouent dans la minute suivant le déploiement.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-moteur-regles
+    name: Moteur de règles métier AXIOM
+    description: >-
+      Évalue des règles de gestion paramétrées par les experts métier sans
+      nécessiter de déploiement applicatif. Les règles sont versionnées et
+      auditables avec traçabilité complète de chaque évaluation.
+    owner_team: Équipe Règles Métier
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-evaluation-regle
+    name: Évaluation de règle métier
+    description: >-
+      Exécute une règle ou un ensemble de règles sur un contexte fourni par
+      l'appelant et retourne la décision avec son chemin de dérivation.
+      Les temps d'évaluation sont enregistrés pour le suivi des performances.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-parametrage-regle
+    name: Paramétrage de règle métier
+    description: >-
+      Interface de saisie permettant aux analystes métier de modifier les
+      seuils et conditions d'une règle sans intervention technique. Chaque
+      modification passe par un circuit de validation à deux niveaux.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-entrepot-donnees
+    name: Entrepôt de données analytiques DATACORE
+    description: >-
+      Centralise les données historisées du socle pour les restitutions
+      réglementaires et le reporting de gestion. Intègre un moteur de
+      transformation en flux pour l'alimentation temps quasi-réel.
+    owner_team: Équipe Data Warehouse
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-ingestion-flux
+    name: Ingestion de flux de données
+    description: >-
+      Consomme les événements du bus HERMES et les charge dans les tables
+      de staging selon les règles de mapping définies par domaine. Les
+      rejets sont journalisés avec le motif de rejet pour correction manuelle.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-transformation-etl
+    name: Transformation ETL
+    description: >-
+      Applique les règles de qualité, de déduplication et d'enrichissement
+      aux données de staging avant leur chargement dans les tables de
+      présentation. Un rapport de qualité est produit à chaque cycle.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-export-reglementaire
+    name: Export réglementaire
+    description: >-
+      Génère les extractions périodiques destinées aux reportings prudentiels
+      dans les formats requis par les autorités de supervision. Chaque export
+      est signé et horodaté avant transmission.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-plateforme-containers
+    name: Plateforme de conteneurs KUBOS
+    description: >-
+      Socle d'orchestration de conteneurs mutualisé pour l'ensemble des
+      applications du groupe. Propose des namespaces isolés par domaine
+      avec quotas de ressources et politiques réseau associées.
+    owner_team: Équipe Platform Engineering
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-deploiement-service
+    name: Déploiement de service applicatif
+    description: >-
+      Déploie une nouvelle version d'un service via pipeline GitOps en
+      respectant la stratégie rolling-update ou blue-green selon la criticité.
+      Le déploiement est automatiquement annulé si le taux d'erreur dépasse
+      le seuil défini dans la politique du namespace.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-isolation-reseau
+    name: Isolation réseau par namespace
+    description: >-
+      Applique des NetworkPolicy Kubernetes pour restreindre les flux
+      inter-namespaces aux seules communications autorisées dans la matrice
+      de flux validée par l'équipe sécurité.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-autoscaling
+    name: Mise à l'échelle automatique
+    description: >-
+      Ajuste le nombre de répliques d'un déploiement en fonction des métriques
+      d'utilisation CPU et de file d'attente. Les seuils de mise à l'échelle
+      sont définis par SLA et révisés trimestriellement.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-droits
+    name: Gestionnaire de droits d'accès PERIMA
+    description: >-
+      Gère les habilitations applicatives fines selon le modèle RBAC/ABAC
+      pour les systèmes du socle. Centralise les demandes d'accès, les
+      workflows de validation et les revues périodiques de droits.
+    owner_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-demande-habilitation
+    name: Demande d'habilitation
+    description: >-
+      Permet à un utilisateur ou à une application de soumettre une demande
+      d'accès à une ressource protégée. Le workflow associé route la demande
+      vers le ou les approbateurs définis dans la politique de ressource.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-revue-droits
+    name: Revue périodique des droits
+    description: >-
+      Déclenche campagnes de recertification des habilitations actives auprès
+      des responsables de ressource. Les droits non reconfirmés dans le délai
+      imparti sont automatiquement révoqués.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-incidents
+    name: Gestion des incidents IT INFOCALL
+    description: >-
+      Outil ITSM interne centralisant la création, le suivi et la résolution
+      des incidents d'exploitation. Gère la priorisation selon la matrice
+      d'impact/urgence et les escalades vers les équipes de niveau 2 et 3.
+    owner_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-creation-incident
+    name: Création d'incident
+    description: >-
+      Enregistre un incident avec sa catégorie, son impact estimé et le
+      composant affecté. La priorité est calculée automatiquement selon
+      la matrice définie dans le référentiel de criticité des services.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-escalade-incident
+    name: Escalade d'incident
+    description: >-
+      Transfère un incident vers le niveau de support supérieur avec
+      enrichissement du contexte collecté. Un compteur d'escalade permet
+      d'identifier les composants récurrents et de déclencher des actions
+      préventives.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-bilan-post-incident
+    name: Bilan post-incident
+    description: >-
+      Structure la rédaction du retour d'expérience selon un gabarit
+      standardisé : chronologie, causes racines, actions correctives et
+      indicateurs de non-recurrence. Partagé automatiquement aux équipes
+      concernées à la clôture.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-pipeline-ci-cd
+    name: Pipeline CI/CD FORGEFLOW
+    description: >-
+      Chaîne d'intégration et de déploiement continus mutualisée pour les
+      équipes du socle. Intègre les étapes de compilation, tests, analyse
+      statique, construction d'image et déploiement vers les environnements.
+    owner_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-analyse-statique
+    name: Analyse statique de code
+    description: >-
+      Exécute un ensemble de règles de qualité et de sécurité sur le code
+      source à chaque soumission de merge request. Les violations bloquantes
+      empêchent la fusion jusqu'à correction ou justification explicite.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-tests-integration
+    name: Tests d'intégration automatisés
+    description: >-
+      Lance une suite de tests contre un environnement d'intégration dédié
+      à chaque version candidate. Les résultats sont publiés dans le tableau
+      de bord qualité et archivés dans ARCHON pour traçabilité réglementaire.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-promotion-artifact
+    name: Promotion d'artefact
+    description: >-
+      Déplace un artefact validé du dépôt de staging vers le dépôt de
+      production après approbation manuelle d'un responsable de livraison.
+      L'artefact est signé cryptographiquement lors de la promotion.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-tronc-comptable
+    name: Tronc comptable partagé COMPTALIB
+    description: >-
+      Bibliothèque de services comptables mutualisée offrant aux applications
+      métier les primitives d'écriture, de validation et d'interrogation du
+      plan comptable bancaire. Garantit l'équilibre débit-crédit à chaque
+      opération.
+    owner_team: Équipe Comptabilité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-ecriture-comptable
+    name: Écriture comptable
+    description: >-
+      Enregistre un mouvement de débit-crédit sur les comptes du plan
+      comptable en respectant les règles d'équilibre et les contrôles
+      de compte. Retourne le numéro de pièce comptable généré.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-interrogation-solde
+    name: Interrogation de solde comptable
+    description: >-
+      Calcule le solde d'un compte à une date donnée en agrégeant les
+      mouvements enregistrés. Distingue le solde comptable du solde
+      disponible après prise en compte des autorisations en cours.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-lettrage-ecritures
+    name: Lettrage d'écritures
+    description: >-
+      Rapproche les écritures débitrices et créditrices de même nature
+      pour solder les comptes de liaison inter-systèmes. Les écritures
+      non lettrées au-delà du délai toléré font l'objet d'un signalement.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-portail-ops
+    name: Portail opérateur HELIOS
+    description: >-
+      Interface web unifiée permettant aux équipes d'exploitation d'agir
+      sur les systèmes du socle : relance de traitements, consultation
+      des files de messages et modification de paramètres opérationnels.
+    owner_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-relance-traitement
+    name: Relance manuelle de traitement
+    description: >-
+      Permet à un opérateur habilité de rejouer un traitement bloqué
+      sans passer par un déploiement. Chaque relance est tracée avec
+      l'identité de l'opérateur et le motif saisi.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-purge-file-message
+    name: Purge de file de messages
+    description: >-
+      Supprime les messages bloqués dans la file de lettres mortes après
+      analyse par l'équipe technique. L'opération requiert la co-signature
+      de deux opérateurs de niveaux différents.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-cles-chiffrement
+    name: Gestion de clés de chiffrement CRYPTA
+    description: >-
+      Service HSM-backed de génération, stockage et rotation des clés
+      cryptographiques utilisées par le socle. Implémente la séparation
+      des rôles entre gestionnaires de clés et opérateurs de chiffrement.
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-generation-cle
+    name: Génération de clé cryptographique
+    description: >-
+      Crée une paire de clés ou une clé symétrique selon l'algorithme et
+      la longueur requis par la politique de sécurité. La clé privée ne
+      quitte jamais le HSM et n'est accessible que par des opérations signées.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-rotation-cle
+    name: Rotation de clé de chiffrement
+    description: >-
+      Remplace une clé active par une nouvelle version et re-chiffre les
+      données protégées en arrière-plan. Les anciens matériaux clé sont
+      conservés en lecture seule pendant la période de transition définie.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-versions
+    name: Gestion de versions VERSIO
+    description: >-
+      Registre centralisé des versions déployées de chaque composant du
+      socle en production et hors-production. Alimente la CMDB et permet
+      la traçabilité de chaque changement.
+    owner_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-declaration-version
+    name: Déclaration de version déployée
+    description: >-
+      Enregistre automatiquement la version déployée d'un composant à
+      l'issue de chaque pipeline de déploiement réussi. Inclut l'empreinte
+      de l'image, la date et le responsable de la promotion.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-comparaison-versions
+    name: Comparaison de versions entre environnements
+    description: >-
+      Présente un tableau de bord comparant les versions déployées en
+      recette, pré-production et production. Met en évidence les écarts
+      et signale les composants en retard de plusieurs versions.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-notification-service
+    name: Service de notification NOTIFEX
+    description: >-
+      Centralise l'envoi de notifications internes vers les équipes et
+      les systèmes : email, webhook, SMS opérateurs et push applicatif.
+      Gère les préférences de canal et les politiques de retry.
+    owner_team: Équipe Intégration Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-envoi-notification
+    name: Envoi de notification
+    description: >-
+      Achemine un message vers le canal préféré du destinataire avec
+      accusé de réception. En cas d'échec sur le canal primaire, bascule
+      automatiquement vers le canal de secours configuré.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-gestion-preferences-notif
+    name: Gestion des préférences de notification
+    description: >-
+      Permet à une équipe de configurer ses canaux de réception et ses
+      horaires de disponibilité. Les notifications hors plage sont mises
+      en file et délivrées à l'ouverture de la plage suivante.
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === REMAINING FEATURES (to complete 67 total) ===
+
+  - type: feature
+    id: feat-dsoc-audit-log
+    name: Journal d'audit des actions
+    description: >-
+      Enregistre chaque action sensible effectuée sur les systèmes du socle
+      avec l'identité de l'auteur, l'horodatage et le contexte d'exécution.
+      Les journaux sont transmis en temps réel vers ARCHON pour conservation
+      à valeur probante.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-controle-coherence-ref
+    name: Contrôle de cohérence référentielle
+    description: >-
+      Vérifie la cohérence des codes de référence utilisés dans les flux
+      inter-systèmes par rapport au référentiel NOMEX. Toute valeur absente
+      du référentiel déclenche un rejet avec code d'erreur explicite.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-synchronisation-ref
+    name: Synchronisation de référentiel
+    description: >-
+      Propage les mises à jour de NOMEX vers les caches locaux des
+      applications consommatrices selon un mécanisme d'événement. Garantit
+      une fraîcheur maximale de cinq minutes pour les listes critiques.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-gestion-quota-ressource
+    name: Gestion de quota de ressource
+    description: >-
+      Attribue et surveille les quotas CPU, mémoire et stockage par namespace
+      dans KUBOS. Les dépassements sont signalés avant d'atteindre le seuil
+      critique pour permettre un ajustement proactif.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-export-cmdb
+    name: Export vers la CMDB
+    description: >-
+      Synchronise le registre des versions VERSIO avec la base de données
+      de gestion de configuration de l'entreprise. Permet aux processus
+      ITSM d'avoir une vision à jour des composants en production.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-gestion-fenetre-maintenance
+    name: Gestion de fenêtre de maintenance
+    description: >-
+      Déclare et publie les plages d'indisponibilité planifiées des
+      composants du socle. Bloque automatiquement les alertes de supervision
+      pour les services en maintenance déclarée.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-healthcheck-service
+    name: Health-check de service
+    description: >-
+      Sonde périodiquement les endpoints de santé des services déployés
+      et met à jour leur statut dans le registre de supervision VIGIL.
+      Une indisponibilité confirmée sur trois sondes consécutives déclenche
+      une alerte critique.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-tracabilite-flux
+    name: Traçabilité de flux inter-systèmes
+    description: >-
+      Corrèle les identifiants de corrélation portés par les messages
+      transitant dans le bus pour reconstituer le chemin d'un flux de bout
+      en bout. Outil essentiel lors des investigations d'incident.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-gestion-retries
+    name: Gestion des politiques de retry
+    description: >-
+      Configure les paramètres de réessai (backoff exponentiel, nombre
+      maximum de tentatives) pour les appels inter-services du socle. Les
+      politiques sont définies par couple source-destination dans la matrice
+      de résilience.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-circuit-breaker
+    name: Disjoncteur de service
+    description: >-
+      Interrompt automatiquement les appels vers un service dont le taux
+      d'erreur dépasse le seuil configuré, préservant ainsi la stabilité
+      des appelants. La réouverture du disjoncteur est progressive et
+      instrumentée.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-encryption-donnees-repos
+    name: Chiffrement des données au repos
+    description: >-
+      Applique un chiffrement AES-256 aux volumes de données persistants
+      des applications du socle à l'aide des clés gérées par CRYPTA.
+      Les clés de chiffrement de volume sont elles-mêmes chiffrées par une
+      clé maître stockée en HSM.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-rapport-conformite-infra
+    name: Rapport de conformité infrastructure
+    description: >-
+      Produit un bilan mensuel de la conformité des composants d'infrastructure
+      aux politiques de sécurité définies par la RSSI. Les écarts sont
+      classés par niveau de criticité avec délai de remédiation associé.
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === ADDITIONAL SYSTEMS (4 to reach 25 total) ===
+
+  - type: system
+    id: sys-dsoc-registre-schemas
+    name: Registre de schémas SCHEMEX
+    description: >-
+      Stocke et versionne les schémas de données utilisés dans les échanges
+      inter-systèmes : Avro, JSON Schema et Protobuf. Garantit la compatibilité
+      évolutive des formats à travers les validations ascendantes et descendantes.
+    owner_team: Équipe Intégration Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dsoc-validation-schema
+    name: Validation de schéma de message
+    description: >-
+      Vérifie la conformité d'un message entrant ou sortant par rapport au
+      schéma enregistré dans SCHEMEX pour la version déclarée. Les messages
+      non conformes sont rejetés avec un rapport d'erreur structuré.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-certs-pki
+    name: Infrastructure PKI CERTIGO
+    description: >-
+      Autorité de certification interne émettant les certificats TLS pour
+      les services du socle. Gère le cycle de vie complet des certificats :
+      émission, renouvellement, révocation et publication des CRL.
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-proxy-sortant
+    name: Proxy sortant EGRESSO
+    description: >-
+      Point de sortie centralisé et contrôlé pour les flux HTTPS vers
+      l'extérieur du datacenter. Applique les listes blanches de domaines
+      autorisés et journalise l'ensemble des connexions sortantes.
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dsoc-gestion-patchs
+    name: Gestion des patchs PATCHMASTER
+    description: >-
+      Coordonne l'application des correctifs de sécurité sur l'ensemble
+      des composants d'infrastructure du socle. Évalue l'urgence de chaque
+      patch selon la criticité de la CVE et la criticité du composant affecté.
+    owner_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === BUSINESS OBJECTS (17 total) ===
+
+  - type: business_object
+    id: obj-dsoc-evenement-metier
+    name: Événement métier
+    description: >-
+      Unité d'information immuable représentant un fait survenu dans le
+      système d'information, portant un type, un horodatage et une charge
+      utile structurée. Constitue la brique de base du bus HERMES.
+    steward_team: Équipe Intégration Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-secret-applicatif
+    name: Secret applicatif
+    description: >-
+      Credential ou clé dont la divulgation non autorisée compromettrait la
+      sécurité d'un composant du socle. Géré exclusivement via ARKAN et
+      jamais stocké en clair dans les référentiels de code ou de configuration.
+    steward_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-contrat-api
+    name: Contrat d'API
+    description: >-
+      Spécification OpenAPI décrivant les ressources exposées, les schémas
+      de données et les codes de retour d'un service. Version publiée dans
+      KATALOG et contraignante pour les consommateurs et le producteur.
+    steward_team: Équipe Gouvernance API
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-compte-technique
+    name: Compte technique
+    description: >-
+      Identité non humaine associée à une application ou un composant
+      d'infrastructure, utilisée pour les authentifications machine-à-machine.
+      Son cycle de vie est piloté par NEXID avec revue annuelle obligatoire.
+    steward_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-job-batch
+    name: Job batch
+    description: >-
+      Traitement automatisé planifié ou déclenché, défini par un script ou
+      un programme, une configuration d'exécution et des dépendances. Son
+      historique d'exécution est conservé dans KRONOS pendant deux ans.
+    steward_team: Équipe Batch Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-archive-legale
+    name: Archive légale
+    description: >-
+      Document ou flux de données scellé et horodaté conservé dans ARCHON
+      pour répondre aux obligations légales de preuve et de conservation.
+      L'intégrité est garantie par signature cryptographique vérifiable.
+    steward_team: Équipe Conformité Archivage
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-code-reference
+    name: Code de référence
+    description: >-
+      Valeur normalisée appartenant à une liste contrôlée, identifiée par un
+      code et un libellé, versionnée dans NOMEX. Utilisée dans les échanges
+      inter-systèmes pour assurer la cohérence sémantique.
+    steward_team: Équipe Données Référence
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-message-swift
+    name: Message SWIFT
+    description: >-
+      Instruction financière échangée via le réseau SWIFTNet au format ISO
+      20022, identifiée par un UETR unique. Son statut de livraison et son
+      contenu sont tracés dans CORVUS pendant dix ans.
+    steward_team: Équipe Correspondance Bancaire
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-configuration-applicative
+    name: Configuration applicative
+    description: >-
+      Ensemble de paramètres pilotant le comportement d'une application à
+      l'exécution, versionnés et déployés via CONFIGURA. Distingue les
+      paramètres fonctionnels des paramètres d'infrastructure.
+    steward_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-regle-metier
+    name: Règle métier
+    description: >-
+      Expression formalisée d'une politique de gestion évaluée par AXIOM,
+      versionnée et traçable. Chaque règle porte un propriétaire métier
+      responsable de sa maintenance et de ses impacts.
+    steward_team: Équipe Règles Métier
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-habilitation
+    name: Habilitation
+    description: >-
+      Droit d'accès accordé à un sujet (humain ou technique) sur une ressource
+      protégée, avec une portée et une durée de validité définies. Géré dans
+      PERIMA et révocable à tout moment par le responsable de ressource.
+    steward_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-incident-it
+    name: Incident IT
+    description: >-
+      Événement non planifié perturbant ou dégradant la qualité d'un service
+      du socle, enregistré dans INFOCALL avec priorité, périmètre et
+      équipes assignées. Son cycle de vie va de l'ouverture à la clôture
+      avec bilan post-incident.
+    steward_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-ecriture-comptable
+    name: Écriture comptable
+    description: >-
+      Mouvement de débit ou de crédit enregistré sur un compte du plan
+      comptable bancaire, rattaché à une pièce comptable et un exercice.
+      Immuable après validation et archivée par ARCHON sur dix années.
+    steward_team: Équipe Comptabilité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-cle-cryptographique
+    name: Clé cryptographique
+    description: >-
+      Matériau cryptographique généré et conservé dans le HSM de CRYPTA,
+      associé à un algorithme, une taille et une politique de rotation.
+      Son usage est journalisé de façon exhaustive pour traçabilité.
+    steward_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-artefact-deployable
+    name: Artefact déployable
+    description: >-
+      Image de conteneur ou paquet binaire signé, produit par FORGEFLOW et
+      stocké dans le registre d'artefacts du groupe. Identifié par un digest
+      immuable et une version sémantique.
+    steward_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-politique-securite
+    name: Politique de sécurité SI
+    description: >-
+      Document normatif définissant les exigences de sécurité applicables
+      à une catégorie de composants du socle, émis par la RSSI. Référencé
+      par les contraintes techniques et les décisions d'architecture.
+    steward_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dsoc-plan-comptable
+    name: Plan comptable bancaire
+    description: >-
+      Référentiel de comptes normalisé selon le plan comptable des
+      établissements de crédit, maintenu dans NOMEX. Toute création ou
+      modification de compte est soumise à validation de la direction
+      comptable.
+    steward_team: Équipe Comptabilité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === PROJECTS (19 total) ===
+
+  - type: project
+    id: proj-dsoc-migration-bus-v2
+    name: Migration vers HERMES v2
+    description: >-
+      Mise à niveau du bus d'événements vers la version majeure 2.0 intégrant
+      le support natif d'Apache Avro et la compression des messages. Implique
+      la migration des producteurs et consommateurs existants.
+    status: done
+    owner_team: Équipe Intégration Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-deploiement-hsm
+    name: Déploiement HSM groupe
+    description: >-
+      Acquisition et mise en production de modules HSM redondants pour
+      sécuriser la génération et le stockage des clés cryptographiques.
+      Remplacement des solutions logicielles précédentes jugées insuffisantes.
+    status: done
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-refonte-iam
+    name: Refonte IAM socle
+    description: >-
+      Remplacement de l'annuaire d'identité vieillissant par NEXID avec
+      migration des comptes techniques et mise en place du fédération OIDC
+      pour toutes les applications du socle.
+    status: done
+    owner_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-plateforme-kubos
+    name: Lancement de la plateforme KUBOS
+    description: >-
+      Construction de la plateforme de conteneurs mutualisée sur la base
+      de Kubernetes, avec définition des standards namespace, quota et
+      NetworkPolicy. Onboarding progressif des applications du socle.
+    status: done
+    owner_team: Équipe Platform Engineering
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-unification-config
+    name: Unification de la gestion de configuration
+    description: >-
+      Remplacement des fichiers de configuration dispersés dans les dépôts
+      de code par une source unique dans CONFIGURA. Couvre l'ensemble des
+      vingt-trois systèmes du socle en trois vagues.
+    status: done
+    owner_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-archon-migration
+    name: Migration vers ARCHON v3
+    description: >-
+      Renouvellement du système d'archivage légal pour conformité ETSI TS
+      119 511. Comprend la remigration des archives antérieures et la
+      mise à jour des interfaces d'alimentation.
+    status: done
+    owner_team: Équipe Conformité Archivage
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-extension-swift-iso20022
+    name: Extension SWIFT ISO 20022
+    description: >-
+      Adaptation de la passerelle CORVUS pour supporter les nouveaux
+      types de messages ISO 20022 introduits par la migration du réseau
+      SWIFT. Phase 1 couvrant les messages de paiement MT/MX.
+    status: done
+    owner_team: Équipe Correspondance Bancaire
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-catalogue-api
+    name: Mise en place du catalogue API KATALOG
+    description: >-
+      Déploiement du registre d'API et migration des spécifications existantes
+      dispersées dans des wikis vers le catalogue centralisé. Inclut la
+      mise en place des processus de gouvernance API.
+    status: done
+    owner_team: Équipe Gouvernance API
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-observabilite-socle
+    name: Programme observabilité socle
+    description: >-
+      Déploiement généralisé des agents de collecte de métriques et de traces
+      sur l'ensemble des composants du socle. Création des tableaux de bord
+      SLA et des règles d'alerting standardisées.
+    status: done
+    owner_team: Équipe Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-automatisation-rotation-secrets
+    name: Automatisation de la rotation des secrets
+    description: >-
+      Élimination des secrets statiques longue durée au profit d'une rotation
+      automatique par ARKAN. Couvre les bases de données, les API internes
+      et les certificats de service.
+    status: done
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-modernisation-batch
+    name: Modernisation de l'ordonnancement batch
+    description: >-
+      Remplacement de l'ordonnanceur legacy par KRONOS avec cartographie
+      des deux cents jobs existants et modélisation de leurs dépendances.
+      Réduction des incidents de fin de journée comptable de quarante pour cent.
+    status: done
+    owner_team: Équipe Batch Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-referentiel-nomenclature-v2
+    name: Refonte du référentiel de nomenclature
+    description: >-
+      Remplacement des listes de valeurs figées dans les applications par
+      le référentiel NOMEX centralisé. Nécessite la participation de
+      douze équipes consommatrices pour les tests d'intégration.
+    status: ongoing
+    owner_team: Équipe Données Référence
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-gitops-migration
+    name: Migration GitOps
+    description: >-
+      Adoption du paradigme GitOps pour tous les déploiements du socle via
+      FORGEFLOW. Suppression progressive des déploiements manuels et des
+      scripts de mise en production non versionnés.
+    status: ongoing
+    owner_team: Équipe DevOps Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-zero-trust-reseau
+    name: Programme Zero Trust réseau
+    description: >-
+      Mise en oeuvre de l'architecture Zero Trust pour les flux internes
+      du socle : mTLS entre services, suppression des plages réseau de
+      confiance implicite et déploiement des proxies de service mesh.
+    status: ongoing
+    owner_team: Équipe Sécurité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-comptalib-api
+    name: APIisation de COMPTALIB
+    description: >-
+      Exposition des services de COMPTALIB via une API REST versionnée
+      pour permettre aux nouvelles applications de consommer les
+      primitives comptables sans dépendance directe à la bibliothèque.
+    status: ongoing
+    owner_team: Équipe Comptabilité Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-perima-extension
+    name: Extension PERIMA aux domaines métier
+    description: >-
+      Onboarding des domaines bancaires (monétique, crédit, paiements) dans
+      PERIMA pour centraliser la gestion des habilitations applicatives
+      jusqu'alors gérées localement par chaque équipe.
+    status: ongoing
+    owner_team: Équipe IAM
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-datacore-temps-reel
+    name: Alimentation temps réel de DATACORE
+    description: >-
+      Remplacement des chargements batch nocturnes par une ingestion continue
+      depuis le bus HERMES, réduisant la latence de disponibilité des données
+      analytiques de vingt-quatre heures à quinze minutes.
+    status: ongoing
+    owner_team: Équipe Data Warehouse
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-resilience-swift
+    name: Renforcement de la résilience SWIFT
+    description: >-
+      Déploiement d'un second nœud de connexion SWIFTNet en mode actif-actif
+      pour éliminer le point de défaillance unique de CORVUS. Inclut la
+      mise en place des procédures de bascule automatique.
+    status: ongoing
+    owner_team: Équipe Correspondance Bancaire
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dsoc-axiom-v2
+    name: Moteur de règles AXIOM v2
+    description: >-
+      Montée de version majeure d'AXIOM avec support des règles probabilistes
+      et des décisions expliquables. Permet d'ouvrir l'outil aux équipes de
+      conformité pour les contrôles réglementaires automatisés.
+    status: ongoing
+    owner_team: Équipe Règles Métier
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === DECISIONS (22 total) ===
+
+  - type: decision
+    id: dec-dsoc-bus-asynchrone-standard
+    title: Bus asynchrone comme standard d'intégration
+    statement: >-
+      Tout échange de données entre systèmes du socle doit transiter par le
+      bus HERMES sauf contrainte technique documentée. Les appels synchrones
+      REST restent permis pour les requêtes à faible latence dûment justifiées.
+    rationale: >-
+      L'historique des incidents a montré que les couplages synchrones
+      généralisent les pannes en cascade. Le bus offre résilience, rejeu et
+      traçabilité sans surcoût.
+    date: "2022-09-15"
+    decided_by: Comité Architecture Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-openapi-obligatoire
+    title: OpenAPI obligatoire pour toute nouvelle API
+    statement: >-
+      Toute API interne exposée par un système du socle doit être décrite par
+      une spécification OpenAPI 3.1 publiée dans KATALOG avant mise en
+      production. Les API sans spécification sont refusées par le pipeline.
+    rationale: >-
+      L'absence de contrat formel a généré des intégrations fragiles et des
+      régressions non détectées. La spécification préalable force le design
+      first et facilite les tests de compatibilité.
+    date: "2023-03-01"
+    decided_by: Comité Gouvernance API
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-secrets-centralises
+    title: Centralisation obligatoire des secrets dans ARKAN
+    statement: >-
+      Aucun secret ne peut être stocké dans un dépôt de code, une variable
+      d'environnement statique ou un fichier de configuration non chiffré.
+      Toute exception requiert une dérogation signée par le RSSI.
+    rationale: >-
+      L'audit de sécurité de 2021 a révélé plusieurs secrets exposés dans
+      des dépôts privés. La centralisation dans ARKAN permet la rotation
+      automatique et la traçabilité des accès.
+    date: "2021-11-01"
+    decided_by: RSSI Groupe
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-containers-obligatoires
+    title: Conteneurisation obligatoire des nouveaux services
+    statement: >-
+      Tout nouveau service du socle doit être déployé sous forme de conteneur
+      sur KUBOS. Les déploiements sur machines virtuelles dédiées sont
+      interdits pour les nouvelles applications depuis 2023.
+    rationale: >-
+      La plateforme KUBOS a atteint la maturité opérationnelle permettant
+      d'absorber l'ensemble du socle. La standardisation réduit la dette
+      opérationnelle et facilite la portabilité.
+    date: "2023-01-10"
+    decided_by: Comité Architecture Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-gitops-only
+    title: GitOps comme seul mode de déploiement autorisé
+    statement: >-
+      À compter de la migration complète dans FORGEFLOW, tout déploiement
+      manuel en production est interdit. Les pipelines doivent être la seule
+      voie d'acheminement vers les environnements de production.
+    rationale: >-
+      Les déploiements manuels ont causé trois incidents majeurs en deux ans
+      liés à des erreurs humaines. Le GitOps garantit la traçabilité, la
+      reproductibilité et la réversibilité des changements.
+    date: "2024-06-01"
+    decided_by: Comité Change Management
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-retention-metriques-13-mois
+    title: Rétention des métriques fixée à treize mois
+    statement: >-
+      Les métriques d'infrastructure collectées par VIGIL sont conservées
+      treize mois, permettant les comparaisons annuelles avec marge. Au-delà,
+      seules les agrégations mensuelles sont préservées sur cinq ans.
+    rationale: >-
+      Treize mois couvrent un cycle annuel complet avec chevauchement pour
+      la détection des dérives saisonnières. La conservation plus longue
+      en agrégat répond aux besoins de tendance sans coût de stockage excessif.
+    date: "2022-04-15"
+    decided_by: Comité Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-hsm-obligatoire-cles-critiques
+    title: HSM obligatoire pour les clés de niveau critique
+    statement: >-
+      Les clés cryptographiques de niveau CRITIQUE (chiffrement de données
+      personnelles, signature de tokens d'authentification) doivent être
+      générées et stockées exclusivement dans le HSM de CRYPTA. Aucune
+      génération logicielle n'est tolérée pour ces niveaux.
+    rationale: >-
+      Les modules logiciels de génération de clés présentent une surface
+      d'attaque insuffisamment maîtrisée pour les actifs les plus sensibles
+      du groupe.
+    date: "2023-09-01"
+    decided_by: RSSI Groupe
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-oidc-standard-auth
+    title: OIDC comme standard d'authentification inter-services
+    statement: >-
+      Toutes les authentifications machine-à-machine au sein du socle doivent
+      utiliser le flux OIDC client_credentials via NEXID. Les mécanismes
+      d'authentification propriétaires (IP whitelisting, basic auth) sont
+      interdits pour les nouvelles intégrations.
+    rationale: >-
+      L'harmonisation des mécanismes d'authentification simplifie les audits
+      de sécurité et la rotation des credentiels. NEXID offre la traçabilité
+      centralisée des accès inter-services.
+    date: "2023-06-15"
+    decided_by: Comité Sécurité Architecture
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-archivage-scellement-etsi
+    title: Scellement ETSI obligatoire pour les archives probantes
+    statement: >-
+      Tout document conservé dans ARCHON à des fins de preuve légale doit
+      porter un sceau horodaté conforme au profil ETSI TS 119 511. Les
+      archives sans scellement valide ne peuvent être produites en justice.
+    rationale: >-
+      La réglementation bancaire impose la valeur probante des archives
+      sur les durées légales. Le standard ETSI est le seul profil reconnu
+      par les juridictions européennes pour les prestataires de confiance.
+    date: "2022-07-01"
+    decided_by: Direction Juridique
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-nomex-source-verite
+    title: NOMEX comme source de vérité unique des codes de référence
+    statement: >-
+      Toute liste de valeurs contrôlées partagée entre deux systèmes ou plus
+      doit être hébergée dans NOMEX. La duplication locale de ces listes est
+      interdite sauf cache en lecture avec invalidation automatique.
+    rationale: >-
+      La fragmentation des référentiels a engendré des incohérences coûteuses
+      lors des intégrations. La centralisation simplifie la gouvernance et
+      assure la cohérence sémantique des échanges.
+    date: "2023-11-15"
+    decided_by: Comité Gouvernance Données
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-sla-disponibilite-99-9
+    title: SLA de disponibilité 99,9 % pour les services critiques du socle
+    statement: >-
+      Les services classés CRITIQUES dans le registre de criticité de VIGIL
+      doivent atteindre un taux de disponibilité mensuel de 99,9 % minimum.
+      Tout écart fait l'objet d'un post-mortem et d'engagements de remédiation.
+    rationale: >-
+      Les services du socle sont des dépendances transversales pour les
+      applications métier. Un SLA formalisé impose la discipline d'ingénierie
+      de fiabilité nécessaire à leur maintien.
+    date: "2022-01-01"
+    decided_by: Direction des Opérations IT
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-zero-secret-statique
+    title: Objectif zéro secret statique d'ici 2025
+    statement: >-
+      Tous les secrets statiques (mots de passe de base de données, clés API)
+      actuellement configurés en dur doivent être migrés vers ARKAN avec
+      rotation automatique avant fin 2025. Suivi mensuel en comité sécurité.
+    rationale: >-
+      Le programme de rotation automatique prouve son efficacité sur les
+      nouveaux systèmes. L'extension à l'existant réduit la surface d'exposition
+      résiduelle identifiée lors des audits.
+    date: "2024-01-15"
+    decided_by: RSSI Groupe
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-kafka-protocol-interne
+    title: Protocole Kafka pour le bus interne
+    statement: >-
+      Le bus d'événements HERMES repose sur le protocole Apache Kafka.
+      Les équipes consommatrices doivent utiliser les clients SDK fournis
+      par l'équipe Intégration Socle plutôt que des clients communautaires
+      non qualifiés.
+    rationale: >-
+      La qualification du SDK maison garantit le respect des conventions
+      de nommage, le traçage des corrélations et les bonnes pratiques de
+      gestion des offsets pour éviter les pertes de messages.
+    date: "2022-09-15"
+    decided_by: Comité Architecture Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-revue-droits-annuelle
+    title: Revue annuelle obligatoire des habilitations applicatives
+    statement: >-
+      Toutes les habilitations accordées via PERIMA doivent être recertifiées
+      annuellement par le responsable de la ressource concernée. Les droits
+      non recertifiés sont automatiquement révoqués à l'échéance.
+    rationale: >-
+      Le principe du moindre privilège impose de vérifier périodiquement
+      la légitimité des accès. La revue annuelle est le standard minimal
+      requis par la politique de sécurité groupe.
+    date: "2023-04-01"
+    decided_by: Comité Sécurité Architecture
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-iso20022-standard-messages
+    title: ISO 20022 comme standard des messages financiers
+    statement: >-
+      Tous les nouveaux types de messages financiers inter-systèmes adoptent
+      le standard ISO 20022 pour la structuration des données. La conversion
+      vers les formats anciens est assurée par la couche d'adaptation de CORVUS.
+    rationale: >-
+      La convergence du marché sur ISO 20022 impose l'alignement du socle
+      pour faciliter l'interopérabilité avec les nouvelles infrastructures
+      de marché et les partenaires européens.
+    date: "2023-05-20"
+    decided_by: Comité Architecture Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-separation-roles-cle
+    title: Séparation des rôles pour la gestion des clés
+    statement: >-
+      La gestion des clés cryptographiques dans CRYPTA requiert la participation
+      d'au moins deux personnes aux rôles différents (Key Custodian et Key
+      Administrator) pour toute opération sensible sur une clé de niveau CRITIQUE.
+    rationale: >-
+      La séparation des rôles empêche qu'une seule personne compromisse
+      l'ensemble des actifs cryptographiques. Exigence du standard PCI-HSM
+      applicable à nos modules matériels.
+    date: "2023-09-01"
+    decided_by: RSSI Groupe
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-test-reprise-trimestriel
+    title: Tests de reprise sur incident trimestriels
+    statement: >-
+      Chaque service classé CRITIQUE du socle doit faire l'objet d'un test de
+      reprise après sinistre au moins une fois par trimestre. Les résultats
+      sont documentés dans INFOCALL et remontés au Comité Risques IT.
+    rationale: >-
+      Les procédures de reprise non testées deviennent caduques. Les tests
+      réguliers valident les délais de rétablissement et maintiennent les
+      équipes d'exploitation en condition opérationnelle.
+    date: "2022-10-01"
+    decided_by: Comité Risques IT
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-semver-api
+    title: Versionnement sémantique des API
+    statement: >-
+      Les API publiées dans KATALOG adoptent le versionnement sémantique
+      (MAJOR.MINOR.PATCH). Un changement MAJOR rompt la compatibilité et
+      requiert un plan de migration à destination des consommateurs.
+    rationale: >-
+      Le versionnement sémantique communique clairement l'impact d'un
+      changement aux équipes consommatrices et réduit les régressions
+      involontaires dues à des mises à jour silencieuses.
+    date: "2023-03-01"
+    decided_by: Comité Gouvernance API
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-tracing-distribue
+    title: Traçage distribué obligatoire
+    statement: >-
+      Tout service du socle exposant une API ou consommant le bus HERMES doit
+      propager un identifiant de corrélation (trace-id) dans tous ses appels
+      sortants. La génération et la propagation sont assurées par le SDK fourni.
+    rationale: >-
+      L'absence de corrélation entre les logs de services différents allonge
+      considérablement les investigations d'incident. Le traçage distribué
+      permet la reconstruction du chemin d'exécution en moins de dix minutes.
+    date: "2023-07-01"
+    decided_by: Comité Exploitation Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-backup-quotidien
+    title: Sauvegarde quotidienne des données critiques
+    statement: >-
+      Les bases de données et volumes persistants hébergeant des données
+      classées CRITIQUES ou SENSIBLES font l'objet d'une sauvegarde complète
+      quotidienne et d'une sauvegarde incrémentale toutes les quatre heures.
+    rationale: >-
+      Un RPO maximal de quatre heures a été défini en accord avec les
+      propriétaires de données. La sauvegarde quotidienne complète facilite
+      les restaurations après corruption.
+    date: "2021-06-01"
+    decided_by: Comité Risques IT
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-alerting-itsm-auto
+    title: Intégration automatique alertes VIGIL vers INFOCALL
+    statement: >-
+      Toute alerte de niveau CRITIQUE émise par VIGIL doit créer automatiquement
+      un ticket incident dans INFOCALL sans intervention manuelle. Le titre
+      et la description sont construits depuis le contexte de l'alerte.
+    rationale: >-
+      La création manuelle de tickets introduit des délais d'enregistrement
+      et des pertes d'information dans les situations à forte pression. L'automatisation
+      garantit la traçabilité dès la détection.
+    date: "2024-02-01"
+    decided_by: Comité Exploitation Socle
+    still_active: true
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dsoc-purge-batch-heure-creuse
+    title: Exécution des purges batch en heures creuses
+    statement: >-
+      Les traitements de purge réglementaire orchestrés par KRONOS doivent
+      être planifiés entre 23h00 et 05h00 afin de minimiser leur impact sur
+      les performances des systèmes transactionnels.
+    rationale: >-
+      Les purges volumiques génèrent une charge d'I/O significative sur le
+      stockage partagé. Leur exécution nocturne évite la contention avec les
+      traitements de journée et les flux de paiement.
+    date: "2022-03-15"
+    decided_by: Comité Exploitation Socle
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === CONSTRAINTS (33 total) ===
+
+  - type: constraint
+    id: con-dsoc-disponibilite-bus-critique
+    title: Disponibilité 99,95 % du bus HERMES
+    statement: >-
+      Le bus d'événements HERMES doit maintenir une disponibilité mensuelle
+      de 99,95 %, soit moins de vingt-deux minutes d'interruption par mois.
+      Toute fenêtre de maintenance planifiée doit avoir lieu entre 02h00 et
+      04h00 hors jours ouvrés.
+    source: Convention de service Socle SI v3.2
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-chiffrement-transit
+    title: Chiffrement TLS 1.3 obligatoire en transit
+    statement: >-
+      Tous les flux de données entre composants du socle traversant le réseau
+      doivent utiliser TLS version 1.3 minimum. Les configurations TLS 1.2
+      sont tolérées jusqu'au 31 décembre 2025 pour les systèmes legacy en
+      cours de migration.
+    source: Politique de Sécurité des Échanges - RSSI Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-rpo-quatre-heures
+    title: RPO maximal de quatre heures pour les données critiques
+    statement: >-
+      Les données classées CRITIQUES dans le registre de sensibilité doivent
+      pouvoir être restaurées avec une perte maximale de quatre heures de
+      transactions. Cette exigence conditionne la fréquence des sauvegardes.
+    source: Plan de Continuité d'Activité Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-rto-deux-heures
+    title: RTO de deux heures pour les services du socle critique
+    statement: >-
+      Les services classés CRITIQUES doivent être rétablis dans un délai
+      maximum de deux heures après détection d'un incident majeur. Les
+      procédures de bascule sont testées trimestriellement.
+    source: Plan de Continuité d'Activité Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-audit-annuel-securite
+    title: Audit de sécurité annuel obligatoire
+    statement: >-
+      L'ensemble des composants du socle exposant des interfaces réseau
+      ou manipulant des données sensibles est soumis à un audit de sécurité
+      externe annuel. Le rapport est transmis au régulateur sur demande.
+    source: Politique de Sécurité SI - Direction Générale
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-isolation-prod
+    title: Isolation stricte des environnements de production
+    statement: >-
+      Aucun flux de données réelles ne peut transiter vers les environnements
+      hors production. Les données de test sont systématiquement anonymisées
+      ou synthétisées avant utilisation en recette ou développement.
+    source: Règlement Intérieur SI - Comité Sécurité
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-revue-code-obligatoire
+    title: Revue de code obligatoire avant fusion
+    statement: >-
+      Tout code soumis dans les dépôts du socle doit avoir reçu l'approbation
+      d'au moins un pair avant fusion dans la branche principale. Les revues
+      automatisées ne se substituent pas à la validation humaine.
+    source: Charte Qualité Développement Socle
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-log-retention-un-an
+    title: Rétention des logs applicatifs un an minimum
+    statement: >-
+      Les logs applicatifs des systèmes du socle doivent être conservés au
+      moins un an en ligne et cinq ans en archive froide. L'accès aux logs
+      archivés est soumis à justification et traçabilité.
+    source: Politique de Gestion des Traces - RSSI
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-plafond-latence-api
+    title: Latence API interne P99 inférieure à 500 ms
+    statement: >-
+      Les API synchrones internes du socle doivent respecter un temps de
+      réponse P99 inférieur à cinq cents millisecondes en charge nominale.
+      Les dépassements persistants déclenchent une revue d'architecture.
+    source: Standard de Performance API Socle v1.4
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-mfa-acces-sensible
+    title: MFA obligatoire pour les accès aux données sensibles
+    statement: >-
+      Tout accès humain aux interfaces d'administration des systèmes classés
+      SENSIBLES ou CRITIQUES requiert une authentification multifacteur.
+      L'utilisation d'un token matériel est imposée pour les environnements
+      de production.
+    source: Politique d'Authentification - RSSI Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-fenetre-deploiement
+    title: Fenêtres de déploiement contrôlées en production
+    statement: >-
+      Les déploiements en production de composants classés CRITIQUES sont
+      autorisés uniquement le mardi et le jeudi entre 09h00 et 11h30 hors
+      périodes de restriction (clôture mensuelle, J-fériés).
+    source: Politique de Gestion des Changements IT
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-vulnerabilites-critiques
+    title: Correctif des vulnérabilités critiques sous 72 heures
+    statement: >-
+      Toute vulnérabilité de niveau CRITIQUE (CVSS ≥ 9,0) identifiée sur un
+      composant du socle doit être corrigée et déployée dans un délai de
+      soixante-douze heures. Un plan de mitigation doit être activé dans
+      les quatre heures.
+    source: Politique de Gestion des Vulnérabilités - RSSI
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-pas-lib-non-qualifiee
+    title: Interdiction des bibliothèques tierces non qualifiées
+    statement: >-
+      Toute bibliothèque logicielle externe intégrée dans le socle doit avoir
+      été qualifiée par l'équipe Sécurité selon le processus SBOM. L'utilisation
+      de bibliothèques non référencées dans le catalogue approuvé est bloquée
+      par le pipeline.
+    source: Politique de Gestion des Composants Tiers - RSSI
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-conservation-messages-bus
+    title: Conservation des messages du bus sept jours
+    statement: >-
+      Les messages publiés dans HERMES sont conservés au minimum sept jours
+      pour permettre le rejeu en cas d'incident consommateur. Les topics à
+      haute volumétrie peuvent réduire cette rétention à quarante-huit heures
+      sur dérogation du Comité Architecture.
+    source: Standard d'Exploitation du Bus HERMES v2.1
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-plan-comptable-acbf
+    title: Conformité au plan comptable des établissements de crédit
+    statement: >-
+      Le plan comptable géré par COMPTALIB et NOMEX doit être conforme au
+      règlement n°2014-07 de l'Autorité des Normes Comptables applicable aux
+      établissements de crédit. Toute modification requiert validation
+      de la direction comptable.
+    source: Règlement ANC 2014-07
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-conformite-swift-cscf
+    title: Conformité SWIFT CSCF obligatoire
+    statement: >-
+      L'infrastructure de connexion à SWIFTNet doit répondre aux exigences
+      du Customer Security Controls Framework (CSCF) de SWIFT, attestée
+      annuellement. Le non-respect entraîne la suspension de la connexion.
+    source: SWIFT Customer Security Programme
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-bilan-carbone-datacenter
+    title: Bilan carbone datacenter limité
+    statement: >-
+      Les déploiements de nouveaux composants dans le socle doivent s'inscrire
+      dans l'enveloppe carbone allouée par le programme Green IT du groupe.
+      Tout composant nécessitant plus de cinquante nœuds doit faire l'objet
+      d'une évaluation d'impact environnemental préalable.
+    source: Politique RSE Groupe - Direction Développement Durable
+    severity: low
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-journalisation-acces-donnees
+    title: Journalisation de tout accès aux données personnelles
+    statement: >-
+      Tout accès à des données à caractère personnel stockées dans le socle
+      doit être consigné dans le journal d'audit avec l'identité de l'auteur,
+      la ressource accédée et la finalité déclarée. Conservation cinq ans.
+    source: RGPD Article 30 et politique DPO Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-tests-charge-avant-prod
+    title: Tests de charge obligatoires avant mise en production critique
+    statement: >-
+      Tout composant du socle classé CRITIQUE ou traitant plus de mille
+      requêtes par seconde doit passer des tests de charge validant les
+      SLA de performance avant chaque déploiement majeur en production.
+    source: Standard de Qualité des Mises en Production Socle
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-documentation-adr
+    title: ADR obligatoire pour les décisions d'architecture structurantes
+    statement: >-
+      Toute décision d'architecture impactant deux systèmes du socle ou plus
+      doit être formalisée sous forme d'Architecture Decision Record (ADR)
+      et approuvée par le Comité Architecture avant mise en oeuvre.
+    source: Charte Architecture Socle SI v2.0
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-segregation-reseau-pci
+    title: Ségrégation réseau pour les composants sensibles
+    statement: >-
+      Les composants du socle manipulant des données financières sensibles
+      doivent être déployés dans des namespaces réseau isolés avec des règles
+      de flux strictement limitatives. Toute ouverture de flux est soumise
+      à validation sécurité.
+    source: Politique de Segmentation Réseau - RSSI
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-capacite-bus-evenements
+    title: Capacité nominale du bus HERMES
+    statement: >-
+      Le bus HERMES doit supporter en charge nominale cent mille messages
+      par seconde avec un délai de propagation inférieur à dix millisecondes
+      pour les topics critiques. Un exercice de capacité est mené semestriellement.
+    source: Contrat de Performance HERMES v2.1
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-rotation-secret-max-90j
+    title: Durée de vie maximale d'un secret applicatif
+    statement: >-
+      Tout secret applicatif géré par ARKAN doit être renouvelé au maximum
+      tous les quatre-vingt-dix jours. Les secrets non renouvelés dans ce
+      délai sont automatiquement révoqués avec notification à l'équipe
+      propriétaire.
+    source: Politique de Gestion des Secrets - RSSI Groupe
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-couverture-tests-70pct
+    title: Couverture de tests unitaires 70 % minimum
+    statement: >-
+      Le code des composants du socle doit maintenir une couverture de tests
+      unitaires d'au moins soixante-dix pour cent. Le pipeline bloque la
+      fusion si la couverture passe en dessous de ce seuil sur les nouvelles
+      lignes de code ajoutées.
+    source: Charte Qualité Développement Socle
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-archivage-traces-audit
+    title: Archivage des traces d'audit dans ARCHON
+    statement: >-
+      Les journaux d'audit générés par le socle doivent être versés dans
+      ARCHON dans les vingt-quatre heures suivant leur production. La
+      conservation à valeur probante est de dix ans pour les opérations
+      financières.
+    source: Politique de Conservation des Traces - DPO et Direction Juridique
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-norme-nommage-api
+    title: Norme de nommage des API internes
+    statement: >-
+      Les chemins des API internes du socle respectent la convention
+      REST définie dans le standard KATALOG : ressources en minuscules
+      kebab-case, pluriels, sans verbe dans l'URI. Les écarts bloquent
+      la validation du lint OpenAPI.
+    source: Standard de Nommage API Socle v1.2
+    severity: low
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-limitation-privilege-compte-technique
+    title: Limitation des privilèges des comptes techniques
+    statement: >-
+      Les comptes techniques provisionnés dans NEXID ne peuvent disposer
+      que des droits strictement nécessaires à leur fonction (principe du
+      moindre privilège). Les droits d'administration sont interdits aux
+      comptes de service applicatifs.
+    source: Politique IAM Groupe - RSSI
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-dependances-batch-documentees
+    title: Documentation obligatoire des dépendances batch
+    statement: >-
+      Tout job enregistré dans KRONOS doit déclarer ses dépendances amont
+      et les services dont il requiert la disponibilité. Les jobs sans
+      documentation de dépendances sont refusés à l'enregistrement.
+    source: Standard d'Exploitation KRONOS v1.3
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-schema-avro-obligatoire
+    title: Schéma Avro obligatoire pour les topics du bus
+    statement: >-
+      Tout topic créé dans le bus HERMES doit disposer d'un schéma Avro
+      enregistré dans le registre de schémas avant la première publication.
+      Les messages non conformes au schéma sont rejetés par le broker.
+    source: Standard d'Intégration HERMES v2.0
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-conformite-rgpd-donnees-test
+    title: Anonymisation des données pour les environnements hors production
+    statement: >-
+      Toute donnée à caractère personnel utilisée dans un environnement
+      non productif (développement, recette, formation) doit être anonymisée
+      ou synthétisée. L'utilisation de données réelles hors production est
+      une violation de la politique RGPD groupe.
+    source: Politique RGPD Groupe - DPO
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-image-base-approuvee
+    title: Images de base de conteneur approuvées obligatoires
+    statement: >-
+      Les images Docker déployées sur KUBOS doivent utiliser une image de
+      base issue du catalogue d'images approuvées, maintenues et scannées
+      par l'équipe Sécurité. L'usage d'images communautaires non approuvées
+      est bloqué par l'admission controller du cluster.
+    source: Politique de Sécurité Conteneurs - RSSI
+    severity: high
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-supervision-obligatoire
+    title: Supervision VIGIL obligatoire pour les services du socle
+    statement: >-
+      Tout service déployé dans le socle doit exposer un endpoint /health
+      conforme au standard VIGIL et être enregistré dans la plateforme
+      de supervision. Les services non supervisés ne peuvent recevoir de
+      trafic de production.
+    source: Standard d'Exploitation VIGIL v2.3
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dsoc-format-log-structure
+    title: Format de log structuré JSON obligatoire
+    statement: >-
+      Tous les composants du socle doivent émettre leurs logs en format JSON
+      structuré avec les champs obligatoires : timestamp ISO 8601, niveau,
+      service, trace-id et message. Les logs non structurés sont refusés par
+      l'agrégateur de logs.
+    source: Standard de Journalisation Socle v1.5
+    severity: medium
+    domains: [socle-si]
+    created_from: synthetic
+
+  # === RISKS (17 total) ===
+
+  - type: risk
+    id: risk-dsoc-panne-bus-evenements
+    title: Panne du bus d'événements HERMES
+    statement: >-
+      Une indisponibilité prolongée d'HERMES interromprait les échanges
+      asynchrones entre tous les systèmes du socle, provoquant l'accumulation
+      de traitements en attente et des incohérences de données entre systèmes.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Architecture multi-broker avec réplication synchrone entre deux datacenters.
+      - Tests de bascule trimestriels pour valider les procédures de reprise.
+      - Mécanismes de dégradation gracieuse côté producteurs en cas d'indisponibilité.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-compromission-secret
+    title: Compromission d'un secret applicatif
+    statement: >-
+      L'exfiltration d'un secret applicatif via une vulnérabilité ou une erreur
+      humaine pourrait permettre l'accès non autorisé à des systèmes ou données
+      sensibles. Le risque est amplifié par les secrets longue durée résiduels
+      non encore migrés vers ARKAN.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Rotation automatique des secrets applicatifs tous les quatre-vingt-dix jours.
+      - Détection d'usage anormal dans les journaux d'audit ARKAN avec alerting.
+      - Programme d'élimination des secrets statiques suivi en comité sécurité.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-dette-securite-images
+    title: Images de conteneur avec vulnérabilités non patchées
+    statement: >-
+      L'accumulation de vulnérabilités dans les images de base non mises à jour
+      expose le socle à des exploitations connues. Le rythme de mise à jour
+      des images de base peut être insuffisant face à la fréquence de
+      publication des CVE critiques.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Scan automatique des images à chaque build et en continu sur le registre.
+      - Politique de patch critique sous 72 heures avec procédure d'urgence.
+      - Mise à jour mensuelle planifiée des images de base approuvées.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-perte-donnees-archivage
+    title: Perte d'archives légales
+    statement: >-
+      Une défaillance du système ARCHON ou une corruption du coffre de
+      scellement pourrait entraîner la perte d'archives à valeur probante,
+      exposant la banque à des risques juridiques lors de litiges.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Triple réplication géographique des archives sur trois datacenters.
+      - Tests de restauration semestriels avec vérification des scellements.
+      - Supervision continue de l'intégrité cryptographique des archives.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-depassement-capacite-kubos
+    title: Saturation de la plateforme KUBOS
+    statement: >-
+      La croissance non maîtrisée des ressources demandées par les équipes
+      pourrait saturer les nœuds de KUBOS, dégradant l'ensemble des services
+      déployés. Le manque d'anticipation dans les demandes de capacité est
+      un facteur aggravant.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Quotas par namespace avec alertes automatiques à 80 % d'utilisation.
+      - Comité de capacité mensuel avec projection à six mois.
+      - Procédure d'extension de capacité en urgence sous quatre heures.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-fragmentation-nomenclature
+    title: Fragmentation du référentiel de nomenclature
+    statement: >-
+      Des équipes pourraient maintenir des copies locales de listes de valeurs
+      non synchronisées avec NOMEX, entraînant des incohérences dans les
+      échanges inter-systèmes et des rejets lors des contrôles de cohérence.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Contrôles automatiques de cohérence référentielle dans les pipelines.
+      - Campagne d'audit et de migration des listes locales identifiées par domaine.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-incident-batch-cloture
+    title: Incident batch lors de la clôture comptable
+    statement: >-
+      Un échec de job dans KRONOS lors de la séquence de clôture journalière
+      peut bloquer l'ensemble de la chaîne comptable et retarder la publication
+      des positions, avec impact direct sur les activités de marché et
+      les reportings réglementaires.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Simulation de clôture hebdomadaire en environnement hors production.
+      - Procédures de reprise documentées et testées pour chaque job critique.
+      - Astreinte dédiée planifiée lors des clôtures de fin de mois.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-obsolescence-sdk-bus
+    title: Obsolescence des SDK consommateurs du bus
+    statement: >-
+      Des SDK anciens non mis à jour par les équipes consommatrices pourraient
+      perdre la compatibilité avec les évolutions du bus HERMES, entraînant
+      des pertes de messages silencieuses ou des erreurs de désérialisation.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Registre centralisé des versions de SDK déployées en production.
+      - Politique de dépréciation formelle avec avertissements automatiques.
+      - Tests de compatibilité ascendante systématiques à chaque version du bus.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-interruption-swift
+    title: Interruption de la connexion SWIFTNet
+    statement: >-
+      Une coupure de la connexion SWIFTNet bloquerait tous les échanges
+      financiers inter-banques transitant par CORVUS, impactant les opérations
+      de correspondance bancaire et potentiellement les positions de liquidité.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Second nœud SWIFTNet en mode actif-actif pour éliminer le point unique de défaillance.
+      - Procédures dégradées documentées pour les échanges critiques en cas de coupure.
+      - Supervision 24/7 de la connexion avec escalade automatique.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-derive-perimetres-droits
+    title: Dérive des périmètres de droits applicatifs
+    statement: >-
+      En l'absence de revues régulières, les habilitations accordées dans PERIMA
+      peuvent s'accumuler et dépasser les besoins réels, augmentant la surface
+      d'exposition en cas de compromission d'un compte.
+    likelihood: high
+    impact: medium
+    mitigations:
+      - Revues annuelles automatisées dans PERIMA avec révocation des droits non recertifiés.
+      - Rapport mensuel des droits dormants transmis aux responsables de ressource.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-non-conformite-swift-cscf
+    title: Non-conformité SWIFT CSCF
+    statement: >-
+      Un écart persistant aux exigences du Customer Security Controls Framework
+      SWIFT non corrigé dans les délais pourrait conduire à la suspension
+      de la connexion SWIFTNet par SWIFT, interrompant les paiements internationaux.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Audit CSCF interne semestriel avec rapport à la direction de la sécurité.
+      - Suivi des actions correctives en comité mensuel dédié.
+      - Correspondant SWIFT dédié dans l'équipe sécurité pour le suivi réglementaire.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-erreur-configuration-prod
+    title: Erreur de configuration en production
+    statement: >-
+      Un paramètre de configuration erroné déployé via CONFIGURA en production
+      peut provoquer des dysfonctionnements applicatifs étendus avant détection.
+      Le rechargement à chaud augmente la vitesse de propagation.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Validation syntaxique et sémantique automatique avant tout déploiement.
+      - Canary deployment sur un sous-ensemble d'instances avant généralisation.
+      - Rollback automatique déclenché sur dégradation des health-checks post-déploiement.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-fragmentation-deploiement
+    title: Fragmentation des pratiques de déploiement
+    statement: >-
+      Des équipes continuant des pratiques de déploiement manuel parallèlement
+      au pipeline FORGEFLOW créent des incohérences non détectables entre
+      l'état du dépôt de code et l'état réel de la production.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Suppression des accès de déploiement manuel sur les environnements de production.
+      - Monitoring des divergences entre registre VERSIO et état réel des pods KUBOS.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-saturation-archivage
+    title: Saturation du stockage d'archivage
+    statement: >-
+      La croissance non anticipée du volume d'archives versées dans ARCHON
+      pourrait saturer le stockage et bloquer les nouvelles entrées, créant
+      un risque de non-conservation réglementaire.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Alertes de capacité automatiques à 70 % et 90 % d'utilisation du stockage.
+      - Plan d'extension de capacité préparé et validé pour activation sous vingt-quatre heures.
+      - Purge réglementaire automatique planifiée pour libérer les archives échues.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-indisponibilite-iam
+    title: Indisponibilité du service IAM NEXID
+    statement: >-
+      Une panne de NEXID bloquerait toutes les authentifications OIDC des
+      applications du socle utilisant le flux client_credentials, paralysant
+      potentiellement les intégrations inter-services critiques.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Déploiement multi-zone avec basculement automatique entre zones de disponibilité.
+      - Cache de tokens court-terme côté client pour absorber les micro-indisponibilités.
+      - Tests de résilience mensuels validant les procédures de bascule.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-mauvaise-qualite-regles
+    title: Règles métier incorrectes dans AXIOM
+    statement: >-
+      Une règle métier mal paramétrée dans AXIOM peut produire des décisions
+      erronées à grande échelle avant détection, notamment si la phase de
+      validation par les experts métier est contournée par pression calendaire.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Double validation obligatoire par les équipes technique et métier avant activation.
+      - Déploiement progressif avec monitoring en temps réel des décisions produites.
+      - Rollback immédiat de règle sur alerte de dérive statistique.
+    domains: [socle-si]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dsoc-dette-technique-comptalib
+    title: Dette technique de COMPTALIB freinant les évolutions
+    statement: >-
+      L'ancienneté de certains modules de COMPTALIB rend les évolutions
+      coûteuses et risquées. Des adaptations comptables réglementaires
+      pourraient nécessiter des refactorisations majeures difficilement
+      planifiables dans les délais imposés.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Cartographie de la dette technique en cours avec priorisation des modules critiques.
+      - Projet d'APIisation pour isoler les consommateurs du code legacy sous-jacent.
+      - Budget refactoring dédié inclus dans la feuille de route annuelle.
+    domains: [socle-si]
+    created_from: synthetic
+
+edges:
+
+  # PART_OF — one per feature → its parent system
+
+  - {source_id: feat-dsoc-pub-evenement, target_id: sys-dsoc-bus-evenements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-souscription-topic, target_id: sys-dsoc-bus-evenements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-replay-evenements, target_id: sys-dsoc-bus-evenements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-injection-secret, target_id: sys-dsoc-coffre-secrets, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-rotation-certificat, target_id: sys-dsoc-coffre-secrets, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-publication-spec, target_id: sys-dsoc-registre-api, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-portail-dev, target_id: sys-dsoc-registre-api, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-deprecation-api, target_id: sys-dsoc-registre-api, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-auth-oidc, target_id: sys-dsoc-gestion-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-provision-compte, target_id: sys-dsoc-gestion-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-federation-sso, target_id: sys-dsoc-gestion-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-collecte-metriques, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-alerting-seuil, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-tableau-bord-sla, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-planification-job, target_id: sys-dsoc-orchestrateur-jobs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-suivi-execution, target_id: sys-dsoc-orchestrateur-jobs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-dependance-jobs, target_id: sys-dsoc-orchestrateur-jobs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-depot-archive, target_id: sys-dsoc-archivage-legale, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-verification-integrite, target_id: sys-dsoc-archivage-legale, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-purge-reglementaire, target_id: sys-dsoc-archivage-legale, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-consultation-code, target_id: sys-dsoc-referentiel-nomenclature, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-liste-valeurs, target_id: sys-dsoc-referentiel-nomenclature, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-emission-swift, target_id: sys-dsoc-passerelle-swift, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-reception-swift, target_id: sys-dsoc-passerelle-swift, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-reconciliation-swift, target_id: sys-dsoc-passerelle-swift, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-lecture-config, target_id: sys-dsoc-gestion-config, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-deploiement-config, target_id: sys-dsoc-gestion-config, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-evaluation-regle, target_id: sys-dsoc-moteur-regles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-parametrage-regle, target_id: sys-dsoc-moteur-regles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-ingestion-flux, target_id: sys-dsoc-entrepot-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-transformation-etl, target_id: sys-dsoc-entrepot-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-export-reglementaire, target_id: sys-dsoc-entrepot-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-deploiement-service, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-isolation-reseau, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-autoscaling, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-demande-habilitation, target_id: sys-dsoc-gestion-droits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-revue-droits, target_id: sys-dsoc-gestion-droits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-creation-incident, target_id: sys-dsoc-gestion-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-escalade-incident, target_id: sys-dsoc-gestion-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-bilan-post-incident, target_id: sys-dsoc-gestion-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-analyse-statique, target_id: sys-dsoc-pipeline-ci-cd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-tests-integration, target_id: sys-dsoc-pipeline-ci-cd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-promotion-artifact, target_id: sys-dsoc-pipeline-ci-cd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-ecriture-comptable, target_id: sys-dsoc-tronc-comptable, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-interrogation-solde, target_id: sys-dsoc-tronc-comptable, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-lettrage-ecritures, target_id: sys-dsoc-tronc-comptable, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-relance-traitement, target_id: sys-dsoc-portail-ops, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-purge-file-message, target_id: sys-dsoc-portail-ops, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-generation-cle, target_id: sys-dsoc-gestion-cles-chiffrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-rotation-cle, target_id: sys-dsoc-gestion-cles-chiffrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-declaration-version, target_id: sys-dsoc-gestion-versions, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-comparaison-versions, target_id: sys-dsoc-gestion-versions, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-envoi-notification, target_id: sys-dsoc-notification-service, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-preferences-notif, target_id: sys-dsoc-notification-service, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-audit-log, target_id: sys-dsoc-gestion-droits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-controle-coherence-ref, target_id: sys-dsoc-referentiel-nomenclature, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-synchronisation-ref, target_id: sys-dsoc-referentiel-nomenclature, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-quota-ressource, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-export-cmdb, target_id: sys-dsoc-gestion-versions, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-fenetre-maintenance, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-healthcheck-service, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-tracabilite-flux, target_id: sys-dsoc-bus-evenements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-retries, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-circuit-breaker, target_id: sys-dsoc-plateforme-containers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-encryption-donnees-repos, target_id: sys-dsoc-gestion-cles-chiffrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-rapport-conformite-infra, target_id: sys-dsoc-supervision-infra, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dsoc-validation-schema, target_id: sys-dsoc-registre-schemas, type: PART_OF, created_from: synthetic}
+
+  # OPERATES_ON — feature|system → business_object (20-40)
+
+  - {source_id: feat-dsoc-pub-evenement, target_id: obj-dsoc-evenement-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-souscription-topic, target_id: obj-dsoc-evenement-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-replay-evenements, target_id: obj-dsoc-evenement-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-injection-secret, target_id: obj-dsoc-secret-applicatif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-rotation-certificat, target_id: obj-dsoc-secret-applicatif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-coffre-secrets, target_id: obj-dsoc-secret-applicatif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-publication-spec, target_id: obj-dsoc-contrat-api, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-deprecation-api, target_id: obj-dsoc-contrat-api, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-registre-api, target_id: obj-dsoc-contrat-api, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-provision-compte, target_id: obj-dsoc-compte-technique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-revue-droits, target_id: obj-dsoc-habilitation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-demande-habilitation, target_id: obj-dsoc-habilitation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-planification-job, target_id: obj-dsoc-job-batch, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-suivi-execution, target_id: obj-dsoc-job-batch, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-depot-archive, target_id: obj-dsoc-archive-legale, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-verification-integrite, target_id: obj-dsoc-archive-legale, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-purge-reglementaire, target_id: obj-dsoc-archive-legale, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-consultation-code, target_id: obj-dsoc-code-reference, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-gestion-liste-valeurs, target_id: obj-dsoc-code-reference, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-emission-swift, target_id: obj-dsoc-message-swift, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-reception-swift, target_id: obj-dsoc-message-swift, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-reconciliation-swift, target_id: obj-dsoc-message-swift, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-lecture-config, target_id: obj-dsoc-configuration-applicative, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-deploiement-config, target_id: obj-dsoc-configuration-applicative, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-evaluation-regle, target_id: obj-dsoc-regle-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-parametrage-regle, target_id: obj-dsoc-regle-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-ecriture-comptable, target_id: obj-dsoc-ecriture-comptable, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-interrogation-solde, target_id: obj-dsoc-plan-comptable, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-lettrage-ecritures, target_id: obj-dsoc-ecriture-comptable, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-generation-cle, target_id: obj-dsoc-cle-cryptographique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-rotation-cle, target_id: obj-dsoc-cle-cryptographique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-creation-incident, target_id: obj-dsoc-incident-it, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-escalade-incident, target_id: obj-dsoc-incident-it, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-promotion-artifact, target_id: obj-dsoc-artefact-deployable, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-analyse-statique, target_id: obj-dsoc-artefact-deployable, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-gestion-cles-chiffrement, target_id: obj-dsoc-politique-securite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-rapport-conformite-infra, target_id: obj-dsoc-politique-securite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-ingestion-flux, target_id: obj-dsoc-evenement-metier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-audit-log, target_id: obj-dsoc-habilitation, type: OPERATES_ON, created_from: synthetic}
+
+  # DEPENDS_ON — system→system, feature→feature, feature→system (10-20)
+
+  - {source_id: sys-dsoc-entrepot-donnees, target_id: sys-dsoc-bus-evenements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-passerelle-swift, target_id: sys-dsoc-gestion-identite, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-orchestrateur-jobs, target_id: sys-dsoc-notification-service, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-portail-ops, target_id: sys-dsoc-gestion-identite, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-pipeline-ci-cd, target_id: sys-dsoc-coffre-secrets, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-pipeline-ci-cd, target_id: sys-dsoc-plateforme-containers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-moteur-regles, target_id: sys-dsoc-referentiel-nomenclature, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-tronc-comptable, target_id: sys-dsoc-referentiel-nomenclature, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dsoc-archivage-legale, target_id: sys-dsoc-gestion-cles-chiffrement, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-ingestion-flux, target_id: feat-dsoc-souscription-topic, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-deploiement-service, target_id: feat-dsoc-promotion-artifact, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-alerting-seuil, target_id: feat-dsoc-collecte-metriques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-suivi-execution, target_id: feat-dsoc-envoi-notification, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-rotation-cle, target_id: feat-dsoc-envoi-notification, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-purge-reglementaire, target_id: feat-dsoc-planification-job, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-tests-integration, target_id: sys-dsoc-plateforme-containers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-depot-archive, target_id: sys-dsoc-gestion-cles-chiffrement, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dsoc-export-reglementaire, target_id: feat-dsoc-transformation-etl, type: DEPENDS_ON, created_from: synthetic}
+
+  # CONSTRAINS — constraint|decision → system|feature|business_object|project (15-30)
+
+  - {source_id: con-dsoc-disponibilite-bus-critique, target_id: sys-dsoc-bus-evenements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-chiffrement-transit, target_id: sys-dsoc-passerelle-swift, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-chiffrement-transit, target_id: sys-dsoc-bus-evenements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-rpo-quatre-heures, target_id: sys-dsoc-archivage-legale, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-rto-deux-heures, target_id: sys-dsoc-gestion-incidents, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-isolation-prod, target_id: sys-dsoc-plateforme-containers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-log-retention-un-an, target_id: sys-dsoc-supervision-infra, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-plafond-latence-api, target_id: sys-dsoc-registre-api, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-mfa-acces-sensible, target_id: sys-dsoc-gestion-droits, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-vulnerabilites-critiques, target_id: sys-dsoc-pipeline-ci-cd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-conservation-messages-bus, target_id: sys-dsoc-bus-evenements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-plan-comptable-acbf, target_id: sys-dsoc-tronc-comptable, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-conformite-swift-cscf, target_id: sys-dsoc-passerelle-swift, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-journalisation-acces-donnees, target_id: feat-dsoc-audit-log, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-schema-avro-obligatoire, target_id: feat-dsoc-pub-evenement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-image-base-approuvee, target_id: sys-dsoc-plateforme-containers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-rotation-secret-max-90j, target_id: sys-dsoc-coffre-secrets, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-couverture-tests-70pct, target_id: sys-dsoc-pipeline-ci-cd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-archivage-traces-audit, target_id: sys-dsoc-archivage-legale, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-supervision-obligatoire, target_id: sys-dsoc-supervision-infra, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-bus-asynchrone-standard, target_id: sys-dsoc-bus-evenements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-openapi-obligatoire, target_id: sys-dsoc-registre-api, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-secrets-centralises, target_id: sys-dsoc-coffre-secrets, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-containers-obligatoires, target_id: proj-dsoc-plateforme-kubos, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-gitops-only, target_id: sys-dsoc-pipeline-ci-cd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-hsm-obligatoire-cles-critiques, target_id: sys-dsoc-gestion-cles-chiffrement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-oidc-standard-auth, target_id: sys-dsoc-gestion-identite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-archivage-scellement-etsi, target_id: sys-dsoc-archivage-legale, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-nomex-source-verite, target_id: sys-dsoc-referentiel-nomenclature, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-tracing-distribue, target_id: feat-dsoc-tracabilite-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-semver-api, target_id: obj-dsoc-contrat-api, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-revue-droits-annuelle, target_id: feat-dsoc-revue-droits, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dsoc-separation-roles-cle, target_id: feat-dsoc-generation-cle, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dsoc-conformite-rgpd-donnees-test, target_id: feat-dsoc-tests-integration, type: CONSTRAINS, created_from: synthetic}
+

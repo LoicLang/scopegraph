@@ -1,0 +1,2583 @@
+nodes:
+
+  - type: system
+    id: sys-dref-portail-consentements
+    name: Portail de gestion des consentements client
+    description: >-
+      Centralise la collecte, le stockage et la révocation des consentements RGPD
+      exprimés par les clients particuliers et professionnels. Expose une API REST
+      permettant aux canaux front-end d'interroger la validité d'un consentement
+      avant tout traitement de données à caractère personnel.
+    owner_team: Équipe Conformité Données
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-collecte-consentement
+    name: Collecte du consentement en ligne
+    description: >-
+      Présente les formulaires de recueil du consentement lors de l'ouverture
+      de compte et lors de chaque nouveau traitement nécessitant une base légale
+      explicite. Les choix sont horodatés et liés à la version du texte légal
+      affiché au moment de la signature.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-revocation-consentement
+    name: Révocation du consentement
+    description: >-
+      Permet au client de retirer un consentement à tout moment via l'espace
+      personnel en ligne ou en agence. La révocation déclenche une notification
+      asynchrone vers les systèmes abonnés afin qu'ils cessent les traitements
+      concernés.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-audit-consentements
+    name: Journal d'audit des consentements
+    description: >-
+      Conserve l'historique complet des consentements accordés et révoqués,
+      avec la version du texte légal, le canal de collecte et l'identité de
+      l'opérateur si la saisie est effectuée en agence.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-moteur-qualite-donnees
+    name: Moteur de qualité des données client
+    description: >-
+      Applique des règles de validation, de normalisation et de complétude sur
+      les données du référentiel client. Produit un score de qualité par fiche
+      client et génère des alertes à destination des équipes data.
+    owner_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-normalisation-adresse
+    name: Normalisation des adresses postales
+    description: >-
+      Standardise les adresses saisies selon le référentiel postal national fictif
+      ADRNORM, corrige les abréviations courantes et détecte les incohérences
+      entre code postal et commune. Les corrections sont soumises à validation
+      avant application.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-score-completude
+    name: Score de complétude de la fiche client
+    description: >-
+      Calcule un indicateur de complétude de 0 à 100 pour chaque fiche client
+      en pondérant les champs obligatoires, recommandés et facultatifs. Ce score
+      alimente les tableaux de bord de l'équipe qualité et déclenche des relances
+      automatiques pour les fiches incomplètes.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-detection-doublons
+    name: Détection des doublons clients
+    description: >-
+      Compare les nouveaux enregistrements aux fiches existantes via un algorithme
+      de similarité phonétique et textuelle. Les paires candidates sont soumises
+      à un opérateur pour décision de fusion ou de rejet.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-regles-validation
+    name: Moteur de règles de validation métier
+    description: >-
+      Exécute un catalogue de règles métier paramétrables (format de SIREN,
+      cohérence date de naissance / pièce d'identité, présence de l'email
+      professionnel pour les personnes morales) lors de toute création ou
+      modification de fiche.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-foyers
+    name: Gestionnaire de foyers et ménages
+    description: >-
+      Modélise les relations entre clients physiques pour constituer des unités
+      fiscales et économiques cohérentes (foyers, ménages). Utilisé par les
+      produits d'épargne et de crédit pour le calcul de l'endettement global
+      et des plafonds mutualisés.
+    owner_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-creation-foyer
+    name: Création d'un foyer
+    description: >-
+      Permet de regrouper deux clients ou plus sous un foyer commun en renseignant
+      le lien juridique (marié, pacsé, concubin) et la date de prise d'effet.
+      Un client ne peut appartenir qu'à un seul foyer actif à la fois.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-dissolution-foyer
+    name: Dissolution d'un foyer
+    description: >-
+      Enregistre la séparation d'un foyer à la date indiquée et bascule les
+      membres vers des fiches individuelles autonomes. Les produits partagés
+      sont signalés pour traitement manuel par le conseiller référent.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-calcul-endettement-foyer
+    name: Calcul de l'endettement global du foyer
+    description: >-
+      Agrège les encours de crédit de tous les membres d'un foyer pour fournir
+      un taux d'endettement global. Ce calcul est exposé en API synchrone pour
+      les parcours de souscription crédit.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-referentiel-tiers
+    name: Référentiel des tiers et mandataires
+    description: >-
+      Gère les personnes physiques ou morales qui interagissent avec la banque
+      sans être titulaires d'un compte : mandataires, tuteurs, représentants
+      légaux et co-signataires. Maintient les liens entre tiers et comptes
+      clients.
+    owner_team: Équipe Juridique et Comptes
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-ajout-mandataire
+    name: Ajout d'un mandataire
+    description: >-
+      Enregistre un mandataire sur un compte client en saisissant les coordonnées
+      du tiers, la pièce d'identité et les pouvoirs délégués. La procuration
+      scannée est archivée dans le GED interne.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-revocation-mandataire
+    name: Révocation d'un mandataire
+    description: >-
+      Met fin à un mandat à la date souhaitée et empêche immédiatement tout
+      accès aux comptes par le tiers révoqué. Un accusé de réception est généré
+      et envoyé par courrier au titulaire du compte.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-consultation-tiers
+    name: Consultation des tiers actifs sur un compte
+    description: >-
+      Expose la liste des mandataires et représentants légaux actifs pour un
+      compte donné, avec leurs droits respectifs et la date d'expiration du
+      mandat si elle est connue.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-registre-personnes-morales
+    name: Registre des personnes morales
+    description: >-
+      Stocke et met à jour les données d'identité des entreprises et associations
+      clientes : SIREN, forme juridique, capital social, représentants légaux
+      inscrits au RCS fictif REGISTCO. Alerte sur les changements de dirigeants
+      détectés lors des mises à jour périodiques.
+    owner_team: Équipe Entreprises
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-onboarding-pm
+    name: Onboarding personne morale
+    description: >-
+      Orchestre la création d'une fiche entreprise en collectant les documents
+      requis (Kbis, statuts, liste des bénéficiaires effectifs) et en déclenchant
+      les contrôles LCB-FT appropriés avant toute ouverture de compte.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-mise-a-jour-dirigeants
+    name: Mise à jour des dirigeants
+    description: >-
+      Intègre les changements de dirigeants notifiés par les flux REGISTCO et
+      les soumet à un workflow de validation interne avant mise à jour de la fiche
+      entreprise. Un email d'alerte est envoyé au conseiller référent.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-verification-beneficiaires-effectifs
+    name: Vérification des bénéficiaires effectifs
+    description: >-
+      Contrôle que la liste des bénéficiaires effectifs déclarée par l'entreprise
+      correspond aux seuils réglementaires de détention du capital. Tout écart
+      déclenche une demande de justificatifs complémentaires.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-hub-diffusion-referentiel
+    name: Hub de diffusion du référentiel client
+    description: >-
+      Distribue les mises à jour du référentiel client vers les systèmes abonnés
+      via des flux événementiels (broker de messages interne). Garantit la
+      cohérence éventuelle entre le référentiel maître et les répliques locales
+      des domaines consommateurs.
+    owner_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-abonnement-evenements
+    name: Abonnement aux événements client
+    description: >-
+      Permet aux équipes consommatrices de s'abonner à des topics d'événements
+      (création client, modification d'adresse, changement de statut KYC) en
+      déclarant leur application et leur clé de consommation dans le registre
+      d'abonnements.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-replay-evenements
+    name: Rejeu des événements
+    description: >-
+      Offre aux consommateurs la possibilité de rejouer les événements d'une
+      fenêtre temporelle passée en cas d'incident ou de migration. La rétention
+      des événements est configurée à 30 jours par défaut.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-monitoring-diffusion
+    name: Supervision de la diffusion
+    description: >-
+      Expose des métriques sur le lag de consommation par abonné et déclenche
+      des alertes opérationnelles si un consommateur accuse un retard supérieur
+      au seuil paramétré. Un tableau de bord temps réel est disponible pour
+      l'équipe exploitation.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-archivage-kyc
+    name: Archivage des dossiers KYC
+    description: >-
+      Conserve les documents d'entrée en relation (pièces d'identité, justificatifs
+      de domicile, formulaires de connaissance client) selon les durées légales.
+      Fournit une API de restitution sécurisée pour les contrôleurs internes et
+      les auditeurs externes.
+    owner_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-depot-document-kyc
+    name: Dépôt d'un document KYC
+    description: >-
+      Accepte les documents numérisés au format PDF ou JPEG, vérifie leur
+      lisibilité et les classe automatiquement par type (CNI, passeport,
+      justificatif de domicile). Le document est chiffré avant stockage.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-expiration-documents
+    name: Alerte expiration de documents
+    description: >-
+      Surveille la date de validité des pièces d'identité archivées et envoie
+      une notification au conseiller référent 90 jours avant expiration. Un
+      second rappel est émis à 30 jours si aucun document actualisé n'a été
+      reçu.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-restitution-document
+    name: Restitution d'un document archivé
+    description: >-
+      Expose un endpoint sécurisé permettant aux profils habilités de télécharger
+      un document archivé. Toute consultation est tracée dans le journal d'audit
+      avec l'identité du demandeur et l'objet de la consultation.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-espace-client-selfcare
+    name: Espace client self-care données personnelles
+    description: >-
+      Interface web permettant au client de consulter et corriger ses données
+      personnelles détenues par la banque, d'exercer ses droits RGPD (accès,
+      rectification, portabilité) et de suivre l'état de ses demandes en cours.
+    owner_team: Équipe Expérience Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-demande-rectification
+    name: Demande de rectification de données
+    description: >-
+      Permet au client de signaler une donnée erronée (nom, adresse, date de
+      naissance) et de joindre un justificatif. La demande est routée vers
+      le conseiller compétent qui dispose de 72 heures pour la traiter.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-export-portabilite
+    name: Export de portabilité des données
+    description: >-
+      Génère un fichier JSON structuré contenant l'ensemble des données
+      personnelles du client sur demande. Le fichier est disponible au
+      téléchargement pendant 48 heures via un lien sécurisé à usage unique.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-suivi-demandes-rgpd
+    name: Suivi des demandes RGPD
+    description: >-
+      Affiche l'historique et le statut des demandes d'exercice de droits
+      déposées par le client (en cours, traitée, rejetée avec motif). Un
+      rappel automatique est envoyé à l'opérateur si la demande dépasse le
+      délai réglementaire de 30 jours.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-matching-identite
+    name: Moteur de correspondance d'identité
+    description: >-
+      Détermine si deux fiches client décrivent la même personne physique en
+      croisant nom, prénom, date de naissance, adresse et numéro de document
+      d'identité via un score probabiliste. Sert de socle à la déduplication
+      et aux contrôles de sanctions.
+    owner_team: Équipe Data Science Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-scoring-ressemblance
+    name: Scoring de ressemblance inter-fiches
+    description: >-
+      Produit un score de similarité entre deux fiches client en combinant
+      distance de Levenshtein, phonétique Soundex et correspondance d'adresse
+      normalisée. Le seuil de fusion automatique est configurable par paramètre
+      d'environnement.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-fusion-fiches
+    name: Fusion de fiches dupliquées
+    description: >-
+      Exécute la fusion de deux fiches identifiées comme doublons en conservant
+      la fiche maître, en transférant les produits attachés et en archivant la
+      fiche obsolète avec un lien de traçabilité vers la fiche résultante.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-recherche-exacte-identite
+    name: Recherche exacte par identité
+    description: >-
+      Expose un endpoint de recherche par combinaison exacte (nom + prénom +
+      date de naissance) retournant les fiches correspondantes avec leur score
+      de confiance. Utilisé en priorité lors de l'entrée en relation pour
+      détecter un client existant.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-alertes-conformite
+    name: Gestionnaire d'alertes conformité client
+    description: >-
+      Centralise les alertes émises par les contrôles réglementaires (données
+      manquantes, documents expirés, profil de risque modifié) et orchestre
+      les workflows de traitement par les équipes conformité. Fournit des
+      indicateurs de SLA pour le pilotage opérationnel.
+    owner_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-creation-alerte-conformite
+    name: Création d'une alerte conformité
+    description: >-
+      Enregistre une alerte conformité avec son niveau de priorité, la donnée
+      ou le document concerné et la date limite de résolution. L'alerte est
+      immédiatement visible dans le tableau de bord du responsable conformité.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-escalade-alerte
+    name: Escalade d'alerte non traitée
+    description: >-
+      Réassigne automatiquement les alertes conformité non traitées dans les
+      délais impartis au responsable hiérarchique du gestionnaire initialement
+      assigné. Le nombre d'escalades est tracé à des fins de pilotage RH.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-cloture-alerte
+    name: Clôture d'une alerte conformité
+    description: >-
+      Permet au gestionnaire de clôturer une alerte en saisissant l'action
+      corrective effectuée et en joignant éventuellement un document probatoire.
+      La clôture est soumise à validation par un superviseur pour les alertes
+      de niveau critique.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-catalogue-produits-client
+    name: Catalogue produits souscrits par client
+    description: >-
+      Maintient la liste des produits et services actifs rattachés à chaque
+      client (comptes, cartes, assurances, coffres). Sert de référence pour les
+      parcours de résiliation, les récapitulatifs annuels et les relances
+      commerciales ciblées.
+    owner_team: Équipe Offres et Produits
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-souscription-produit
+    name: Enregistrement d'une souscription produit
+    description: >-
+      Attache un nouveau produit souscrit à la fiche client avec la date
+      d'effet, les conditions tarifaires applicables et l'identifiant du
+      conseiller ayant réalisé la vente. Les données sont propagées vers le
+      hub de diffusion du référentiel.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-resiliation-produit
+    name: Résiliation d'un produit souscrit
+    description: >-
+      Enregistre la date de fin de souscription d'un produit et déclenche les
+      traitements associés (clôture de compte, désactivation de carte). Un
+      questionnaire de satisfaction est envoyé au client dans les 24 heures.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-historique-produits
+    name: Historique des produits client
+    description: >-
+      Conserve l'ensemble des produits souscrits et résiliés d'un client depuis
+      l'entrée en relation. Accessible aux conseillers pour contextualiser les
+      propositions commerciales et aux auditeurs pour reconstituer l'historique
+      relationnel.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-segmentation-client
+    name: Moteur de segmentation client
+    description: >-
+      Calcule et maintient le segment commercial de chaque client (particulier
+      standard, premium, professionnel, patrimonial) en fonction de critères
+      patrimoniniaux, d'usage et de revenus estimés. Le segment est recalculé
+      mensuellement et à chaque événement majeur.
+    owner_team: Équipe Marketing Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-calcul-segment
+    name: Calcul du segment commercial
+    description: >-
+      Applique les règles de segmentation paramétrées (seuils de revenu estimé,
+      encours moyen, ancienneté) pour déterminer le segment d'un client. Le
+      recalcul peut être déclenché manuellement par un conseiller en cas de
+      situation atypique.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-historique-segments
+    name: Historique des changements de segment
+    description: >-
+      Conserve la chronologie des changements de segment de chaque client avec
+      la date, la valeur précédente et la valeur nouvelle. Utilisé pour évaluer
+      l'impact des campagnes de fidélisation et la mobilité de la clientèle.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-contacts
+    name: Gestionnaire de contacts et coordonnées
+    description: >-
+      Gère les canaux de contact des clients (téléphone, email, adresse postale,
+      préférences de notification) et assure leur cohérence avec les systèmes
+      d'envoi. Intègre un mécanisme de préférence de canal par type d'alerte.
+    owner_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-mise-a-jour-email
+    name: Mise à jour de l'adresse e-mail
+    description: >-
+      Enregistre la nouvelle adresse e-mail du client après vérification par
+      un code envoyé à l'ancienne adresse, ou après authentification renforcée
+      en agence. La modification est tracée dans le journal d'audit.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-mise-a-jour-telephone
+    name: Mise à jour du numéro de téléphone
+    description: >-
+      Valide le nouveau numéro via un OTP envoyé par SMS avant de l'enregistrer.
+      Si le numéro est déjà associé à un autre client, une alerte de doublon
+      est levée pour analyse par l'équipe qualité.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-preferences-notification
+    name: Gestion des préférences de notification
+    description: >-
+      Permet au client de choisir le canal préféré (SMS, email, notification
+      push) pour chaque catégorie d'alerte (mouvements, conformité, commercial).
+      Les préférences sont appliquées immédiatement par le système d'envoi.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-referentiel-agences
+    name: Référentiel des agences et conseillers
+    description: >-
+      Maintient la liste des agences et des conseillers référents affectés à
+      chaque client. Sert de référence pour le routage des demandes entrantes
+      et le pilotage de la charge de travail par portefeuille client.
+    owner_team: Équipe Réseau Agences
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-affectation-conseiller
+    name: Affectation d'un conseiller référent
+    description: >-
+      Rattache un client à un conseiller référent et à l'agence correspondante.
+      L'historique des affectations successives est conservé pour permettre
+      une reprise de contexte lors d'un changement de portefeuille.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-transfert-portefeuille
+    name: Transfert de portefeuille client
+    description: >-
+      Permet le transfert en masse d'un ensemble de clients d'un conseiller
+      vers un autre lors d'une réorganisation ou d'un départ. Le transfert est
+      planifié pour éviter les pics de charge et chaque client est notifié par
+      courrier électronique.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-consultation-portefeuille
+    name: Consultation du portefeuille client
+    description: >-
+      Fournit au conseiller la liste filtrée et triée de ses clients avec des
+      indicateurs clés (segment, ancienneté, alertes en cours). La vue est
+      personnalisable par colonnes et exportable en CSV.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-profilage-risque-client
+    name: Module de profilage risque client
+    description: >-
+      Attribue à chaque client un profil de risque LCB-FT (faible, modéré,
+      élevé) en agrégeant les signaux issus des systèmes de surveillance et
+      les données déclaratives. Le profil conditionne la fréquence des revues
+      KYC périodiques.
+    owner_team: Équipe Risques LCB-FT
+    domains: [referentiel-client]
+    known_risks: [dérive de classification, faux négatifs sur profils politiquement exposés]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-calcul-profil-risque
+    name: Calcul du profil de risque LCB-FT
+    description: >-
+      Exécute le modèle de scoring risque en combinant les critères déclaratifs
+      (pays de résidence, secteur d'activité) et comportementaux (fréquence
+      et montant des opérations). Le résultat est horodaté et versionné.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-revue-periodique-kyc
+    name: Planification de la revue KYC périodique
+    description: >-
+      Génère le calendrier des revues KYC en fonction du profil de risque :
+      annuelle pour les profils élevés, triennale pour les profils modérés et
+      quinquennale pour les profils faibles. Les dossiers à réviser sont
+      poussés vers la file de travail conformité.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-declenchement-revue-evenementielle
+    name: Déclenchement de revue KYC événementielle
+    description: >-
+      Lance une revue KYC hors cycle sur événement déclencheur (changement de
+      pays de résidence, opération atypique signalée, inscription sur liste
+      de surveillance). La revue est prioritaire sur le cycle planifié.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-integration-sources-externes
+    name: Connecteur de sources d'identité externes
+    description: >-
+      Intègre les données d'identité issues de sources officielles fictives
+      (registre d'état civil RECIVIL, flux INSEE synthétique) pour enrichir
+      et valider les fiches clients. Les données importées sont marquées avec
+      la source et la date de collecte.
+    owner_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-import-etat-civil
+    name: Import des données d'état civil
+    description: >-
+      Consomme le flux quotidien RECIVIL pour mettre à jour les informations
+      d'état civil des clients (décès, changement de nom, naissance d'enfant)
+      et déclenche les workflows métier appropriés pour chaque type d'événement.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-verification-insee
+    name: Vérification SIREN via flux INSEE fictif
+    description: >-
+      Interroge le flux INSEE synthétique pour contrôler la validité et le
+      statut d'un SIREN lors de l'onboarding entreprise. Retourne les données
+      officielles de dénomination, d'adresse de siège et de code APE.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-reconciliation-identite-externe
+    name: Réconciliation identité externe / interne
+    description: >-
+      Compare les données reçues des sources externes avec les fiches internes
+      et génère des propositions de correction pour les divergences détectées.
+      Un opérateur valide chaque proposition avant application sur la fiche maître.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-tableaux-bord-referentiel
+    name: Tableau de bord du référentiel client
+    description: >-
+      Agrège les métriques opérationnelles et qualité du référentiel client
+      (taux de complétude, nombre d'alertes en cours, répartition des profils
+      de risque) dans des dashboards à destination des responsables métier et
+      des équipes conformité.
+    owner_team: Équipe Pilotage Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-rapport-completude-mensuel
+    name: Rapport mensuel de complétude des données
+    description: >-
+      Génère chaque mois un rapport comparatif du score de complétude moyen
+      par segment et par agence, avec identification des champs les plus souvent
+      absents. Distribué automatiquement aux directeurs de réseau.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-api-gateway-referentiel
+    name: API Gateway du référentiel client
+    description: >-
+      Point d'entrée unique pour les appels entrants vers le référentiel client.
+      Assure l'authentification OAuth2 des applications consommatrices, le
+      rate-limiting par application et la journalisation de toutes les requêtes
+      pour audit de traçabilité.
+    owner_team: Équipe Sécurité SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-authentification-oauth
+    name: Authentification OAuth2 des applications
+    description: >-
+      Valide les jetons d'accès OAuth2 présentés par les applications
+      consommatrices et contrôle les scopes autorisés avant de router la
+      requête vers le service cible. Les jetons expirés ou révoqués sont
+      rejetés avec un code d'erreur HTTP 401.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-rate-limiting
+    name: Rate-limiting par application consommatrice
+    description: >-
+      Applique des quotas de requêtes par application et par minute, configurables
+      dans le registre d'abonnements. Les dépassements de quota retournent un
+      code HTTP 429 avec un header Retry-After indiquant le délai d'attente.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-journalisation-api
+    name: Journalisation des accès API
+    description: >-
+      Enregistre chaque requête entrante (application, endpoint, timestamp,
+      code de réponse, durée) dans un journal structuré exploitable par le
+      SIEM de l'établissement. La rétention des logs est alignée sur la
+      politique d'archivage de l'établissement.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-listes-surveillance
+    name: Gestion des listes de surveillance client
+    description: >-
+      Maintient les listes internes de clients sous surveillance renforcée
+      (PPE, relations avec des juridictions à risque, signalements internes).
+      Découplé du criblage sanctions pour traiter les risques de réputation
+      et les cas de diligence renforcée non liés à des sanctions.
+    owner_team: Équipe Risques LCB-FT
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-inscription-liste-surveillance
+    name: Inscription sur liste de surveillance
+    description: >-
+      Enregistre un client sur une liste de surveillance avec le motif, la
+      date d'inscription et le responsable. L'inscription déclenche une revue
+      KYC événementielle et active la surveillance transactionnelle renforcée.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-radiation-liste-surveillance
+    name: Radiation de la liste de surveillance
+    description: >-
+      Retire un client d'une liste de surveillance après validation par deux
+      responsables distincts. La décision de radiation est motivée et archivée
+      dans le dossier KYC du client.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-consultation-liste-surveillance
+    name: Consultation des clients sous surveillance
+    description: >-
+      Expose la liste des clients actuellement sous surveillance avec leur
+      niveau de diligence et la date de la prochaine revue planifiée. L'accès
+      est restreint aux profils habilités de l'équipe LCB-FT.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-onboarding-digital
+    name: Parcours d'onboarding client digital
+    description: >-
+      Orchestre le parcours d'ouverture de compte en ligne de bout en bout :
+      saisie des informations, vérification documentaire automatisée, signature
+      électronique et activation des accès. Intègre les contrôles LCB-FT
+      avant toute validation du dossier.
+    owner_team: Équipe Parcours Client Digital
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-verification-documentaire-auto
+    name: Vérification documentaire automatisée
+    description: >-
+      Soumet les documents d'identité téléversés à un service OCR et de
+      détection de fraude documentaire. Le résultat (authentique, suspect,
+      illisible) est communiqué en quelques secondes et conditionne la
+      poursuite du parcours d'onboarding.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-signature-electronique-onboarding
+    name: Signature électronique des conventions d'ouverture
+    description: >-
+      Présente au futur client les conventions de compte et les conditions
+      générales à signer électroniquement. La signature qualifiée est archivée
+      avec la preuve d'audit pour constituer la valeur légale du consentement.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-activation-acces-client
+    name: Activation des accès client post-ouverture
+    description: >-
+      Déclenche la création des credentials d'accès à la banque en ligne
+      et l'envoi du courrier de bienvenue dès que le dossier d'onboarding
+      est validé. L'activation est réversible en cas de suspicion de fraude
+      détectée a posteriori.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-beneficiaires-speciaux
+    name: Gestion des bénéficiaires spéciaux (tiers de confiance)
+    description: >-
+      Maintient la liste des tiers de confiance certifiés par la banque
+      (associations partenaires, trésoreries publiques, entreprises référencées)
+      pour lesquels les délais de carence et les contrôles de routine sont
+      allégés. Distinct du référentiel de bénéficiaires de virement standard.
+    owner_team: Équipe Partenariats et Flux
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-certification-tiers-confiance
+    name: Certification d'un tiers de confiance
+    description: >-
+      Enregistre un organisme comme tiers de confiance après validation par
+      le comité habilitations et vérification de son numéro SIREN ou équivalent.
+      Le statut de tiers de confiance est réexaminé annuellement.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-revocation-tiers-confiance
+    name: Révocation d'un tiers de confiance
+    description: >-
+      Retire le statut de tiers de confiance d'un organisme suite à un
+      incident ou à une décision du comité habilitations. Les clients
+      ayant ce tiers en bénéficiaire sont notifiés que les conditions
+      ordinaires s'appliquent désormais.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-gestion-incapacites-juridiques
+    name: Gestion des incapacités juridiques
+    description: >-
+      Enregistre et suit les mesures de protection juridique prononcées pour
+      les clients (tutelle, curatelle, sauvegarde de justice). Adapte les
+      droits d'accès aux comptes en conséquence et notifie les représentants
+      légaux désignés.
+    owner_team: Équipe Juridique et Comptes
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-enregistrement-mesure-protection
+    name: Enregistrement d'une mesure de protection
+    description: >-
+      Saisit la mesure de protection prononcée par le tribunal (type, date
+      d'effet, identité du protecteur désigné) et reconfigure automatiquement
+      les règles d'accès du client aux produits bancaires selon le type de mesure.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-anonymisation-rgpd
+    name: Moteur d'anonymisation RGPD
+    description: >-
+      Anonymise les données personnelles des clients dont le délai de
+      conservation légal est écoulé et dont la relation commerciale est terminée.
+      Conserve uniquement les données agrégées nécessaires aux obligations
+      réglementaires et au reporting statistique.
+    owner_team: Équipe Conformité Données
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-detection-fin-conservation
+    name: Détection des fiches en fin de conservation
+    description: >-
+      Identifie quotidiennement les fiches dont le délai de conservation est
+      atteint en croisant la date de fin de relation et les durées légales
+      applicables par catégorie de données. Produit une liste de travail
+      pour le moteur d'anonymisation.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-anonymisation-champs-personnels
+    name: Anonymisation des champs personnels
+    description: >-
+      Remplace les champs identifiants (nom, prénom, adresse, IBAN) par des
+      valeurs pseudonymes et supprime les documents archivés. Les transactions
+      historiques conservent uniquement les montants et catégories agrégées.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-moteur-notifications-client
+    name: Moteur de notifications client
+    description: >-
+      Envoie les communications transactionnelles et réglementaires aux clients
+      via les canaux configurés (SMS, email, notification push). Gère les
+      accusés de réception, les relances et les bounces pour garantir la
+      traçabilité des envois.
+    owner_team: Équipe Expérience Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-envoi-sms-transactionnel
+    name: Envoi de SMS transactionnel
+    description: >-
+      Route les SMS transactionnels vers l'opérateur de téléphonie fictif
+      TELEROUTE en gérant les priorités d'envoi et les fenêtres horaires
+      autorisées. Les SMS non délivrés sont réessayés deux fois à 15 minutes
+      d'intervalle.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-envoi-email-reglementaire
+    name: Envoi d'emails réglementaires
+    description: >-
+      Génère et envoie les emails requis par la réglementation (récapitulatif
+      annuel des frais, relevé de situation) depuis une adresse d'expédition
+      dédiée. Les pièces jointes volumineuses sont remplacées par un lien de
+      téléchargement sécurisé.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: system
+    id: sys-dref-referentiel-activites-professionnelles
+    name: Référentiel des activités professionnelles client
+    description: >-
+      Stocke et maintient à jour les informations sur l'activité professionnelle
+      des clients personnes physiques (employeur fictif, secteur, statut salarié
+      ou indépendant, revenus déclarés) utilisées pour la segmentation, le
+      scoring crédit et les revues KYC.
+    owner_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-mise-a-jour-situation-pro
+    name: Mise à jour de la situation professionnelle
+    description: >-
+      Enregistre un changement de situation professionnelle du client (nouveau
+      poste, licenciement, retraite) et recalcule les revenus estimés utilisés
+      dans les modèles de segmentation et de scoring. La donnée est horodatée
+      et la précédente valeur conservée en historique.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dref-declaration-revenus
+    name: Déclaration des revenus annuels
+    description: >-
+      Collecte la déclaration de revenus annuels du client via un formulaire
+      en ligne avec possibilité de joindre un justificatif (bulletin de salaire,
+      avis d'imposition). Le montant déclaré est transmis aux systèmes de
+      scoring crédit et de segmentation.
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-fiche-client
+    name: Fiche client
+    description: >-
+      Enregistrement central du référentiel client regroupant l'identité civile,
+      les coordonnées, le profil de risque et les métadonnées de gestion. Toute
+      ouverture de compte ou de produit suppose l'existence préalable d'une fiche client valide.
+    steward_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-consentement
+    name: Consentement RGPD
+    description: >-
+      Accord explicite du client autorisant un traitement spécifique de ses données
+      personnelles. Chaque consentement est daté, versionné et lié au texte légal
+      présenté au moment de la signature.
+    steward_team: Équipe Conformité Données
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-document-identite
+    name: Document d'identité
+    description: >-
+      Pièce justificative d'identité (carte nationale d'identité, passeport,
+      titre de séjour) archivée lors de l'entrée en relation ou d'une mise à
+      jour KYC. Possède une date de validité surveillée par le système d'archivage.
+    steward_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-foyer
+    name: Foyer bancaire
+    description: >-
+      Unité de regroupement de clients physiques partageant une situation
+      économique commune. Sert de base au calcul de l'endettement global et
+      à la cohérence des plafonds mutualisés entre produits.
+    steward_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-mandataire
+    name: Mandataire
+    description: >-
+      Personne physique ou morale disposant d'une délégation de pouvoir sur
+      un ou plusieurs comptes bancaires au titre d'une procuration. Ses droits
+      d'accès sont définis dans l'acte de mandat enregistré.
+    steward_team: Équipe Juridique et Comptes
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-entreprise-cliente
+    name: Entreprise cliente
+    description: >-
+      Personne morale titulaire d'un ou plusieurs comptes professionnels.
+      Caractérisée par son numéro SIREN, sa forme juridique et sa liste de
+      bénéficiaires effectifs réglementaires.
+    steward_team: Équipe Entreprises
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-profil-risque
+    name: Profil de risque LCB-FT
+    description: >-
+      Classification du niveau de risque LCB-FT attribué à un client sur la
+      base de critères déclaratifs et comportementaux. Conditionne la fréquence
+      des revues KYC et le niveau de surveillance transactionnelle applicable.
+    steward_team: Équipe Risques LCB-FT
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-alerte-conformite
+    name: Alerte conformité
+    description: >-
+      Notification interne signalant une anomalie dans les données ou les
+      documents d'un client (donnée manquante, document expiré, profil de
+      risque modifié). Comporte un niveau de priorité et un délai de traitement.
+    steward_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-segment-commercial
+    name: Segment commercial
+    description: >-
+      Étiquette commerciale attribuée à un client (standard, premium, professionnel,
+      patrimonial) déterminant l'offre de produits proposés et le niveau de
+      service associé. Recalculée périodiquement par le moteur de segmentation.
+    steward_team: Équipe Marketing Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-dossier-kyc
+    name: Dossier KYC
+    description: >-
+      Ensemble structuré des documents et informations collectés lors de l'entrée
+      en relation et mis à jour lors des revues périodiques. Constitue la pièce
+      centrale de la preuve de diligence raisonnable exercée par la banque.
+    steward_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-evenement-referentiel
+    name: Événement référentiel client
+    description: >-
+      Notification structurée émise lors de tout changement sur une fiche client
+      (création, modification d'adresse, changement de statut KYC, décès). Consommé
+      par les systèmes abonnés au hub de diffusion.
+    steward_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-mesure-protection-juridique
+    name: Mesure de protection juridique
+    description: >-
+      Disposition légale (tutelle, curatelle, sauvegarde de justice) prononcée
+      par un tribunal à l'égard d'un client majeur protégé. Entraîne une
+      restriction des droits d'accès aux comptes bancaires.
+    steward_team: Équipe Juridique et Comptes
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-score-qualite-donnees
+    name: Score de qualité des données
+    description: >-
+      Indicateur numérique de 0 à 100 reflétant la complétude et la cohérence
+      des données d'une fiche client. Alimenté par le moteur de qualité et
+      utilisé pour prioriser les actions de remédiation.
+    steward_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-beneficiaire-effectif
+    name: Bénéficiaire effectif
+    description: >-
+      Personne physique détenant directement ou indirectement une fraction
+      significative du capital ou des droits de vote d'une entreprise cliente.
+      La déclaration des bénéficiaires effectifs est une obligation réglementaire.
+    steward_team: Équipe Entreprises
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-source-identite-externe
+    name: Source d'identité externe
+    description: >-
+      Référentiel officiel fictif (RECIVIL, flux INSEE synthétique) alimentant
+      les données d'état civil et de statut juridique des clients. Les données
+      issues de sources externes sont marquées et versionnées.
+    steward_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-canal-contact
+    name: Canal de contact
+    description: >-
+      Coordonnée de contact d'un client (adresse e-mail, numéro de téléphone,
+      adresse postale) associée à un statut de validité et à des préférences
+      d'usage par type de communication.
+    steward_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dref-portefeuille-conseiller
+    name: Portefeuille conseiller
+    description: >-
+      Ensemble des clients rattachés à un conseiller bancaire dans le référentiel
+      des agences. Sert de base au pilotage de la charge de travail et aux
+      campagnes commerciales ciblées par portefeuille.
+    steward_team: Équipe Réseau Agences
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-migration-referentiel-v3
+    name: Migration du référentiel client vers la version 3
+    description: >-
+      Refonte du modèle de données du référentiel client pour intégrer les
+      nouveaux champs réglementaires LCB-FT et améliorer les performances de
+      lecture. Comprend la migration des données historiques et la mise à jour
+      de l'ensemble des API consommatrices.
+    status: done
+    owner_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-portail-consentements-v1
+    name: Déploiement du portail de gestion des consentements
+    description: >-
+      Mise en production du portail de collecte et de révocation des consentements
+      RGPD en remplacement de la gestion manuelle dans l'outil CRM fictif CRMATIX.
+      Inclut la reprise des consentements historiques collectés sur papier.
+    status: done
+    owner_team: Équipe Conformité Données
+    domains: [referentiel-client]
+    outcomes: Réduction du délai de prise en compte des révocations de 5 jours à 2 heures.
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-deduplication-masse
+    name: Campagne de déduplication des fiches clients
+    description: >-
+      Opération de détection et de fusion des doublons accumulés lors des
+      migrations successives du système central. Le chantier couvre 2,3 millions
+      de fiches analysées sur une période de six mois.
+    status: done
+    owner_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-onboarding-digital-v2
+    name: Refonte du parcours d'onboarding digital
+    description: >-
+      Remplacement du parcours d'ouverture de compte en ligne par un nouveau
+      parcours intégrant la vérification documentaire automatisée et la signature
+      électronique qualifiée. Objectif : ramener le temps d'onboarding sous dix minutes.
+    status: ongoing
+    owner_team: Équipe Parcours Client Digital
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-integration-recivil
+    name: Intégration du flux RECIVIL
+    description: >-
+      Raccordement du référentiel client au flux fictif RECIVIL d'état civil
+      pour automatiser la mise à jour des données suite à un décès ou un
+      changement de nom. Remplace les processus manuels de signalement par les
+      agences.
+    status: done
+    owner_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-refonte-segmentation
+    name: Refonte du modèle de segmentation client
+    description: >-
+      Révision des critères et des seuils de segmentation commerciale pour
+      mieux refléter la valeur patrimoniale estimée des clients. Inclut la
+      recalcul rétroactif de tous les segments et la validation par le comité
+      marketing.
+    status: done
+    owner_team: Équipe Marketing Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-hub-evenements-v1
+    name: Mise en place du hub de diffusion événementielle
+    description: >-
+      Déploiement de l'infrastructure de broker de messages et migration des
+      échanges synchrones entre référentiel client et systèmes consommateurs
+      vers un modèle événementiel asynchrone. Réduit le couplage inter-systèmes.
+    status: done
+    owner_team: Équipe Intégration SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-anonymisation-rgpd-phase1
+    name: Mise en conformité RGPD — anonymisation phase 1
+    description: >-
+      Première phase du chantier d'anonymisation des données clients en fin de
+      conservation légale. Couvre les clients résiliés depuis plus de cinq ans
+      et prioritise les données les plus sensibles (documents d'identité, données
+      de santé).
+    status: done
+    owner_team: Équipe Conformité Données
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-selfcare-droits-rgpd
+    name: Espace self-care exercice des droits RGPD
+    description: >-
+      Développement de l'interface client permettant l'exercice autonome des
+      droits d'accès, de rectification et de portabilité sans intervention du
+      conseiller. Vise à réduire le volume de sollicitations au service client.
+    status: ongoing
+    owner_team: Équipe Expérience Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-api-gateway-referentiel
+    name: Déploiement de l'API Gateway référentiel
+    description: >-
+      Mise en place du point d'entrée unique sécurisé pour l'ensemble des
+      consommateurs du référentiel client. Inclut la migration des intégrations
+      existantes vers le nouveau modèle d'authentification OAuth2.
+    status: done
+    owner_team: Équipe Sécurité SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-qualite-donnees-continue
+    name: Programme qualité des données client en continu
+    description: >-
+      Initiative permanente d'amélioration du score de complétude du référentiel
+      via des campagnes de relance client ciblées et le renforcement des
+      contrôles à la saisie. Suit un cycle trimestriel de priorisation des champs.
+    status: ongoing
+    owner_team: Équipe Qualité Data
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-registre-pm-integration
+    name: Intégration du registre personnes morales
+    description: >-
+      Connexion du référentiel des personnes morales au flux fictif REGISTCO pour
+      l'alimentation automatique des données de dirigeants et de bénéficiaires
+      effectifs. Supprime la saisie manuelle lors des mises à jour annuelles.
+    status: done
+    owner_team: Équipe Entreprises
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-matching-identite-v1
+    name: Déploiement du moteur de correspondance d'identité
+    description: >-
+      Mise en production du moteur probabiliste de détection de doublons inter-fiches
+      en remplacement du rapprochement manuel. Calibrage du seuil de fusion
+      automatique sur un jeu de données annoté par l'équipe qualité.
+    status: done
+    owner_team: Équipe Data Science Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-profilage-risque-v2
+    name: Refonte du modèle de profilage risque LCB-FT
+    description: >-
+      Mise à jour du modèle de scoring risque pour intégrer de nouveaux signaux
+      comportementaux et aligner les seuils de classification sur les orientations
+      de l'Autorité de contrôle fictive ACPREF. Soumis à validation du comité
+      des risques.
+    status: ongoing
+    owner_team: Équipe Risques LCB-FT
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-archivage-kyc-chiffrement
+    name: Chiffrement des archives KYC
+    description: >-
+      Mise à niveau du système d'archivage des documents KYC pour appliquer un
+      chiffrement de bout en bout sur l'ensemble du stock existant. Le chiffrement
+      est réalisé à la volée lors des accès aux documents non encore chiffrés.
+    status: done
+    owner_team: Équipe Sécurité SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-pilotage-alertes-conformite
+    name: Mise en place du pilotage des alertes conformité
+    description: >-
+      Développement du tableau de bord et des indicateurs de SLA pour les alertes
+      conformité client. Remplace le suivi par tableur partagé et automatise
+      les escalades sur dépassement de délai.
+    status: done
+    owner_team: Équipe Conformité KYC
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-protection-juridique-integration
+    name: Intégration des mesures de protection juridique
+    description: >-
+      Connexion du référentiel client au greffe fictif GREJUST pour la réception
+      automatique des notifications de mesures de protection prononcées. Remplace
+      la saisie manuelle par les agences après réception du courrier papier.
+    status: ongoing
+    owner_team: Équipe Juridique et Comptes
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-notifications-multicanal
+    name: Refonte du moteur de notifications multicanal
+    description: >-
+      Consolidation des systèmes d'envoi SMS et email sur une plateforme unique
+      gérant les préférences client, les accusés de réception et les relances.
+      Réduit la multiplicité des contrats opérateurs et harmonise la traçabilité.
+    status: done
+    owner_team: Équipe Expérience Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dref-referentiel-activites-pro
+    name: Enrichissement des données d'activité professionnelle
+    description: >-
+      Extension du référentiel client avec les informations d'activité
+      professionnelle pour les particuliers, alimentées par déclaration client
+      et croisées avec des sources externes fictives. Améliore la pertinence
+      du scoring crédit et de la segmentation.
+    status: ongoing
+    owner_team: Équipe Relation Client
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-referentiel-maitre-unique
+    title: Référentiel client maître unique
+    statement: >-
+      Un seul système est désigné système de référence pour les données d'identité
+      client. Toute modification de ces données doit transiter par ce système maître ;
+      les systèmes consommateurs ne peuvent pas mettre à jour les données d'identité
+      directement.
+    rationale: >-
+      La multiplicité des points d'écriture historiques avait engendré des divergences
+      fréquentes entre les différentes copies du référentiel, causant des anomalies
+      dans les envois de courrier et les contrôles LCB-FT.
+    date: "2023-03-15"
+    decided_by: Comité Architecture SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-api-gateway-obligatoire
+    title: Passage obligatoire par l'API Gateway
+    statement: >-
+      Tout accès au référentiel client depuis un système tiers doit passer par
+      l'API Gateway dédiée. Les connexions directes aux bases de données du
+      référentiel sont interdites, quelle que soit l'équipe demandeuse.
+    rationale: >-
+      La centralisation des accès permet d'appliquer uniformément les politiques
+      d'authentification, de rate-limiting et d'audit. Elle simplifie également
+      les opérations de maintenance et de montée de version.
+    date: "2023-09-01"
+    decided_by: Comité Sécurité SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-evenementiel-asynchrone
+    title: Adoption du modèle événementiel pour la diffusion
+    statement: >-
+      Les mises à jour du référentiel client sont propagées vers les systèmes
+      consommateurs exclusivement par événements asynchrones. Les appels
+      synchrones en lecture directe sont tolérés mais les écritures synchrones
+      inter-systèmes sont prohibées.
+    rationale: >-
+      Le couplage synchrone entre le référentiel et les systèmes aval avait
+      provoqué des cascades de panne lors des pics de charge. Le modèle
+      événementiel améliore la résilience globale et facilite l'ajout de
+      nouveaux consommateurs.
+    date: "2023-06-20"
+    decided_by: Comité Architecture SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-consentement-granulaire
+    title: Granularité fine des consentements RGPD
+    statement: >-
+      Les consentements sont collectés à un niveau de granularité par finalité
+      de traitement. Un consentement global couvrant plusieurs finalités n'est
+      pas admis ; chaque case à cocher correspond à une et une seule finalité.
+    rationale: >-
+      L'autorité de contrôle fictive CPDONNEES a précisé que le consentement
+      global ne satisfait pas l'exigence de spécificité du règlement. La
+      granularité fine réduit le risque de sanction et renforce la confiance
+      des clients.
+    date: "2022-11-10"
+    decided_by: DPO
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-seuil-fusion-auto
+    title: Seuil de fusion automatique à 0,92
+    statement: >-
+      Les doublons présentant un score de similarité supérieur ou égal à 0,92
+      sont fusionnés automatiquement sans intervention humaine. Les paires
+      entre 0,75 et 0,92 sont soumises à un opérateur pour décision manuelle.
+    rationale: >-
+      Les tests sur données réelles ont montré un taux de faux positifs
+      inférieur à 0,3 % au seuil de 0,92, jugé acceptable par l'équipe qualité.
+      En deçà, le volume de révisions manuelles redevenait prohibitif.
+    date: "2024-01-22"
+    decided_by: Comité Qualité Données
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-retention-evenements-30j
+    title: Rétention des événements référentiel à 30 jours
+    statement: >-
+      La fenêtre de rétention des événements sur le broker de messages est fixée
+      à 30 jours calendaires. Les consommateurs qui n'auraient pas traité les
+      événements dans ce délai doivent solliciter une reconstruction complète
+      de leur état via un export initial.
+    rationale: >-
+      Un délai inférieur avait conduit à des pertes de données lors de maintenances
+      prolongées. Trente jours couvrent les cas de déploiement difficile observés
+      en production sans engendrer un coût de stockage prohibitif.
+    date: "2023-09-15"
+    decided_by: Comité Architecture SI
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-kyc-numerique-prioritaire
+    title: KYC numérique prioritaire sur le papier
+    statement: >-
+      Les documents KYC sont collectés et conservés exclusivement sous forme
+      numérique. La réception de documents papier en agence implique une
+      numérisation immédiate suivie de la destruction physique dans les 24 heures.
+    rationale: >-
+      La conservation de documents papier dispersés en agences créait des
+      risques de perte et rendait les contrôles à distance impossibles pour
+      les équipes conformité.
+    date: "2022-05-03"
+    decided_by: Direction Conformité
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-profil-risque-version-archive
+    title: Archivage de l'historique des profils de risque
+    statement: >-
+      Chaque recalcul du profil de risque LCB-FT donne lieu à l'archivage de
+      la version précédente avec son horodatage. La liste des versions est
+      conservée pendant dix ans pour permettre les contrôles rétrospectifs.
+    rationale: >-
+      Les superviseurs ont demandé à pouvoir reconstituer le profil de risque
+      d'un client à une date passée lors des contrôles sur pièces. Cette
+      traçabilité est désormais une exigence documentée dans la charte de conformité.
+    date: "2024-03-07"
+    decided_by: Direction Risques
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-double-validation-radiation
+    title: Double validation obligatoire pour la radiation de surveillance
+    statement: >-
+      Toute radiation d'un client de la liste de surveillance renforcée requiert
+      la validation concordante de deux responsables LCB-FT distincts. Une seule
+      validation ne suffit pas, quel que soit le grade du valideur.
+    rationale: >-
+      Un incident passé avait conduit à la radiation prématurée d'un client
+      ultérieurement impliqué dans un signalement TRACFIN fictif. La double
+      validation réduit le risque d'erreur individuelle.
+    date: "2024-07-14"
+    decided_by: Comité des risques
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-oauth2-scopes-par-application
+    title: Scopes OAuth2 déclarés par application consommatrice
+    statement: >-
+      Chaque application consommatrice du référentiel client doit déclarer
+      explicitement les scopes OAuth2 nécessaires à son fonctionnement. Les
+      accès en lecture et en écriture font l'objet de scopes distincts ;
+      l'attribution de scopes d'écriture est soumise à validation du RSSI.
+    rationale: >-
+      Le modèle de permission précédent était trop permissif et ne permettait
+      pas d'identifier l'application à l'origine d'une écriture anormale dans
+      les journaux d'audit.
+    date: "2023-11-20"
+    decided_by: Comité Sécurité SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-foyer-un-seul-actif
+    title: Unicité du foyer actif par client
+    statement: >-
+      Un client ne peut être membre que d'un seul foyer bancaire actif
+      simultanément. Toute tentative d'ajout à un second foyer est bloquée
+      par le système jusqu'à dissolution du foyer en cours.
+    rationale: >-
+      La présence d'un même client dans plusieurs foyers actifs engendrait des
+      incohérences dans le calcul du taux d'endettement global, causant des
+      risques de sur-endettement non détecté.
+    date: "2023-02-28"
+    decided_by: Comité Produits Crédit
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-normalisation-adresse-systematique
+    title: Normalisation systématique des adresses à la saisie
+    statement: >-
+      Toute adresse postale saisie dans le référentiel client est soumise
+      automatiquement au processus de normalisation ADRNORM avant enregistrement.
+      La saisie d'une adresse non normalisée est bloquée sauf dérogation
+      explicite d'un superviseur qualité.
+    rationale: >-
+      Les envois postaux sur adresses non normalisées représentaient 4,7 % de
+      retours NPAI, entraînant des coûts d'affranchissement et des risques de
+      non-notification réglementaire.
+    date: "2022-08-31"
+    decided_by: Comité Qualité Données
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-expiration-token-api-1h
+    title: Durée de vie des jetons API limitée à une heure
+    statement: >-
+      Les jetons OAuth2 émis par l'API Gateway du référentiel ont une durée de
+      validité maximale de 60 minutes. Les applications doivent implémenter un
+      mécanisme de renouvellement automatique avant expiration.
+    rationale: >-
+      Une durée de vie longue des jetons augmente la fenêtre d'exposition en
+      cas de compromission. Soixante minutes est le compromis retenu entre
+      fréquence de renouvellement et risque de sécurité.
+    date: "2023-09-01"
+    decided_by: Comité Sécurité SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-score-qualite-seuil-relance
+    title: Seuil de score de complétude déclenchant la relance client
+    statement: >-
+      Les fiches présentant un score de complétude inférieur à 65 % font l'objet
+      d'une relance automatique adressée au client. Les fiches entre 65 % et 80 %
+      alimentent uniquement la file de travail du conseiller.
+    rationale: >-
+      Des tests A/B internes ont montré que les relances automatiques en dessous
+      du seuil de 65 % obtiennent un taux de complétion de 38 %, justifiant
+      le coût d'envoi. Au-delà, le taux chute à 9 %.
+    date: "2024-05-12"
+    decided_by: Comité Qualité Données
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-beneficiaires-effectifs-25pct
+    title: Seuil de déclaration des bénéficiaires effectifs à 25 %
+    statement: >-
+      Toute personne physique détenant directement ou indirectement 25 % ou plus
+      du capital ou des droits de vote d'une entreprise cliente doit être déclarée
+      comme bénéficiaire effectif dans le référentiel. Ce seuil s'aligne sur
+      les directives anti-blanchiment applicables.
+    rationale: >-
+      Le seuil de 25 % est celui retenu par la réglementation fictive DAMLCBFT
+      transposée dans la politique interne. Il correspond à la pratique des
+      établissements comparables du secteur.
+    date: "2022-01-10"
+    decided_by: Direction Conformité
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-anonymisation-5ans
+    title: Anonymisation après 5 ans post-résiliation
+    statement: >-
+      Les données personnelles des clients résiliés sont anonymisées à l'issue
+      d'un délai de cinq ans suivant la date de fin de la dernière relation
+      commerciale, sous réserve de l'absence de procédure contentieuse en cours.
+    rationale: >-
+      Le délai de cinq ans couvre les prescriptions civiles et commerciales les
+      plus fréquentes tout en respectant les recommandations de la CPDONNEES
+      fictive sur la durée de conservation.
+    date: "2022-04-01"
+    decided_by: DPO
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-otp-changement-telephone
+    title: OTP obligatoire pour tout changement de numéro de téléphone
+    statement: >-
+      Toute modification du numéro de téléphone principal d'un client en ligne
+      nécessite la validation d'un code OTP envoyé à l'ancien numéro. Si l'ancien
+      numéro est inaccessible, la modification doit être effectuée en agence
+      avec présentation d'un justificatif d'identité.
+    rationale: >-
+      Le numéro de téléphone est utilisé comme facteur d'authentification fort.
+      Sa modification non sécurisée est un vecteur fréquent d'attaque SIM-swap
+      ciblant les comptes à forts encours.
+    date: "2023-07-05"
+    decided_by: Comité Sécurité SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-revue-annuelle-tiers-confiance
+    title: Revue annuelle du statut des tiers de confiance
+    statement: >-
+      Le statut de tiers de confiance est réexaminé chaque année par le comité
+      habilitations. À défaut de renouvellement explicite, le statut expire
+      automatiquement et les conditions ordinaires de délai de carence
+      s'appliquent à nouveau.
+    rationale: >-
+      Des organismes bénéficiant du statut de tiers de confiance avaient connu
+      des changements de gouvernance sans que la banque en soit informée. La
+      revue annuelle systématique réduit ce risque.
+    date: "2023-04-17"
+    decided_by: Comité Habilitations
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-portabilite-json-structure
+    title: Format JSON structuré pour l'export de portabilité
+    statement: >-
+      Les exports de portabilité des données personnelles sont produits au format
+      JSON avec un schéma versionné et documenté publiquement. Le format CSV est
+      abandonné car il ne permet pas d'exprimer les relations entre entités.
+    rationale: >-
+      Le format JSON permet aux clients techniques d'exploiter leur export plus
+      facilement et facilite les transferts vers d'autres établissements.
+      La documentation du schéma répond à une recommandation de la CPDONNEES.
+    date: "2023-10-08"
+    decided_by: DPO
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-segment-calcule-automatiquement
+    title: Calcul automatique du segment sans intervention par défaut
+    statement: >-
+      Le segment commercial d'un client est calculé automatiquement chaque mois
+      et ne nécessite pas d'action du conseiller. Les surclassements manuels
+      sont strictement encadrés et soumis à validation hiérarchique.
+    rationale: >-
+      Les surclassements manuels discrétion accordés par le passé avaient créé
+      des distorsions dans les statistiques de portefeuille et conduit à des
+      offres inadaptées. L'automatisation garantit la cohérence des critères.
+    date: "2024-02-19"
+    decided_by: Comité Marketing Client
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-signature-qualifiee-onboarding
+    title: Signature électronique qualifiée pour l'onboarding
+    statement: >-
+      Les conventions d'ouverture de compte signées lors du parcours d'onboarding
+      digital doivent recourir à la signature électronique qualifiée au sens de
+      la réglementation eIDAS fictive. La signature avancée n'est acceptée que
+      pour les documents internes non contractuels.
+    rationale: >-
+      La signature qualifiée offre la valeur légale équivalente au manuscrit et
+      réduit le risque de contestation de la convention lors d'un litige ultérieur.
+    date: "2023-12-01"
+    decided_by: Direction Juridique
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dref-log-api-immutable
+    title: Journaux d'accès API en écriture seule
+    statement: >-
+      Les journaux d'accès produits par l'API Gateway du référentiel sont stockés
+      sur un support en écriture seule pendant toute leur durée de rétention.
+      Aucune modification ni suppression n'est possible, même par un administrateur.
+    rationale: >-
+      L'intégrité des journaux est une exigence de traçabilité imposée par le
+      cadre réglementaire fictif SYSTRAIL. La protection contre la suppression
+      garantit la valeur probatoire des journaux en cas d'audit.
+    date: "2024-01-09"
+    decided_by: Comité Sécurité SI
+    still_active: true
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rgpd-collecte-minimale
+    title: Minimisation des données collectées à l'onboarding
+    statement: >-
+      Seules les données strictement nécessaires à la finalité déclarée sont
+      collectées lors de l'ouverture de compte. Tout champ supplémentaire doit
+      faire l'objet d'une analyse d'impact préalable validée par le DPO.
+    source: Règlement RGPD fictif article 5
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rgpd-droit-effacement
+    title: Traitement des demandes de droit à l'effacement sous 30 jours
+    statement: >-
+      Toute demande de droit à l'effacement reçue d'un client doit être traitée
+      dans un délai maximum de 30 jours calendaires. Un accusé de réception
+      automatique doit être envoyé dans les 72 heures suivant la réception.
+    source: Règlement RGPD fictif article 17
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-lcbft-conservation-kyc
+    title: Conservation des dossiers KYC pendant 5 ans
+    statement: >-
+      Les documents et informations collectés dans le cadre du KYC sont conservés
+      pendant au moins cinq ans après la fin de la relation d'affaires. Cette
+      obligation s'applique même si le client a exercé son droit à l'effacement.
+    source: Directive anti-blanchiment fictive DAMLCBFT
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-lcbft-revue-kyc-pep
+    title: Revue KYC annuelle obligatoire pour les PPE
+    statement: >-
+      Les clients identifiés comme personnes politiquement exposées (PPE) doivent
+      faire l'objet d'une revue KYC complète au minimum une fois par an. Les
+      dossiers en retard de revue bloquent les nouvelles souscriptions de produits.
+    source: Directive DAMLCBFT et politique interne LCB-FT
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rgpd-portabilite-format
+    title: Export de portabilité dans un format lisible par machine
+    statement: >-
+      Les données fournies en réponse à une demande de portabilité doivent être
+      remises dans un format structuré, couramment utilisé et lisible par machine.
+      Le délai de mise à disposition ne doit pas excéder 30 jours.
+    source: Règlement RGPD fictif article 20
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-acpref-profilage-risque-documente
+    title: Documentation obligatoire de la méthode de profilage risque
+    statement: >-
+      La méthodologie de calcul du profil de risque LCB-FT doit être documentée,
+      tenue à jour et communiquée à l'autorité de contrôle fictive ACPREF sur
+      simple demande. Toute modification substantielle du modèle fait l'objet
+      d'une notification préalable.
+    source: Instructions ACPREF sur le pilotage LCB-FT
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-api-tls-13
+    title: TLS 1.3 minimum pour les flux API du référentiel
+    statement: >-
+      L'ensemble des communications entre l'API Gateway du référentiel et ses
+      clients doivent utiliser TLS 1.3 au minimum. Les versions antérieures
+      sont explicitement interdites et rejetées par la gateway.
+    source: Politique de sécurité des systèmes d'information
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rate-limit-default-1000rpm
+    title: Rate-limit par défaut de 1 000 requêtes par minute
+    statement: >-
+      En l'absence de configuration spécifique, chaque application consommatrice
+      est soumise à un quota de 1 000 requêtes par minute. Ce quota ne peut être
+      augmenté que sur demande validée par l'équipe sécurité SI.
+    source: Politique d'exploitation de l'API Gateway
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-documents-chiffres-au-repos
+    title: Chiffrement des documents KYC au repos
+    statement: >-
+      Tous les documents KYC stockés par le système d'archivage doivent être
+      chiffrés au repos avec un algorithme approuvé par la politique de
+      cryptographie interne. Les clés de chiffrement sont gérées par le HSM
+      centralisé fictif CRYPTOVAULT.
+    source: Politique de sécurité des systèmes d'information
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-acces-documents-habilites
+    title: Accès aux documents KYC restreint aux profils habilités
+    statement: >-
+      La consultation des documents KYC archivés est limitée aux agents disposant
+      d'une habilitation KYC active dans le référentiel des droits. Tout accès
+      est journalisé et consultable dans le journal d'audit centralisé.
+    source: Politique de contrôle des accès logiques
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-siren-valide-obligatoire
+    title: Numéro SIREN validé obligatoire pour les personnes morales
+    statement: >-
+      Toute fiche entreprise doit comporter un numéro SIREN vérifié auprès
+      du flux INSEE fictif. La création d'une fiche entreprise avec un SIREN
+      non validé est bloquée sauf dérogation du responsable conformité.
+    source: Politique interne onboarding entreprise
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-delai-traitement-alerte-critique
+    title: "Délai de traitement des alertes critiques : 24 heures"
+    statement: >-
+      Les alertes conformité de niveau critique doivent être prises en charge
+      par un gestionnaire dans un délai de 24 heures ouvrées suivant leur
+      création. Le non-respect de ce délai déclenche une escalade automatique.
+    source: Charte de conformité interne
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-delai-traitement-alerte-medium
+    title: "Délai de traitement des alertes moyennes : 5 jours ouvrés"
+    statement: >-
+      Les alertes conformité de niveau intermédiaire doivent être traitées dans
+      les cinq jours ouvrés suivant leur création. Les alertes non traitées
+      à l'échéance sont escaladées au responsable d'équipe.
+    source: Charte de conformité interne
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-otp-validite-5min
+    title: Validité de l'OTP de vérification de 5 minutes
+    statement: >-
+      Les codes OTP générés pour la vérification d'une modification de coordonnées
+      (email, téléphone) ont une durée de validité de cinq minutes. Un code
+      utilisé ou expiré est définitivement invalidé et ne peut pas être réutilisé.
+    source: Politique de sécurité des systèmes d'information
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-disponibilite-referentiel-99-5
+    title: Disponibilité du référentiel client de 99,5 % en heures ouvrées
+    statement: >-
+      Le référentiel client doit maintenir une disponibilité d'au moins 99,5 %
+      pendant les heures ouvrées (8h-20h, jours ouvrés). Les fenêtres de
+      maintenance doivent être planifiées hors de cette plage et notifiées
+      48 heures à l'avance.
+    source: SLA de la direction informatique
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-latence-api-lecture-200ms
+    title: Latence des API de lecture inférieure à 200 ms au P95
+    statement: >-
+      Les endpoints de lecture du référentiel client (consultation de fiche,
+      vérification de consentement) doivent répondre en moins de 200 millisecondes
+      au 95e percentile en charge nominale. Les dépassements répétés déclenchent
+      une analyse de performance.
+    source: SLA de la direction informatique
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-portabilite-disponible-48h
+    title: Fichier d'export de portabilité disponible 48 heures
+    statement: >-
+      Le fichier généré en réponse à une demande de portabilité doit rester
+      accessible via le lien de téléchargement pendant 48 heures. Passé ce
+      délai, le lien est invalidé et une nouvelle demande doit être déposée.
+    source: Décision interne DPO
+    severity: low
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-score-completude-minimum-ouverture
+    title: Score de complétude minimal de 80 % pour toute ouverture de compte
+    statement: >-
+      La fiche client doit atteindre un score de complétude d'au moins 80 %
+      avant qu'une ouverture de compte puisse être finalisée. Les champs
+      manquants bloquants sont listés dans le message d'erreur retourné
+      au conseiller.
+    source: Politique interne qualité données
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-backup-quotidien-referentiel
+    title: Sauvegarde quotidienne du référentiel client
+    statement: >-
+      Les données du référentiel client font l'objet d'une sauvegarde complète
+      chaque nuit et d'une sauvegarde différentielle toutes les heures. Le plan
+      de reprise d'activité impose un RPO de quatre heures et un RTO de deux heures.
+    source: Plan de continuité d'activité
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-journaux-audit-3ans
+    title: Rétention des journaux d'audit 3 ans
+    statement: >-
+      Les journaux d'accès et de modification du référentiel client sont conservés
+      pendant trois ans. Cette durée couvre les prescriptions des contrôles
+      internes et les éventuelles enquêtes régulateurs.
+    source: Politique d'archivage des journaux SI
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-acpref-formation-lcbft-annuelle
+    title: Formation LCB-FT annuelle obligatoire pour les gestionnaires KYC
+    statement: >-
+      Tous les agents impliqués dans le traitement des dossiers KYC et des alertes
+      conformité doivent suivre une formation LCB-FT certifiée au moins une fois
+      par an. L'accès aux outils de traitement est subordonné à la mise à jour
+      de cette certification.
+    source: Instructions ACPREF
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-adresse-email-unique-par-client
+    title: Unicité de l'adresse e-mail principale par client
+    statement: >-
+      Chaque client ne peut avoir qu'une seule adresse e-mail principale active.
+      Si une adresse e-mail est déjà utilisée par un autre client, une alerte de
+      doublon est levée pour analyse avant toute mise à jour.
+    source: Politique interne qualité données
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-destruction-papier-24h
+    title: Destruction des documents papier dans les 24 heures après numérisation
+    statement: >-
+      Les documents papier reçus en agence et numérisés pour archivage KYC
+      doivent être physiquement détruits dans les 24 heures suivant la
+      validation de la numérisation. Un registre de destruction est tenu par
+      chaque agence.
+    source: Politique de protection des données
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-consentement-version-texte
+    title: Versionnage obligatoire du texte légal des consentements
+    statement: >-
+      Chaque version du texte légal présenté lors de la collecte d'un consentement
+      doit être archivée et liée aux consentements recueillis sous cette version.
+      La suppression d'une version de texte est interdite si des consentements
+      actifs y font référence.
+    source: Règlement RGPD fictif et recommandations CPDONNEES
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-matching-seuil-minimal-75pct
+    title: Seuil minimal de 0,75 pour la présentation à l'opérateur
+    statement: >-
+      Seules les paires de fiches présentant un score de similarité supérieur ou
+      égal à 0,75 sont soumises à l'opérateur pour décision de fusion. Les paires
+      en dessous de ce seuil sont automatiquement rejetées sans intervention humaine.
+    source: Politique interne qualité données
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rgpd-notification-violation
+    title: Notification des violations de données sous 72 heures
+    statement: >-
+      En cas de violation de données à caractère personnel portant sur le
+      référentiel client, la CPDONNEES fictive doit être notifiée dans un délai
+      maximum de 72 heures après la prise de connaissance de l'incident.
+    source: Règlement RGPD fictif article 33
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-tiers-confiance-siren-verifie
+    title: SIREN vérifié obligatoire pour les tiers de confiance
+    statement: >-
+      L'enregistrement d'un organisme comme tiers de confiance nécessite un numéro
+      SIREN ou équivalent validé par le flux INSEE fictif. Les associations étrangères
+      doivent fournir un identifiant équivalent reconnu par le flux de sources
+      externes.
+    source: Politique interne des habilitations
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-schema-json-versionne
+    title: Schéma JSON des événements référentiel versionné et rétrocompatible
+    statement: >-
+      Chaque évolution du schéma des événements diffusés par le hub doit être
+      rétrocompatible pendant au moins deux versions majeures. Un breaking change
+      requiert une migration coordonnée avec l'ensemble des consommateurs abonnés.
+    source: Politique d'intégration SI
+    severity: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-acces-liste-surveillance-need-to-know
+    title: Accès à la liste de surveillance sur principe du besoin d'en savoir
+    statement: >-
+      La liste des clients sous surveillance renforcée est strictement confidentielle.
+      L'accès est réservé aux membres de l'équipe LCB-FT nommément habilités.
+      Toute consultation hors de cette liste d'habilités est une violation de
+      procédure interne.
+    source: Politique de contrôle des accès logiques
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-rgpd-base-legale-documentee
+    title: Base légale documentée pour chaque traitement de données
+    statement: >-
+      Chaque traitement de données personnelles opéré par le référentiel ou les
+      systèmes connexes doit disposer d'une base légale explicitement documentée
+      dans le registre des traitements. Les traitements sans base légale identifiée
+      sont suspendus jusqu'à régularisation.
+    source: Règlement RGPD fictif article 6
+    severity: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-surclassement-segment-motive
+    title: Surclassement de segment commercial obligatoirement motivé
+    statement: >-
+      Toute modification manuelle du segment commercial d'un client par un
+      conseiller doit être accompagnée d'une justification textuelle d'au moins
+      30 caractères. Les surclassements non motivés sont automatiquement rejetés
+      par le moteur de segmentation.
+    source: Politique commerciale interne
+    severity: low
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-notification-changement-conseiller
+    title: Notification client obligatoire lors d'un changement de conseiller
+    statement: >-
+      Tout transfert de client vers un nouveau conseiller référent déclenche
+      l'envoi d'un courrier ou d'un email d'information au client dans les
+      cinq jours ouvrés suivant le transfert. L'absence de canal de contact
+      valide doit être signalée avant le transfert.
+    source: Charte de la relation client
+    severity: low
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dref-replay-evenements-30j-max
+    title: Fenêtre de rejeu des événements limitée à 30 jours
+    statement: >-
+      Les consommateurs ne peuvent rejouer les événements référentiel que sur
+      une fenêtre maximale de 30 jours glissants. Pour une reconstruction
+      complète de l'état, un export initial doit être demandé via la procédure
+      dédiée.
+    source: Politique d'exploitation du hub événementiel
+    severity: low
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-derive-modele-scoring
+    title: Dérive du modèle de scoring risque LCB-FT
+    statement: >-
+      Le modèle de profilage risque peut perdre en précision au fil du temps
+      si les comportements client évoluent sans recalibrage. Des clients à
+      risque réel pourraient être classés faible risque, échappant à la
+      surveillance transactionnelle renforcée.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [revue semestrielle des performances du modèle, comparaison avec les cas de signalement TRACFIN fictif]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-fuite-documents-kyc
+    title: Fuite de documents KYC archivés
+    statement: >-
+      Une intrusion dans le système d'archivage ou une mauvaise configuration
+      des droits d'accès pourrait exposer des documents d'identité sensibles.
+      L'impact est majeur en termes de réputation et de conformité RGPD.
+    likelihood: low
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [chiffrement au repos, audit trimestriel des habilitations]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-perte-evenements-broker
+    title: Perte d'événements en cas de défaillance du broker
+    statement: >-
+      Une défaillance prolongée du broker de messages pourrait entraîner la
+      perte d'événements non encore consommés si la fenêtre de rétention est
+      dépassée. Les systèmes aval pourraient se retrouver dans un état incohérent
+      avec le référentiel maître.
+    likelihood: low
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [réplication multi-nœuds du broker, procédure de reconstruction par export initial]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-doublons-non-detectes
+    title: Doublons clients non détectés par le moteur de matching
+    statement: >-
+      Des variations orthographiques inhabituelles ou des données d'entrée
+      de mauvaise qualité peuvent conduire le moteur de correspondance à
+      manquer des doublons réels. Ces doublons non détectés faussent les calculs
+      d'endettement global et les revues KYC.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-indisponibilite-source-externe
+    title: Indisponibilité d'une source d'identité externe
+    statement: >-
+      L'interruption du flux RECIVIL ou du flux INSEE fictif bloquerait les
+      processus d'onboarding et de vérification dépendants de ces sources.
+      Des dossiers en attente pourraient accumuler des délais dépassant les
+      engagements de SLA.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-faux-positifs-fusion
+    title: Fusions automatiques de fiches incorrectes
+    statement: >-
+      Un seuil de fusion automatique mal calibré pourrait conduire à la
+      fusion de fiches appartenant à des personnes distinctes, en particulier
+      pour des noms courants. La récupération manuelle d'une fusion incorrecte
+      est coûteuse en temps et risquée pour la relation client.
+    likelihood: low
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [audit mensuel des fusions automatiques sur un échantillon aléatoire]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-consentement-revoque-non-propage
+    title: Révocation de consentement non propagée aux systèmes abonnés
+    statement: >-
+      Un abonné au hub de diffusion affichant un lag important pourrait continuer
+      un traitement après révocation du consentement. La fenêtre de non-conformité,
+      même brève, constitue une violation RGPD exposant la banque à sanction.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [alertes de lag en temps réel, SLA de propagation contractualisé avec les équipes consommatrices]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-fraude-modification-contacts
+    title: Fraude par modification frauduleuse des coordonnées
+    statement: >-
+      Un attaquant ayant compromis un accès client pourrait modifier les
+      coordonnées (email, téléphone) pour rediriger les notifications d'alerte
+      et réaliser des opérations frauduleuses sans que le client légitime
+      en soit informé.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [OTP obligatoire sur l'ancien canal, délai de prise d'effet de 24 heures]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-protection-juridique-retard
+    title: Retard dans l'enregistrement d'une mesure de protection
+    statement: >-
+      Un délai entre le prononcé d'une mesure de protection et son enregistrement
+      dans le référentiel exposerait la banque à la responsabilité d'avoir
+      autorisé des opérations que le client protégé n'était pas en mesure
+      d'effectuer seul.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-ppm-non-declare
+    title: Bénéficiaires effectifs non déclarés sur des personnes morales
+    statement: >-
+      Certaines entreprises clientes pourraient omettre de déclarer des
+      bénéficiaires effectifs franchissant le seuil réglementaire, notamment
+      lors de restructurations capitalistiques. L'absence de détection expose
+      la banque à un risque LCB-FT non géré.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-expiration-token-api-non-geree
+    title: Gestion défaillante de l'expiration des jetons OAuth2
+    statement: >-
+      Une application consommatrice ne gérant pas correctement le renouvellement
+      des jetons OAuth2 pourrait générer des interruptions de service inopinées
+      lors de l'expiration. Les erreurs 401 en production peuvent impacter
+      les parcours client en cours.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-surcharge-matchin-masse
+    title: Surcharge du moteur de correspondance lors de traitements en masse
+    statement: >-
+      Les campagnes de déduplication portant sur des millions de fiches peuvent
+      saturer les ressources du moteur de matching et dégrader les performances
+      de la recherche en temps réel. Un plan de capacité dédié aux campagnes
+      de masse est nécessaire.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-perte-acces-selfcare
+    title: Inaccessibilité de l'espace self-care pour l'exercice des droits
+    statement: >-
+      Une panne prolongée de l'espace client self-care oblige les clients à
+      exercer leurs droits RGPD par d'autres canaux (courrier, agence) plus
+      lents et plus coûteux. Le délai de traitement réglementaire reste
+      opposable même si l'outil numérique est indisponible.
+    likelihood: low
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-degradation-score-qualite
+    title: Dégradation silencieuse du score de qualité des données
+    statement: >-
+      L'ajout de nouveaux champs obligatoires sans recalcul rétroactif peut
+      faire chuter le score de complétude de l'ensemble du référentiel sans
+      alerte visible. Les seuils de blocage basés sur ce score deviendraient
+      alors trop restrictifs et bloqueraient des dossiers légitimes.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-non-conformite-portabilite
+    title: Non-conformité du format d'export de portabilité
+    statement: >-
+      Une évolution du schéma de données du référentiel non répercutée dans
+      le générateur d'export de portabilité pourrait produire des fichiers
+      incomplets ou invalides. Le client recevrait un export ne reflétant
+      pas l'intégralité de ses données, exposant la banque à un manquement RGPD.
+    likelihood: low
+    impact: high
+    domains: [referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-fraude-onboarding-document
+    title: Fraude documentaire lors de l'onboarding digital
+    statement: >-
+      Des documents d'identité falsifiés sophistiqués pourraient tromper le
+      système de vérification documentaire automatisée et permettre l'ouverture
+      de comptes frauduleux. Le taux de détection du service OCR doit être
+      régulièrement évalué sur des vecteurs d'attaque récents.
+    likelihood: medium
+    impact: high
+    domains: [referentiel-client]
+    mitigations: [mise à jour semestrielle du modèle de détection, revue manuelle des cas ambigus]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dref-obsolescence-modele-segmentation
+    title: Obsolescence du modèle de segmentation commerciale
+    statement: >-
+      Des changements macroéconomiques ou démographiques non répercutés dans
+      les critères de segmentation peuvent rendre les segments commerciaux
+      inadaptés à la réalité du portefeuille. Cela se traduit par des offres
+      mal ciblées et une érosion de la satisfaction client.
+    likelihood: medium
+    impact: medium
+    domains: [referentiel-client]
+    mitigations: [revue annuelle des critères de segmentation par le comité marketing]
+    created_from: synthetic
+
+edges:
+
+  # PART_OF — one per feature (67 total)
+  - {source_id: feat-dref-collecte-consentement, target_id: sys-dref-portail-consentements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-revocation-consentement, target_id: sys-dref-portail-consentements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-audit-consentements, target_id: sys-dref-portail-consentements, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-normalisation-adresse, target_id: sys-dref-moteur-qualite-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-score-completude, target_id: sys-dref-moteur-qualite-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-detection-doublons, target_id: sys-dref-moteur-qualite-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-regles-validation, target_id: sys-dref-moteur-qualite-donnees, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-creation-foyer, target_id: sys-dref-gestion-foyers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-dissolution-foyer, target_id: sys-dref-gestion-foyers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-calcul-endettement-foyer, target_id: sys-dref-gestion-foyers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-ajout-mandataire, target_id: sys-dref-referentiel-tiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-revocation-mandataire, target_id: sys-dref-referentiel-tiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-consultation-tiers, target_id: sys-dref-referentiel-tiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-onboarding-pm, target_id: sys-dref-registre-personnes-morales, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-dirigeants, target_id: sys-dref-registre-personnes-morales, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-verification-beneficiaires-effectifs, target_id: sys-dref-registre-personnes-morales, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-abonnement-evenements, target_id: sys-dref-hub-diffusion-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-replay-evenements, target_id: sys-dref-hub-diffusion-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-monitoring-diffusion, target_id: sys-dref-hub-diffusion-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-depot-document-kyc, target_id: sys-dref-archivage-kyc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-expiration-documents, target_id: sys-dref-archivage-kyc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-restitution-document, target_id: sys-dref-archivage-kyc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-demande-rectification, target_id: sys-dref-espace-client-selfcare, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-export-portabilite, target_id: sys-dref-espace-client-selfcare, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-suivi-demandes-rgpd, target_id: sys-dref-espace-client-selfcare, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-scoring-ressemblance, target_id: sys-dref-matching-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-fusion-fiches, target_id: sys-dref-matching-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-recherche-exacte-identite, target_id: sys-dref-matching-identite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-creation-alerte-conformite, target_id: sys-dref-gestion-alertes-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-escalade-alerte, target_id: sys-dref-gestion-alertes-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-cloture-alerte, target_id: sys-dref-gestion-alertes-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-souscription-produit, target_id: sys-dref-catalogue-produits-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-resiliation-produit, target_id: sys-dref-catalogue-produits-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-historique-produits, target_id: sys-dref-catalogue-produits-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-calcul-segment, target_id: sys-dref-segmentation-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-historique-segments, target_id: sys-dref-segmentation-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-email, target_id: sys-dref-gestion-contacts, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-telephone, target_id: sys-dref-gestion-contacts, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-preferences-notification, target_id: sys-dref-gestion-contacts, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-affectation-conseiller, target_id: sys-dref-referentiel-agences, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-transfert-portefeuille, target_id: sys-dref-referentiel-agences, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-consultation-portefeuille, target_id: sys-dref-referentiel-agences, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-calcul-profil-risque, target_id: sys-dref-profilage-risque-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-revue-periodique-kyc, target_id: sys-dref-profilage-risque-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-declenchement-revue-evenementielle, target_id: sys-dref-profilage-risque-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-import-etat-civil, target_id: sys-dref-integration-sources-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-verification-insee, target_id: sys-dref-integration-sources-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-reconciliation-identite-externe, target_id: sys-dref-integration-sources-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-rapport-completude-mensuel, target_id: sys-dref-tableaux-bord-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-authentification-oauth, target_id: sys-dref-api-gateway-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-rate-limiting, target_id: sys-dref-api-gateway-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-journalisation-api, target_id: sys-dref-api-gateway-referentiel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-inscription-liste-surveillance, target_id: sys-dref-gestion-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-radiation-liste-surveillance, target_id: sys-dref-gestion-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-consultation-liste-surveillance, target_id: sys-dref-gestion-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-verification-documentaire-auto, target_id: sys-dref-onboarding-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-signature-electronique-onboarding, target_id: sys-dref-onboarding-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-activation-acces-client, target_id: sys-dref-onboarding-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-certification-tiers-confiance, target_id: sys-dref-gestion-beneficiaires-speciaux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-revocation-tiers-confiance, target_id: sys-dref-gestion-beneficiaires-speciaux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-enregistrement-mesure-protection, target_id: sys-dref-gestion-incapacites-juridiques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-detection-fin-conservation, target_id: sys-dref-anonymisation-rgpd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-anonymisation-champs-personnels, target_id: sys-dref-anonymisation-rgpd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-envoi-sms-transactionnel, target_id: sys-dref-moteur-notifications-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-envoi-email-reglementaire, target_id: sys-dref-moteur-notifications-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-situation-pro, target_id: sys-dref-referentiel-activites-professionnelles, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dref-declaration-revenus, target_id: sys-dref-referentiel-activites-professionnelles, type: PART_OF, created_from: synthetic}
+
+  # OPERATES_ON — feature|system -> business_object (30 edges)
+  - {source_id: feat-dref-collecte-consentement, target_id: obj-dref-consentement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-revocation-consentement, target_id: obj-dref-consentement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-audit-consentements, target_id: obj-dref-consentement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-depot-document-kyc, target_id: obj-dref-document-identite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-expiration-documents, target_id: obj-dref-document-identite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-restitution-document, target_id: obj-dref-document-identite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-score-completude, target_id: obj-dref-score-qualite-donnees, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-detection-doublons, target_id: obj-dref-fiche-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-fusion-fiches, target_id: obj-dref-fiche-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-creation-foyer, target_id: obj-dref-foyer, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-dissolution-foyer, target_id: obj-dref-foyer, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-calcul-endettement-foyer, target_id: obj-dref-foyer, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-ajout-mandataire, target_id: obj-dref-mandataire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-revocation-mandataire, target_id: obj-dref-mandataire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-onboarding-pm, target_id: obj-dref-entreprise-cliente, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-verification-beneficiaires-effectifs, target_id: obj-dref-beneficiaire-effectif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-calcul-profil-risque, target_id: obj-dref-profil-risque, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-revue-periodique-kyc, target_id: obj-dref-dossier-kyc, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-creation-alerte-conformite, target_id: obj-dref-alerte-conformite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-escalade-alerte, target_id: obj-dref-alerte-conformite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-calcul-segment, target_id: obj-dref-segment-commercial, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-historique-segments, target_id: obj-dref-segment-commercial, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-email, target_id: obj-dref-canal-contact, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-mise-a-jour-telephone, target_id: obj-dref-canal-contact, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-affectation-conseiller, target_id: obj-dref-portefeuille-conseiller, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-transfert-portefeuille, target_id: obj-dref-portefeuille-conseiller, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dref-hub-diffusion-referentiel, target_id: obj-dref-evenement-referentiel, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-enregistrement-mesure-protection, target_id: obj-dref-mesure-protection-juridique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-anonymisation-champs-personnels, target_id: obj-dref-fiche-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dref-reconciliation-identite-externe, target_id: obj-dref-source-identite-externe, type: OPERATES_ON, created_from: synthetic}
+
+  # DEPENDS_ON — system->system, feature->feature, feature->system (15 edges)
+  - {source_id: sys-dref-matching-identite, target_id: sys-dref-moteur-qualite-donnees, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-profilage-risque-client, target_id: sys-dref-archivage-kyc, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-hub-diffusion-referentiel, target_id: sys-dref-portail-consentements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-gestion-alertes-conformite, target_id: sys-dref-profilage-risque-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-onboarding-digital, target_id: sys-dref-matching-identite, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-onboarding-digital, target_id: sys-dref-archivage-kyc, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-segmentation-client, target_id: sys-dref-referentiel-activites-professionnelles, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-tableaux-bord-referentiel, target_id: sys-dref-moteur-qualite-donnees, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-anonymisation-rgpd, target_id: sys-dref-archivage-kyc, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dref-calcul-endettement-foyer, target_id: sys-dref-catalogue-produits-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dref-export-portabilite, target_id: sys-dref-portail-consentements, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dref-declenchement-revue-evenementielle, target_id: feat-dref-inscription-liste-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dref-activation-acces-client, target_id: feat-dref-signature-electronique-onboarding, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dref-cloture-alerte, target_id: feat-dref-creation-alerte-conformite, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dref-moteur-notifications-client, target_id: sys-dref-gestion-contacts, type: DEPENDS_ON, created_from: synthetic}
+
+  # CONSTRAINS — constraint|decision -> system|feature|business_object|project (25 edges)
+  - {source_id: con-dref-rgpd-collecte-minimale, target_id: sys-dref-onboarding-digital, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-rgpd-droit-effacement, target_id: sys-dref-espace-client-selfcare, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-lcbft-conservation-kyc, target_id: sys-dref-archivage-kyc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-lcbft-revue-kyc-pep, target_id: sys-dref-profilage-risque-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-acpref-profilage-risque-documente, target_id: sys-dref-profilage-risque-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-api-tls-13, target_id: sys-dref-api-gateway-referentiel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-documents-chiffres-au-repos, target_id: sys-dref-archivage-kyc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-acces-documents-habilites, target_id: feat-dref-restitution-document, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-siren-valide-obligatoire, target_id: feat-dref-onboarding-pm, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-delai-traitement-alerte-critique, target_id: sys-dref-gestion-alertes-conformite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-disponibilite-referentiel-99-5, target_id: sys-dref-api-gateway-referentiel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-score-completude-minimum-ouverture, target_id: feat-dref-activation-acces-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-rgpd-notification-violation, target_id: sys-dref-portail-consentements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-consentement-version-texte, target_id: obj-dref-consentement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dref-acces-liste-surveillance-need-to-know, target_id: feat-dref-consultation-liste-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-referentiel-maitre-unique, target_id: sys-dref-hub-diffusion-referentiel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-api-gateway-obligatoire, target_id: sys-dref-api-gateway-referentiel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-consentement-granulaire, target_id: sys-dref-portail-consentements, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-seuil-fusion-auto, target_id: feat-dref-fusion-fiches, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-kyc-numerique-prioritaire, target_id: sys-dref-archivage-kyc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-double-validation-radiation, target_id: feat-dref-radiation-liste-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-signature-qualifiee-onboarding, target_id: feat-dref-signature-electronique-onboarding, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-anonymisation-5ans, target_id: sys-dref-anonymisation-rgpd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-otp-changement-telephone, target_id: feat-dref-mise-a-jour-telephone, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dref-beneficiaires-effectifs-25pct, target_id: feat-dref-verification-beneficiaires-effectifs, type: CONSTRAINS, created_from: synthetic}

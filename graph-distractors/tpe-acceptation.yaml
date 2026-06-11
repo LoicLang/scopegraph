@@ -1,0 +1,1907 @@
+nodes:
+  # --- SYSTEM 1 : NEXOTERM ---
+  - type: system
+    id: sys-dtpe-nexoterm
+    name: Nexoterm
+    description: Plateforme de gestion du parc de terminaux de paiement électronique déployés chez les commerçants partenaires. Elle orchestre le téléchargement des paramètres, la supervision de l'état des terminaux et la remontée des journaux de transactions.
+    owner_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-nexoterm-enreg-terminal
+    name: Enregistrement des terminaux
+    description: Permet l'enrôlement d'un nouveau terminal dans le parc en associant l'identifiant matériel, le commerçant affilié et le profil de paramétrage applicables. Chaque terminal reçoit un certificat unique lors de cet enrôlement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-nexoterm-telech-params
+    name: Téléchargement des paramètres
+    description: Déploie les configurations (clés de chiffrement, plafonds, tables de routage) sur les terminaux de manière sécurisée via un canal TLS mutualisé. La procédure se déclenche à la prochaine connexion du terminal ou en mode push depuis le back-office.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-nexoterm-supervision
+    name: Supervision du parc
+    description: Surveille en continu la connectivité et l'état fonctionnel de chaque terminal, génère des alertes en cas de décrochage prolongé ou d'anomalie de transaction. Le tableau de bord centralise les indicateurs de disponibilité par région commerciale.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-nexoterm-maj-firmware
+    name: Mise à jour du firmware
+    description: Orchestre le déploiement progressif des nouvelles versions de firmware sur les terminaux en respectant les fenêtres de maintenance convenues avec les commerçants. Un mécanisme de rollback automatique est activé en cas d'échec détecté lors des tests post-flashage.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 2 : MERCAPAY ---
+  - type: system
+    id: sys-dtpe-mercapay
+    name: Mercapay
+    description: Système de gestion des contrats commerçants et de la facturation des services d'acceptation. Il centralise les données contractuelles, les grilles tarifaires et les relevés de commissions dus aux commerçants partenaires.
+    owner_team: Équipe Relations Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-mercapay-creation-contrat
+    name: Création de contrat commerçant
+    description: Permet la saisie et la validation des données contractuelles d'un nouveau commerçant, incluant les conditions tarifaires négociées et les engagements de volume. Le workflow inclut une étape de validation par le responsable commercial référent.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-mercapay-gestion-tarifs
+    name: Gestion des grilles tarifaires
+    description: Administre les barèmes de commission appliqués aux transactions selon le type de carte, le secteur d'activité du commerçant et le canal de paiement. Les modifications de tarif font l'objet d'un historique versionné.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-mercapay-facturation
+    name: Facturation mensuelle commerçant
+    description: Génère automatiquement les factures de commission à la fin de chaque période comptable en agrégeant le volume transactionnel traité et en appliquant les barèmes contractuels. Les factures sont transmises au système d'édition pour envoi.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 3 : ROUTEX ---
+  - type: system
+    id: sys-dtpe-routex
+    name: Routex
+    description: Moteur de routage des transactions issues des terminaux vers les réseaux d'autorisation interbancaires. Il applique les règles de priorité réseau, gère les bascules en cas d'indisponibilité et journalise chaque décision de routage pour la conformité.
+    owner_team: Équipe Infrastructure Monétique
+    domains: [tpe-acceptation, monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-routex-selection-reseau
+    name: Sélection du réseau carte
+    description: Détermine le réseau d'autorisation cible pour chaque transaction à partir des attributs du BIN, des priorités définies dans le contrat commerçant et des règles de least-cost routing. La décision est enregistrée dans le journal de routage.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-routex-bascule-secours
+    name: Bascule sur réseau de secours
+    description: Détecte les indisponibilités réseau en temps réel et réachemine automatiquement les flux vers un réseau secondaire qualifié. Le temps de bascule est inférieur à deux secondes pour ne pas impacter l'expérience paiement du porteur.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-routex-regles-least-cost
+    name: Règles de least-cost routing
+    description: Administre les matrices de coût par réseau et par type de transaction, permettant d'optimiser automatiquement les frais d'interchange supportés par la banque acquéreur. Les règles sont actualisables sans redémarrage du moteur.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 4 : CLEARVAULT ---
+  - type: system
+    id: sys-dtpe-clearvault
+    name: Clearvault
+    description: Entrepôt sécurisé de stockage et de réconciliation des données de compensation issues des transactions TPE. Il assure la préparation des fichiers de clearing à destination des réseaux et la réconciliation comptable des flux acquéreur.
+    owner_team: Équipe Compensation & Règlement
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-clearvault-generation-fichiers
+    name: Génération des fichiers de clearing
+    description: Produit, selon les formats et calendriers imposés par chaque réseau interbancaire, les fichiers de compensation agrégant les transactions de la journée. Chaque fichier est signé et transmis via un canal dédié sécurisé.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-clearvault-reconciliation
+    name: Réconciliation comptable
+    description: Compare les montants transmis aux réseaux avec les montants effectivement réglés et détecte automatiquement les écarts au-delà du seuil paramétré. Les écarts non résolus sous 48 heures déclenchent une alerte au responsable comptable.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-clearvault-archivage-transactions
+    name: Archivage des transactions compensées
+    description: Conserve les enregistrements de transactions compensées dans un stockage immuable pendant la durée réglementaire applicable, avec indexation permettant une restitution en moins de dix secondes pour les demandes de litige.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-clearvault-gestion-litiges
+    name: Gestion des litiges de compensation
+    description: Instrumente le suivi des chargebacks et des litiges interbancaires en agrégeant les pièces justificatives et en traçant les échanges avec les réseaux. Un tableau de bord dédié présente l'encours et l'ancienneté de chaque dossier.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 5 : SECUGATE ---
+  - type: system
+    id: sys-dtpe-secugate
+    name: Secugate
+    description: Passerelle de sécurité applicative positionnée entre les terminaux et les systèmes back-end. Elle assure le déchiffrement des flux EMV, la validation des codes PIN et la détection des tentatives d'intrusion sur les canaux de paiement.
+    owner_team: Équipe Sécurité Paiements
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-secugate-dechiffrement-emv
+    name: Déchiffrement des flux EMV
+    description: Réalise le déchiffrement des données de piste et des cryptogrammes EMV reçus depuis les terminaux en s'appuyant sur le HSM central. Les clés de session sont renouvelées à chaque transaction pour limiter l'exposition en cas de compromission.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-secugate-validation-pin
+    name: Validation des codes PIN
+    description: Vérifie les blocs PIN chiffrés transmis par les terminaux en mode offline et online, en coordinant avec le HSM la comparaison sécurisée sans que la valeur en clair ne transite jamais en mémoire système. Les échecs répétés entraînent le blocage temporaire de la carte.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-secugate-detection-intrusion
+    name: Détection des intrusions réseau
+    description: Analyse en temps réel les patterns de connexion sur les canaux de paiement et bloque les adresses sources présentant des comportements suspects (volumes anormaux, séquences d'erreurs d'authentification répétées). Les incidents sont notifiés au SIEM de la banque.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-secugate-gestion-cles
+    name: Gestion du cycle de vie des clés
+    description: Administre la génération, la distribution et la révocation des clés cryptographiques utilisées pour sécuriser les échanges entre terminaux et back-end. Chaque rotation de clé est tracée dans un registre d'audit dédié conforme aux exigences PCI-P2PE.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 6 : ONBOARDPRO ---
+  - type: system
+    id: sys-dtpe-onboardpro
+    name: Onboardpro
+    description: Portail d'onboarding des nouveaux commerçants permettant la souscription en ligne, la collecte des pièces justificatives et la validation KYB avant l'activation des services d'acceptation. Il s'interface avec les référentiels bancaires internes pour la vérification d'identité.
+    owner_team: Équipe Relation Commerciale
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-onboardpro-souscription
+    name: Souscription en ligne commerçant
+    description: Guide le commerçant à travers un formulaire multi-étapes de collecte des informations légales, bancaires et commerciales nécessaires à l'ouverture du contrat d'acceptation. La progression est sauvegardée automatiquement pour permettre une reprise ultérieure.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-onboardpro-kyb-verification
+    name: Vérification KYB
+    description: Orchestre la vérification de l'identité et de la légitimité du commerçant en interrogeant les registres du commerce et en effectuant les contrôles de sanctions réglementaires. Le résultat de la vérification conditionne l'activation du contrat.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-onboardpro-activation-services
+    name: Activation des services d'acceptation
+    description: Déclenche automatiquement la création du contrat dans Mercapay, l'allocation de terminaux dans Nexoterm et la notification au commerçant dès que toutes les étapes de validation sont franchies. Le délai d'activation est enregistré à des fins de suivi qualité.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 7 : FRAUDWATCH ---
+  - type: system
+    id: sys-dtpe-fraudwatch
+    name: Fraudwatch
+    description: Moteur d'analyse comportementale dédié à la détection des fraudes sur les transactions TPE. Il s'appuie sur des modèles de scoring en temps réel et des règles métier configurables pour générer des alertes ou bloquer des transactions suspectes à l'autorisation.
+    owner_team: Équipe Prévention Fraude
+    domains: [tpe-acceptation, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-fraudwatch-scoring-tpe
+    name: Scoring de fraude TPE
+    description: Calcule un score de risque pour chaque transaction entrante en moins de 100 ms en combinant des variables comportementales, la géolocalisation du terminal et l'historique du porteur. Le score est transmis au moteur d'autorisation pour la prise de décision finale.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-fraudwatch-regles-metier
+    name: Administration des règles métier
+    description: Interface de configuration permettant aux analystes fraude de créer, modifier et tester des règles de détection sans intervention technique. Les règles sont versionnées et leur impact estimé est calculé avant leur mise en production.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-fraudwatch-apprentissage
+    name: Réentraînement des modèles
+    description: Déclenche périodiquement le réentraînement des modèles de scoring sur les données labellisées récentes pour maintenir la performance détective face à l'évolution des patterns de fraude. Un comparatif de performance entre l'ancien et le nouveau modèle est généré avant tout déploiement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 8 : RAPPORTEUR ---
+  - type: system
+    id: sys-dtpe-rapporteur
+    name: Rapporteur
+    description: Plateforme de production des reportings réglementaires et opérationnels liés à l'activité d'acceptation monétique. Elle agrège les données transactionnelles, les indicateurs de performance et les statistiques de fraude pour alimenter les tableaux de bord et les déclarations réglementaires.
+    owner_team: Équipe Conformité & Reporting
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-rapporteur-rapport-regulatoire
+    name: Production des rapports réglementaires
+    description: Génère automatiquement les déclarations périodiques requises par les autorités de supervision (volumes traités, taux de fraude, incidents) dans les formats et selon les calendriers imposés. Chaque rapport est archivé avec son accusé de réception.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-rapporteur-tableau-bord
+    name: Tableau de bord opérationnel
+    description: >-
+      Présente en quasi-temps-réel les indicateurs clés de l'activité d'acceptation (volume transactionnel, taux d'autorisation, taux de fraude, disponibilité des terminaux). Les données sont actualisées toutes les cinq minutes et accessibles depuis n'importe quel navigateur.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-rapporteur-export-donnees
+    name: Export des données analytiques
+    description: Permet aux équipes métier d'exporter des extractions personnalisées au format CSV ou Parquet pour des analyses ad hoc dans les outils de BI internes. Les exports sont tracés et soumis à des restrictions de profil pour protéger les données sensibles.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 9 : PARAMHUB ---
+  - type: system
+    id: sys-dtpe-paramhub
+    name: Paramhub
+    description: Référentiel centralisé des paramètres monétiques partagés entre les systèmes d'acceptation. Il garantit la cohérence des tables de BIN, des plafonds sans contact et des règles de fonctionnement entre Nexoterm, Routex et Secugate.
+    owner_team: Équipe Architecture Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-paramhub-gestion-bin
+    name: Gestion des tables de BIN
+    description: Maintient et distribue les tables de BIN (Bank Identification Number) utilisées pour identifier l'émetteur de la carte et appliquer les règles de routage et de tarification adéquates. Les mises à jour sont répercutées en moins d'une minute sur tous les systèmes abonnés.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-paramhub-plafonds-sans-contact
+    name: Paramétrage des plafonds sans contact
+    description: Administre les seuils de transaction sans contact par type de carte et par marché, en tenant compte des exigences des réseaux interbancaires et des décisions réglementaires locales. Toute modification est soumise à validation avant déploiement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 10 : CONTACLESS360 ---
+  - type: system
+    id: sys-dtpe-contactless360
+    name: Contactless360
+    description: Module dédié à la gestion des transactions sans contact et au suivi de conformité des terminaux NFC. Il contrôle le respect des spécifications EMV Contactless et produit les attestations de conformité exigées par les réseaux.
+    owner_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-contactless360-validation-emv-cl
+    name: Validation EMV Contactless
+    description: Vérifie que chaque terminal sans contact respecte les spécifications EMV L1/L2/L3 lors de la certification et après chaque mise à jour firmware. Les résultats de test sont archivés dans un registre de conformité par terminal.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-contactless360-suivi-conformite-nfc
+    name: Suivi de conformité NFC
+    description: Pilote les campagnes de vérification périodique de la conformité NFC sur le parc installé et génère les rapports d'écart à destination des équipes de déploiement. Les terminaux non conformes sont signalés pour mise en quarantaine jusqu'à correction.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 11 : LOYALTRACK ---
+  - type: system
+    id: sys-dtpe-loyaltrack
+    name: Loyaltrack
+    description: Système de gestion des programmes de fidélité commerçants intégrés au terminal de paiement. Il assure le calcul des points, la mise à jour des soldes en temps réel et l'interface avec les moteurs de promotions des enseignes partenaires.
+    owner_team: Équipe Partenariats Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-loyaltrack-calcul-points
+    name: Calcul des points de fidélité
+    description: Applique les règles de calcul propres à chaque enseigne partenaire pour créditer les points correspondant à chaque transaction éligible. Les règles de calcul sont paramétrables par contrat sans nécessiter de redéploiement applicatif.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-loyaltrack-consultation-solde
+    name: Consultation du solde fidélité au TPE
+    description: Affiche le solde de points du porteur sur l'écran du terminal en fin de transaction, permettant une expérience fidélité transparente sans application dédiée. La consultation est assurée via un appel synchrone au moteur de soldes.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 12 : DEBITDIFF ---
+  - type: system
+    id: sys-dtpe-debitdiff
+    name: Debitdiff
+    description: Moteur de différé et de récurrence permettant aux commerçants de proposer des paiements en plusieurs fois ou des prélèvements récurrents initiés depuis le terminal. Il gère le calendrier d'échéances, la communication avec le core banking et la gestion des impayés.
+    owner_team: Équipe Crédit Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-debitdiff-creation-echeancier
+    name: Création d'un échéancier de paiement
+    description: Génère un plan d'échéances à la demande du commerçant lors de la transaction, en calculant les montants et dates de prélèvement selon les paramètres de l'offre souscrite. Le porteur reçoit une confirmation détaillée avant validation définitive.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-debitdiff-gestion-impayes
+    name: Gestion des impayés
+    description: Détecte les échéances non honorées, déclenche les relances automatiques et coordonne avec les équipes de recouvrement si les tentatives automatiques échouent. Un tableau de suivi présente l'exposition en cours par commerçant et par offre de paiement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-debitdiff-recurrence
+    name: Gestion des paiements récurrents
+    description: Pilote les mandats de prélèvement récurrent initiés depuis le terminal, en assurant la conformité avec les règles SEPA et la traçabilité des consentements porteur. La révocation du mandat peut être déclenchée par le porteur via le service client.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 13 : TERMINALINK ---
+  - type: system
+    id: sys-dtpe-terminalink
+    name: Terminalink
+    description: Couche d'intégration exposant les APIs REST utilisées par les terminaux de nouvelle génération pour communiquer avec les back-ends d'acceptation. Elle gère la normalisation des protocoles, l'authentification mutuelle des terminaux et la résilience des appels.
+    owner_team: Équipe Architecture Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-terminalink-api-autorisation
+    name: API d'autorisation terminaux
+    description: Expose le point d'entrée REST permettant aux terminaux de soumettre les demandes d'autorisation en temps réel, avec un SLA de réponse de 800 ms au 99e percentile. Les requêtes sont validées structurellement avant transmission au moteur d'autorisation.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-terminalink-auth-terminaux
+    name: Authentification mutuelle des terminaux
+    description: Vérifie l'identité de chaque terminal à chaque connexion via un certificat client émis lors de l'enrôlement dans Nexoterm. Les certificats expirés ou révoqués sont rejetés sans exception et signalés dans le journal de sécurité.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-terminalink-resilience
+    name: Résilience et retry des appels
+    description: Implémente des stratégies de circuit breaker et de retry exponentiel pour absorber les défaillances transitoires des back-ends d'acceptation sans perturber l'expérience de paiement. Les métriques de résilience sont exposées en temps réel dans Rapporteur.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 14 : TICKETNUM ---
+  - type: system
+    id: sys-dtpe-ticketnum
+    name: Ticketnum
+    description: Service de génération et d'envoi des tickets de caisse numériques à l'issue d'une transaction TPE. Il prend en charge les formats papier réduit, email, SMS et QR code selon la préférence du porteur et les capacités du terminal.
+    owner_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-ticketnum-generation-ticket
+    name: Génération du ticket numérique
+    description: Compose le ticket de caisse numérique à partir des données de transaction, des informations de fidélité et des promotions appliquées, selon un modèle configurable par enseigne. Le ticket est archivé pendant la durée réglementaire requise.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-ticketnum-envoi-multicanal
+    name: Envoi multicanal du ticket
+    description: Délivre le ticket au porteur via le canal choisi (email, SMS, QR code) dans un délai de trente secondes après la transaction. La préférence du porteur est mémorisée pour les transactions futures avec le même commerçant.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 15 : CASHDESK ---
+  - type: system
+    id: sys-dtpe-cashdesk
+    name: Cashdesk
+    description: Logiciel de caisse intégré permettant la gestion des sessions d'encaissement, la clôture des journées et l'interface avec les terminaux de paiement. Il centralise les données de vente et les remonte vers les systèmes comptables du commerçant.
+    owner_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-cashdesk-session-encaissement
+    name: Gestion des sessions d'encaissement
+    description: Ouvre et clôture les sessions de caisse en enregistrant les totaux par mode de règlement, les annulations et les remboursements. Chaque session est associée à un opérateur identifié pour la traçabilité des opérations.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-cashdesk-interface-tpe
+    name: Interface avec le terminal de paiement
+    description: Pilote le terminal connecté en transmettant le montant à régler et en récupérant le résultat de la transaction pour mise à jour automatique du ticket de caisse. La communication repose sur le protocole Nexo Retailer.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-cashdesk-cloture-journee
+    name: Clôture de journée
+    description: Génère le rapport de fin de journée récapitulant les ventes, les modes de règlement et les écarts de caisse, puis déclenche la remise en banque électronique auprès du système de compensation. Le rapport est archivé et transmis au système comptable du commerçant.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 16 : REFUSELAB ---
+  - type: system
+    id: sys-dtpe-refuselab
+    name: Refuselab
+    description: Moteur d'analyse des refus d'autorisation permettant d'identifier les causes récurrentes de rejet et d'optimiser les taux d'acceptation des commerçants. Il s'appuie sur une classification automatique des codes de refus et des corrélations avec les paramètres de routage.
+    owner_team: Équipe Qualité Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-refuselab-classification-refus
+    name: Classification des codes de refus
+    description: Catégorise automatiquement chaque refus d'autorisation selon une taxonomie métier enrichie (limite dépassée, suspicion de fraude, problème technique, etc.) permettant une analyse qualitative rapide. La classification est réalisée par un modèle entraîné sur l'historique des refus.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-refuselab-analyse-tendances
+    name: Analyse des tendances de refus
+    description: Détecte les variations significatives de taux de refus par commerçant, par réseau ou par type de carte et génère des alertes proactives pour les équipes qualité. Les tendances sont visualisées sur des graphiques temporels actualisés quotidiennement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-refuselab-recommandations
+    name: Recommandations d'optimisation
+    description: Produit automatiquement des recommandations de paramétrage (modification des règles de routage, ajustement des plafonds sans contact) susceptibles d'améliorer le taux d'acceptation pour les commerçants présentant des anomalies. Les recommandations sont soumises à validation avant application.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 17 : TERMINALCERT ---
+  - type: system
+    id: sys-dtpe-terminalcert
+    name: Terminalcert
+    description: Plateforme de gestion du cycle de vie des certificats de terminaux, depuis leur émission à l'enrôlement jusqu'à leur révocation en cas de compromission ou de décommissionnement. Elle s'interface avec l'infrastructure PKI interne de la banque et les annuaires réseau.
+    owner_team: Équipe Sécurité Paiements
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-terminalcert-emission-certificat
+    name: Émission de certificats terminaux
+    description: Génère et signe les certificats client associés à chaque terminal lors de son enrôlement, en respectant la politique de certification définie par l'équipe sécurité. Les certificats sont stockés dans le HSM et transmis de façon sécurisée au terminal.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-terminalcert-revocation
+    name: Révocation de certificats
+    description: Permet la révocation immédiate d'un certificat compromis ou d'un terminal décommissionné, avec propagation instantanée sur les listes de révocation (CRL) consultées par les composants d'authentification. Un journal d'audit horodaté consigne chaque révocation.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 18 : ACCEPTOSTAT ---
+  - type: system
+    id: sys-dtpe-acceptostat
+    name: Acceptostat
+    description: Outil de pilotage de la performance de l'acceptation, mesurant les taux d'approbation, les temps de réponse et les taux de chute par type de transaction et par segment de commerçant. Il alimente les comités de pilotage et les objectifs de performance contractuels.
+    owner_team: Équipe Qualité Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-acceptostat-mesure-taux-approbation
+    name: Mesure des taux d'approbation
+    description: Calcule en continu les taux d'approbation par segment de commerçant, réseau, type de carte et plage horaire, en distinguant les refus techniques des refus métier. Les résultats alimentent le tableau de bord de pilotage et les alertes automatiques.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-acceptostat-sla-contractuels
+    name: Suivi des SLA contractuels
+    description: Compare les performances mesurées aux engagements contractuels convenus avec chaque commerçant et génère automatiquement les rapports de conformité SLA. Les dépassements de seuil déclenchent des notifications auprès des équipes commerciales et techniques.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 19 : TRANSLINK ---
+  - type: system
+    id: sys-dtpe-translink
+    name: Translink
+    description: Passerelle de communication entre le réseau bancaire interne et les réseaux d'autorisation interbancaires (CB, Visa, Mastercard). Elle gère les connexions ISO 8583, les sessions de protocole et la supervision des liens réseau avec les partenaires interbancaires.
+    owner_team: Équipe Infrastructure Monétique
+    domains: [tpe-acceptation, monetique]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-translink-connexion-iso8583
+    name: Gestion des connexions ISO 8583
+    description: Maintient les sessions de protocole ISO 8583 avec les partenaires réseau, gère les keep-alives et déclenche les procédures de reconnexion automatique en cas de rupture. La supervision des connexions actives est accessible depuis un tableau de bord dédié.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-translink-supervision-liens
+    name: Supervision des liens interbancaires
+    description: Surveille la latence et la disponibilité des liens vers chaque partenaire réseau et génère des alertes en cas de dégradation. Les métriques de qualité de lien sont historisées et utilisées pour les revues de performance avec les partenaires.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 20 : ACQUIPORTAL ---
+  - type: system
+    id: sys-dtpe-acquiportal
+    name: Acquiportal
+    description: Portail web destiné aux commerçants pour consulter leurs transactions, leurs reversements et leurs relevés d'activité en libre-service. Il expose également les interfaces de configuration des paramètres commerçant délégués par la banque.
+    owner_team: Équipe Relation Commerciale
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-acquiportal-consultation-transactions
+    name: Consultation des transactions
+    description: Permet au commerçant de rechercher et consulter le détail de chaque transaction réalisée, avec des filtres par date, montant, type de carte et statut. Le résultat est exportable pour intégration dans les outils comptables de l'enseigne.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-acquiportal-suivi-reversements
+    name: Suivi des reversements
+    description: Présente le calendrier et le détail des reversements effectués par la banque vers le compte du commerçant, avec le rapprochement entre les transactions compensées et les montants crédités. Les écarts sont signalés avec un mécanisme de contestation en ligne.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 21 : CHARGEBACK360 ---
+  - type: system
+    id: sys-dtpe-chargeback360
+    name: Chargeback360
+    description: Système de traitement des demandes de remboursement forcé (chargeback) initiées par les porteurs ou les réseaux. Il instrumente le workflow de contestation, assemble les preuves de paiement et communique avec les réseaux interbancaires pour défendre les transactions du commerçant.
+    owner_team: Équipe Litiges Monétiques
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-chargeback360-reception-demande
+    name: Réception des demandes de chargeback
+    description: Ingère les demandes de chargeback transmises par les réseaux ou initiées manuellement par le service client, les qualifie selon le code de motif et les affecte à la file de traitement correspondante. Un accusé de réception automatique est envoyé au réseau dans le délai contractuel.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-chargeback360-assemblage-preuves
+    name: Assemblage des preuves de paiement
+    description: Consolide automatiquement les pièces justificatives disponibles (ticket, données EMV, résultat de vérification PIN) pour constituer le dossier de réponse au chargeback dans les délais impartis par le réseau. Les documents manquants sont signalés pour collecte manuelle.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-chargeback360-suivi-dossiers
+    name: Suivi des dossiers de contestation
+    description: Pilote l'avancement de chaque dossier de contestation depuis la réception de la demande jusqu'à la décision finale du réseau, avec des rappels automatiques sur les échéances critiques. Les statistiques de gain/perte par type de litige alimentent les revues qualité mensuelles.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 22 : PROVISIONCRAFT ---
+  - type: system
+    id: sys-dtpe-provisioncraft
+    name: Provisioncraft
+    description: Outil de simulation et de provisionnement des risques liés à l'activité d'acceptation, calculant les réserves à constituer en fonction des volumes de chargeback anticipés et des taux de fraude observés par segment de commerçant.
+    owner_team: Équipe Risque Acquéreur
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-provisioncraft-calcul-reserves
+    name: Calcul des réserves de risque
+    description: Détermine le montant des réserves à constituer pour chaque commerçant en appliquant des modèles actuariels alimentés par les historiques de chargeback et de fraude. Les calculs sont actualisés mensuellement et soumis à validation avant comptabilisation.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-provisioncraft-simulation-scenarions
+    name: Simulation de scénarios
+    description: Permet aux équipes risque de simuler l'impact de variations de taux de fraude ou de chargeback sur les provisions requises, facilitant la préparation des comités de risque. Les scénarios sont sauvegardés et traçables pour comparaison avec les réalisations.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 23 : MULTICAISSE ---
+  - type: system
+    id: sys-dtpe-multicaisse
+    name: Multicaisse
+    description: Solution de caisse multi-points de vente destinée aux grandes enseignes, centralisant la gestion de plusieurs caisses sur un même site et permettant la répartition de charge entre terminaux de paiement. Elle assure la synchronisation des catalogues produits et des paramètres de caisse entre tous les postes.
+    owner_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-multicaisse-repartition-charge
+    name: Répartition de charge entre terminaux
+    description: Distribue les transactions entrantes sur les terminaux disponibles selon leur charge courante pour éviter les goulets d'étranglement aux heures de pointe. La politique de répartition est configurable par l'administrateur du site commerçant.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-multicaisse-synchro-catalogue
+    name: Synchronisation du catalogue produits
+    description: Propage les mises à jour du catalogue produits et des prix sur l'ensemble des postes de caisse d'un même site dans un délai de moins de cinq secondes. Les conflits de version sont détectés et signalés pour résolution manuelle.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 24 : INTEGRATOR ---
+  - type: system
+    id: sys-dtpe-integrator
+    name: Integrator
+    description: Plateforme d'intégration middleware orchestrant les échanges entre les systèmes d'acceptation et les systèmes tiers (ERP commerçants, outils de comptabilité, plateformes e-commerce). Elle expose des connecteurs standardisés et des transformations de format.
+    owner_team: Équipe Architecture Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-integrator-connecteurs-erp
+    name: Connecteurs ERP commerçants
+    description: Fournit des connecteurs préconfigurés pour les principaux ERP du marché, permettant la remontée automatique des transactions et reversements dans le système comptable du commerçant sans développement spécifique. Les connecteurs sont maintenus à jour lors des évolutions de version des ERP partenaires.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-integrator-transformation-format
+    name: Transformation de formats
+    description: Convertit les messages entre les formats internes de la banque et les formats attendus par les systèmes tiers, en s'appuyant sur des règles de mapping administrables sans redéploiement. Les erreurs de transformation sont capturées et envoyées vers une file d'erreurs pour retraitement.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # --- SYSTEM 25 : KYBCHECK ---
+  - type: system
+    id: sys-dtpe-kybcheck
+    name: Kybcheck
+    description: Service centralisé de vérification de l'identité et de la conformité réglementaire des commerçants (KYB – Know Your Business) avant leur intégration dans le dispositif d'acceptation. Il interroge les registres officiels, les listes de sanctions et les bases de données de risque.
+    owner_team: Équipe Conformité Commerçants
+    domains: [tpe-acceptation, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-kybcheck-interrogation-registres
+    name: Interrogation des registres officiels
+    description: Consulte les registres du commerce et des sociétés via des interfaces automatisées pour vérifier la validité juridique et la représentation légale du commerçant. Les résultats sont horodatés et archivés pour la durée réglementaire de conservation.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-kybcheck-criblage-sanctions
+    name: Criblage des listes de sanctions
+    description: Compare les données du commerçant et de ses dirigeants contre les listes de sanctions internationales et les bases de données de personnes politiquement exposées. Un hit déclenche une procédure d'examen renforcé avant toute décision d'activation.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dtpe-kybcheck-scoring-risque-kyb
+    name: Scoring de risque KYB
+    description: Attribue un score de risque global au commerçant candidat en agrégeant les résultats des vérifications réglementaires, la nature de l'activité et les indicateurs sectoriels de risque de fraude. Ce score conditionne le niveau de contrôle appliqué et la fréquence des réévaluations périodiques.
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # =========================================================
+  # BUSINESS OBJECTS (17)
+  # =========================================================
+  - type: business_object
+    id: obj-dtpe-contrat-commercant
+    name: Contrat commerçant
+    description: Accord contractuel entre la banque acquéreur et le commerçant définissant les conditions tarifaires, les engagements de volume et les obligations réglementaires liées à l'acceptation des paiements par carte. Il constitue le référentiel principal des droits et devoirs de chaque commerçant.
+    steward_team: Équipe Relations Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-terminal-paiement
+    name: Terminal de paiement
+    description: Dispositif matériel installé chez le commerçant pour accepter les paiements par carte, qu'il soit fixe ou mobile. Il est identifié par un numéro de série unique et associé à un profil de paramétrage dans Nexoterm.
+    steward_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-transaction-tpe
+    name: Transaction TPE
+    description: Opération de paiement initiée depuis un terminal de paiement, caractérisée par un montant, un identifiant de commerçant, un numéro de terminal, un identifiant de carte et un résultat d'autorisation. Elle constitue l'unité de base des flux de compensation et de reporting.
+    steward_team: Équipe Compensation & Règlement
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-dossier-chargeback
+    name: Dossier de chargeback
+    description: Ensemble documentaire regroupant les pièces justificatives, les échanges avec les réseaux interbancaires et la décision finale associés à une demande de remboursement forcé. Il est piloté dans Chargeback360 jusqu'à sa clôture.
+    steward_team: Équipe Litiges Monétiques
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-lot-compensation
+    name: Lot de compensation
+    description: Regroupement de transactions d'une journée comptable envoyé aux réseaux interbancaires pour règlement. Il est produit par Clearvault et son acceptation par le réseau déclenche le reversement vers le compte du commerçant.
+    steward_team: Équipe Compensation & Règlement
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-profil-commercant
+    name: Profil commerçant
+    description: Agrégat des données d'identification, de configuration et de scoring de risque d'un commerçant dans le dispositif d'acceptation. Il centralise les informations contractuelles, les paramètres actifs et l'historique des vérifications KYB.
+    steward_team: Équipe Relations Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-alerte-fraude-tpe
+    name: Alerte fraude TPE
+    description: Notification générée par Fraudwatch lorsqu'une transaction ou un comportement transactionnel dépasse les seuils de risque définis. Elle contient le score attribué, les variables déterminantes et la recommandation d'action (blocage, surveillance, validation manuelle).
+    steward_team: Équipe Prévention Fraude
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-certificat-terminal
+    name: Certificat terminal
+    description: Certificat X.509 client émis lors de l'enrôlement d'un terminal, utilisé pour son authentification mutuelle lors de chaque connexion aux back-ends d'acceptation. Il est géré dans Terminalcert et révoqué en cas de décommissionnement ou de compromission.
+    steward_team: Équipe Sécurité Paiements
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-grille-tarifaire
+    name: Grille tarifaire
+    description: Barème de commission applicable à un commerçant, définissant les taux par type de carte, par réseau et par canal de paiement. Elle est versionnée dans Mercapay et toute modification tarifaire nécessite la création d'une nouvelle version effective à une date convenue.
+    steward_team: Équipe Relations Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-rapport-sla
+    name: Rapport SLA
+    description: Document périodique mesurant la conformité des performances d'acceptation aux engagements contractuels convenus avec le commerçant. Il est généré par Acceptostat et transmis automatiquement aux parties concernées à échéance mensuelle.
+    steward_team: Équipe Qualité Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-ticket-caisse-num
+    name: Ticket de caisse numérique
+    description: Représentation électronique du reçu de paiement, produite par Ticketnum et contenant les informations de transaction, les détails de fidélité et les conditions de retour. Il peut être transmis par email, SMS ou QR code selon la préférence du porteur.
+    steward_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-session-caisse
+    name: Session de caisse
+    description: Période d'activité d'une caisse enregistreuse entre son ouverture et sa clôture, regroupant l'ensemble des transactions réalisées et les événements associés (annulations, remboursements, erreurs). Chaque session est clôturée en fin de journée et archivée dans Cashdesk.
+    steward_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-echeancier-paiement
+    name: Échéancier de paiement
+    description: Calendrier des prélèvements associés à un paiement différé ou fractionné initié depuis un terminal, définissant les montants, les dates et les modalités de chaque échéance. Il est généré par Debitdiff et communiqué au porteur avant validation.
+    steward_team: Équipe Crédit Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-firmware-version
+    name: Version de firmware terminal
+    description: Package logiciel déployé sur un terminal de paiement, identifié par un numéro de version et associé à une liste de terminaux compatibles. Nexoterm gère le déploiement et le suivi des versions en production sur l'ensemble du parc.
+    steward_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-provision-risque
+    name: Provision de risque acquéreur
+    description: Réserve financière constituée par la banque pour couvrir les pertes potentielles liées aux chargebacks et aux fraudes non récupérées pour un commerçant donné. Son montant est calculé périodiquement par Provisioncraft et validé par le comité des risques.
+    steward_team: Équipe Risque Acquéreur
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-mandat-prelevement
+    name: Mandat de prélèvement récurrent
+    description: Document de consentement du porteur autorisant un commerçant à initier des prélèvements réguliers sur son compte, dans le respect des règles SEPA. Il est créé et géré dans Debitdiff, avec possibilité de révocation à tout moment.
+    steward_team: Équipe Crédit Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dtpe-rapport-compensation
+    name: Rapport de compensation
+    description: Synthèse des flux de compensation journaliers envoyés aux réseaux interbancaires, présentant les montants par réseau, les écarts de réconciliation et le statut de règlement. Il est produit par Clearvault et archivé pour les contrôles réglementaires.
+    steward_team: Équipe Compensation & Règlement
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # =========================================================
+  # PROJECTS (19)
+  # =========================================================
+  - type: project
+    id: proj-dtpe-deploiement-nexoterm-v3
+    name: Déploiement de Nexoterm v3
+    description: Projet de mise à niveau majeure de la plateforme Nexoterm intégrant la gestion des certificats terminaux, le support du protocole Nexo Retailer v4 et la refonte de l'interface d'administration du parc. La migration des terminaux existants est planifiée en vagues régionales.
+    status: ongoing
+    owner_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-integration-contactless-qr
+    name: Intégration du paiement QR Code commerçant
+    description: Projet d'extension du dispositif d'acceptation aux paiements par QR Code générés côté commerçant, permettant l'encaissement sans terminal NFC. Le projet couvre le développement du générateur de QR, l'intégration à Routex et la mise à jour de Ticketnum.
+    status: done
+    owner_team: Équipe Acceptation Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-refonte-onboarding-commercant
+    name: Refonte du parcours d'onboarding commerçant
+    description: Remplacement du formulaire de souscription papier par le portail numérique Onboardpro, incluant la vérification KYB automatisée et la signature électronique du contrat. Ce projet a réduit le délai d'activation moyen de 12 à 3 jours ouvrés.
+    status: done
+    owner_team: Équipe Relation Commerciale
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-deploiement-fraudwatch
+    name: Déploiement de Fraudwatch sur le parc TPE
+    description: Mise en production du moteur de scoring temps réel Fraudwatch pour les transactions TPE, en remplacement des règles statiques héritées. Le projet a nécessité la constitution d'un jeu de données d'entraînement sur douze mois de transactions historiques.
+    status: done
+    owner_team: Équipe Prévention Fraude
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-migration-protocole-nexo
+    name: Migration vers le protocole Nexo Retailer
+    description: Transition du protocole propriétaire utilisé entre les caisses commerçants et les terminaux vers le standard Nexo Retailer, afin d'améliorer l'interopérabilité et de réduire la dépendance à un fournisseur unique. La migration est effectuée par vagues selon le type de caisse.
+    status: ongoing
+    owner_team: Équipe Architecture Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-conformite-pci-p2pe
+    name: Certification PCI P2PE de la chaîne d'acceptation
+    description: Projet de mise en conformité et de certification Point-to-Point Encryption (P2PE) de la chaîne de traitement des données de carte depuis le terminal jusqu'au déchiffrement dans Secugate. La certification réduira le périmètre PCI DSS des commerçants participants.
+    status: ongoing
+    owner_team: Équipe Sécurité Paiements
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-tableau-bord-acceptostat
+    name: Déploiement d'Acceptostat
+    description: Mise en production de la plateforme de pilotage des performances d'acceptation, remplaçant les rapports Excel manuels par des tableaux de bord automatisés. Les alertes sur les SLA contractuels sont opérationnelles depuis la mise en production.
+    status: done
+    owner_team: Équipe Qualité Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-chargeback360-v2
+    name: Refonte du traitement des chargebacks
+    description: Remplacement du processus semi-manuel de gestion des chargebacks par le système automatisé Chargeback360, incluant l'assemblage automatique des preuves et l'interface directe avec les portails réseau. Le délai moyen de réponse a été réduit de 5 à 1,5 jours ouvrés.
+    status: done
+    owner_team: Équipe Litiges Monétiques
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-extension-programme-fidelite
+    name: Extension du programme de fidélité au terminal
+    description: Intégration des programmes de fidélité des enseignes partenaires directement dans le flux de paiement TPE via Loyaltrack, supprimant la nécessité d'une carte de fidélité physique distincte. Vingt enseignes ont été intégrées lors de la première vague.
+    status: done
+    owner_team: Équipe Partenariats Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-securisation-api-terminalink
+    name: Sécurisation des APIs Terminalink
+    description: Renforcement de la sécurité des APIs exposées aux terminaux de nouvelle génération, incluant l'authentification mutuelle par certificat, le rate limiting et la validation stricte des schémas de message. Ce projet fait suite à un audit de sécurité ayant identifié des vulnérabilités sur les contrôles d'entrée.
+    status: done
+    owner_team: Équipe Sécurité Paiements
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-ticket-caisse-numerique
+    name: Déploiement du ticket de caisse numérique
+    description: Mise en production du service Ticketnum permettant d'envoyer les tickets de caisse par email ou SMS en alternative au papier thermique, en réponse aux nouvelles obligations légales sur la dématérialisation. Le taux d'adoption numérique atteint 34 % sur les sites pilotes.
+    status: done
+    owner_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-paiement-fractionne-tpe
+    name: Lancement du paiement fractionné en caisse
+    description: Déploiement de l'offre de paiement en trois ou quatre fois sans frais initiée depuis le terminal via Debitdiff, ciblant les commerçants des secteurs équipement de la maison et électroménager. La première vague couvre 200 commerçants pilotes.
+    status: ongoing
+    owner_team: Équipe Crédit Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-refonte-clearvault
+    name: Refonte de la compensation avec Clearvault
+    description: Migration de l'ancienne plateforme de compensation vers Clearvault, modernisant les formats de fichier, automatisant la réconciliation et réduisant les délais de détection des écarts de règlement. La migration des flux Visa a été achevée en premier.
+    status: done
+    owner_team: Équipe Compensation & Règlement
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-kybcheck-integration
+    name: Intégration de Kybcheck dans l'onboarding
+    description: Connexion du service Kybcheck au parcours Onboardpro pour automatiser les vérifications KYB et de sanctions au moment de la souscription commerçant. Ce projet a permis de réduire les dossiers en instance de vérification manuelle de 60 %.
+    status: done
+    owner_team: Équipe Conformité Commerçants
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-optimisation-least-cost-routing
+    name: Optimisation du least-cost routing
+    description: Projet d'enrichissement des matrices de coût dans Routex pour intégrer les nouvelles grilles d'interchange des réseaux et optimiser automatiquement le routage en fonction des coûts réels. Les économies générées sur les frais d'interchange sont mesurées trimestriellement.
+    status: ongoing
+    owner_team: Équipe Infrastructure Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-portail-acquiportal-v2
+    name: Refonte du portail commerçant Acquiportal
+    description: Modernisation de l'interface commerçant avec une refonte UX complète, l'ajout de la consultation des chargebacks en ligne et l'ouverture de la configuration déléguée des paramètres terminaux. La nouvelle version est déployée en beta pour les commerçants pilotes.
+    status: ongoing
+    owner_team: Équipe Relation Commerciale
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-gestion-risque-provisioncraft
+    name: Déploiement de Provisioncraft
+    description: Mise en production de l'outil de simulation des provisions de risque acquéreur, remplaçant les calculs manuels effectués sous tableur. Le premier comité des risques utilisant les données Provisioncraft a validé une réduction de 8 % des provisions globales grâce à un meilleur ciblage.
+    status: done
+    owner_team: Équipe Risque Acquéreur
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-multicaisse-grandes-enseignes
+    name: Déploiement de Multicaisse chez les grandes enseignes
+    description: Extension de la solution Multicaisse aux enseignes de grande distribution partenaires, permettant la gestion centralisée de plusieurs dizaines de caisses par site. Les premiers déploiements pilotes ont validé la robustesse de la synchronisation catalogue en conditions réelles.
+    status: ongoing
+    owner_team: Équipe Expérience Commerçant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dtpe-paramhub-unification
+    name: Unification des référentiels de paramètres
+    description: Consolidation des multiples sources de vérité sur les paramètres monétiques en un référentiel unique géré par Paramhub, supprimant les synchronisations manuelles inter-systèmes sources de désynchronisation. La phase de migration des tables de BIN est achevée.
+    status: ongoing
+    owner_team: Équipe Architecture Monétique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # =========================================================
+  # DECISIONS (22)
+  # =========================================================
+  - type: decision
+    id: dec-dtpe-protocole-nexo-retailer
+    title: Adoption du standard Nexo Retailer pour les interfaces caisses
+    statement: Toutes les nouvelles intégrations entre logiciels de caisse et terminaux de paiement doivent reposer sur le protocole Nexo Retailer à compter du 1er mars 2024. Les interfaces propriétaires héritées sont maintenues en mode maintenance jusqu'à migration complète.
+    rationale: L'adoption d'un protocole standard réduit les coûts d'intégration et supprime la dépendance à un fournisseur propriétaire, tout en facilitant l'interopérabilité avec de nouveaux partenaires logiciels de caisse.
+    date: "2024-03-01"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-auth-certificat-terminal
+    title: Authentification obligatoire par certificat client pour les terminaux
+    statement: Chaque terminal doit présenter un certificat X.509 valide pour établir toute connexion aux back-ends d'acceptation. Les terminaux ne disposant pas d'un certificat valide se voient refuser l'accès sans dérogation possible.
+    rationale: L'authentification par certificat élimine les risques liés aux identifiants partagés et permet la révocation individuelle d'un terminal compromis sans impact sur le reste du parc.
+    date: "2023-09-15"
+    decided_by: Comité de sécurité paiements
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-scoring-fraudwatch-temps-reel
+    title: Scoring fraude obligatoire en temps réel pour toutes les transactions TPE
+    statement: Toute demande d'autorisation TPE doit être soumise à Fraudwatch pour scoring avant transmission au moteur d'autorisation, sans possibilité de bypass en production. Le délai maximal accordé au scoring est de 80 ms pour ne pas impacter le SLA d'autorisation.
+    rationale: Les tests A/B sur six mois ont démontré une réduction de 23 % du taux de fraude sur le périmètre pilote avec un impact négligeable sur le taux d'acceptation. La généralisation est donc justifiée par les données.
+    date: "2024-06-01"
+    decided_by: Comité de pilotage fraude
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-ticket-dematerialise-defaut
+    title: Ticket numérique par défaut pour les nouvelles installations
+    statement: Pour tout terminal nouvellement déployé à compter du 1er janvier 2025, le ticket numérique est activé par défaut, le porteur devant exprimer explicitement sa préférence pour un ticket papier. Les terminaux existants maintiennent leur comportement jusqu'à leur prochain reconfiguration planifiée.
+    rationale: Conformément aux nouvelles obligations légales sur la dématérialisation des tickets de caisse, ce choix réduit également les coûts de papier thermique et la consommation de ressources.
+    date: "2025-01-01"
+    decided_by: Comité opérationnel acceptation
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-least-cost-routing-activation
+    title: Activation du least-cost routing sur l'ensemble du parc
+    statement: Le module de least-cost routing de Routex est activé pour toutes les transactions sur les réseaux co-badgés à compter du 15 juin 2024. Les règles de routage préférentielles convenues avec les réseaux prioritaires sont maintenues dans les limites fixées contractuellement.
+    rationale: L'analyse des flux a montré une opportunité d'économie d'interchange estimée à 1,2 M€ annuels en optimisant le routage des transactions co-badgées, sans impact détectable sur le taux d'approbation.
+    date: "2024-06-15"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-plafond-sans-contact-50eur
+    title: Plafond sans contact harmonisé à 50 euros
+    statement: Le plafond de transaction sans contact sans saisie du PIN est fixé à 50 euros pour l'ensemble des terminaux du parc, en conformité avec les exigences des réseaux interbancaires. Les commerçants à haut risque peuvent se voir appliquer un plafond inférieur par paramétrage spécifique dans Paramhub.
+    rationale: L'harmonisation simplifie la gestion du parc et aligne la banque sur les pratiques du marché, tout en maintenant la capacité d'adaptation par segment.
+    date: "2022-10-01"
+    decided_by: Comité de conformité réseaux
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-paramhub-source-verite-unique
+    title: Paramhub comme source de vérité unique pour les paramètres monétiques
+    statement: À l'issue du projet d'unification, Paramhub est la seule source autorisée pour les tables de BIN, les plafonds sans contact et les règles de routage. Toute mise à jour de paramètre effectuée directement dans un système applicatif sans passer par Paramhub est considérée comme une dérogation soumise à validation.
+    rationale: La multiplication des sources de paramétrage a généré des désynchronisations responsables d'incidents de production répétés. Centraliser les paramètres dans un référentiel unique est la réponse structurelle à ce problème.
+    date: "2025-04-01"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-certification-p2pe-obligatoire
+    title: Certification P2PE requise pour les nouveaux modèles de terminaux
+    statement: Tout nouveau modèle de terminal référencé dans le parc doit disposer d'une certification PCI P2PE valide avant son déploiement en production. Les modèles existants non certifiés bénéficient d'une période de transition de dix-huit mois.
+    rationale: La certification P2PE réduit significativement le périmètre PCI DSS des commerçants et constitue un avantage concurrentiel dans les négociations commerciales avec les grandes enseignes.
+    date: "2024-09-01"
+    decided_by: Comité de sécurité paiements
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-chargeback-reponse-auto
+    title: Automatisation de l'assemblage des preuves de chargeback
+    statement: Pour les chargebacks dont le montant est inférieur à 500 euros, l'assemblage des preuves est entièrement automatisé par Chargeback360 sans intervention manuelle. Au-delà de ce seuil, une revue manuelle par l'équipe litiges est obligatoire avant envoi de la réponse.
+    rationale: 78 % des chargebacks reçus sont inférieurs à 500 euros. L'automatisation de ce segment permet de concentrer les ressources humaines sur les dossiers complexes à fort enjeu financier.
+    date: "2023-11-01"
+    decided_by: Comité opérationnel litiges
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-rollback-firmware-automatique
+    title: Rollback automatique du firmware en cas d'échec post-flashage
+    statement: Si les tests de validation exécutés après une mise à jour firmware détectent une anomalie sur le terminal, un rollback automatique vers la version précédente est déclenché sans intervention humaine. L'incident est reporté dans Nexoterm et notifié à l'équipe de déploiement.
+    rationale: Les interventions manuelles post-échec de firmware générent des délais d'indisponibilité terminaux préjudiciables aux commerçants et des coûts de support élevés. L'automatisation du rollback a réduit le MTTR de 4 heures à 12 minutes.
+    date: "2024-02-01"
+    decided_by: Comité opérationnel acceptation
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-kyb-renevaluation-biennale
+    title: Réévaluation KYB biennale des commerçants actifs
+    statement: Chaque commerçant actif doit faire l'objet d'une réévaluation de sa conformité KYB au moins tous les deux ans. Les commerçants classés à risque élevé sont soumis à une réévaluation annuelle. Le non-renouvellement dans les délais entraîne la suspension préventive des services d'acceptation.
+    rationale: La réglementation anti-blanchiment impose un suivi continu de la clientèle ; ce rythme de réévaluation est proportionné au risque tout en restant opérationnellement réalisable avec les ressources disponibles.
+    date: "2024-01-15"
+    decided_by: Comité de conformité commerçants
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-api-rest-terminaux-ng
+    title: Architecture REST obligatoire pour les terminaux de nouvelle génération
+    statement: Les terminaux de nouvelle génération communiquent exclusivement via les APIs REST exposées par Terminalink. Le protocole legacy binaire est maintenu uniquement pour les terminaux de l'ancienne génération et ne sera plus disponible après la fin de la période de transition.
+    rationale: L'architecture REST simplifie l'intégration des nouveaux terminaux, facilite les tests et ouvre la possibilité d'intégrer des terminaux de fournisseurs tiers sans développement propriétaire.
+    date: "2023-06-01"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-rapport-sla-mensuel-auto
+    title: Rapport SLA commerçant généré automatiquement chaque mois
+    statement: Acceptostat génère et transmet automatiquement un rapport SLA à chaque commerçant bénéficiant d'un engagement contractuel de performance dans les cinq premiers jours ouvrés du mois suivant. Les rapports sont archivés pendant cinq ans.
+    rationale: La production manuelle des rapports SLA générait des retards fréquents et des risques d'erreur. L'automatisation garantit la ponctualité et la fiabilité des données transmises aux commerçants.
+    date: "2024-03-15"
+    decided_by: Comité de pilotage qualité
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-provision-risque-mensuelle
+    title: Calcul mensuel des provisions de risque acquéreur
+    statement: Les provisions de risque acquéreur sont recalculées mensuellement par Provisioncraft et soumises au comité des risques dans les dix premiers jours du mois suivant. Tout écart supérieur à 15 % par rapport au mois précédent nécessite une justification écrite.
+    rationale: Le calcul mensuel permet de refléter rapidement les variations de comportement des commerçants et de prévenir la sous-provisionnement lors de dégradations soudaines de la qualité d'un portefeuille.
+    date: "2023-05-01"
+    decided_by: Comité des risques
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-archivage-transactions-7ans
+    title: Conservation des transactions compensées pendant sept ans
+    statement: Toutes les transactions compensées sont conservées dans Clearvault pendant sept ans à compter de leur date de traitement, conformément aux exigences légales applicables. Au-delà de cette durée, les enregistrements sont supprimés de manière définitive et traçable.
+    rationale: La durée de sept ans couvre les délais de prescription applicables aux contentieux commerciaux et satisfait aux obligations de conservation imposées par les réglementations fiscale et bancaire.
+    date: "2022-07-01"
+    decided_by: Direction juridique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-fraude-seuil-blocage-auto
+    title: Seuil de blocage automatique des transactions à risque élevé
+    statement: Toute transaction obtenant un score Fraudwatch supérieur à 850 (sur 1000) est automatiquement bloquée sans intervention humaine. Les transactions entre 700 et 850 sont mises en file de revue manuelle par les analystes fraude.
+    rationale: >-
+      La calibration des seuils est basée sur les données historiques de fraude avérée. En dessous de 700, le taux de faux positifs est jugé trop élevé pour justifier une intervention ; au-dessus de 850, le taux de vraie fraude est supérieur à 94 %.
+    date: "2024-07-01"
+    decided_by: Comité de pilotage fraude
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-integrator-connecteurs-standards
+    title: Connecteurs ERP standardisés comme seule interface comptable
+    statement: Les échanges de données de transaction entre la banque et les systèmes comptables des commerçants partenaires doivent passer exclusivement par les connecteurs ERP d'Integrator. Tout accès direct aux bases de données de compensation est interdit hors périmètre de réconciliation interne.
+    rationale: La centralisation via Integrator garantit la traçabilité complète des flux de données partagés et simplifie la gestion des évolutions de format lors des mises à jour de systèmes tiers.
+    date: "2023-09-01"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-emv-contactless-obligatoire
+    title: Conformité EMV Contactless obligatoire pour tout nouveau terminal
+    statement: Tout terminal nouvellement acquis dans le parc doit être certifié EMV L1, L2 et L3 Contactless par un laboratoire accrédité avant son déploiement. Les résultats de certification sont enregistrés dans Contactless360.
+    rationale: La montée en puissance du sans contact impose que tous les terminaux du parc soient capables de traiter ces transactions sans limitation, sous peine d'impacts sur le taux d'acceptation et d'exposition à des pénalités réseau.
+    date: "2022-05-01"
+    decided_by: Comité de conformité réseaux
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-bascule-secours-sla-2s
+    title: SLA de bascule réseau de secours inférieur à deux secondes
+    statement: Routex doit détecter l'indisponibilité d'un réseau et basculer sur le réseau de secours dans un délai maximal de deux secondes. Ce SLA est mesuré en production et son non-respect déclenche une investigation par l'équipe infrastructure monétique.
+    rationale: Un délai de bascule supérieur à deux secondes entraîne des time-out côté terminal et génère des refus techniques inutiles, dégradant l'expérience porteur et le taux d'acceptation commerçant.
+    date: "2023-04-01"
+    decided_by: Comité d'architecture monétique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-ticket-archivage-5ans
+    title: Archivage des tickets numériques pendant cinq ans
+    statement: Ticketnum conserve chaque ticket numérique émis pendant cinq ans à compter de la date de transaction, garantissant leur disponibilité pour les demandes de litige du porteur ou du commerçant. L'accès aux tickets archivés est conditionné à une vérification d'identité.
+    rationale: La durée de cinq ans correspond aux délais légaux de contestation applicables et satisfait aux attentes des commerçants partenaires en matière de traçabilité des ventes.
+    date: "2025-02-01"
+    decided_by: Direction juridique
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-session-caisse-cloture-auto
+    title: Clôture automatique des sessions de caisse non fermées
+    statement: Cashdesk ferme automatiquement toute session de caisse restée ouverte au-delà de minuit heure locale et génère le rapport de clôture correspondant. Un incident est créé dans le système de supervision pour les sessions clôturées automatiquement afin de permettre une vérification humaine.
+    rationale: Les sessions de caisse laissées ouvertes perturbent la comptabilité journalière et peuvent masquer des anomalies transactionnelles. La clôture automatique garantit l'intégrité des données comptables.
+    date: "2023-10-01"
+    decided_by: Comité opérationnel acceptation
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dtpe-renouvellement-cles-annuel
+    title: Renouvellement annuel des clés de chiffrement terminaux
+    statement: Les clés cryptographiques de chiffrement des données de carte doivent être renouvelées au moins une fois par an pour l'ensemble du parc, indépendamment des rotations déclenchées par des événements de sécurité. Terminalcert orchestre et trace chaque renouvellement.
+    rationale: La rotation régulière des clés limite la durée d'exposition en cas de compromission non détectée et est exigée par les normes PCI DSS applicables à la chaîne d'acceptation.
+    date: "2023-01-15"
+    decided_by: Comité de sécurité paiements
+    still_active: true
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # =========================================================
+  # CONSTRAINTS (33)
+  # =========================================================
+  - type: constraint
+    id: con-dtpe-pci-dss-scope
+    title: Périmètre PCI DSS de la chaîne d'acceptation
+    statement: Tout système traitant, transmettant ou stockant des données de carte doit être inclus dans le périmètre PCI DSS de la banque et respecter les exigences de la norme version en vigueur. Les audits de conformité sont réalisés annuellement par un QSA accrédité.
+    source: PCI DSS v4.0
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-rgpd-porteur
+    title: Protection des données personnelles du porteur
+    statement: Les données personnelles des porteurs collectées lors des transactions (notamment le numéro de carte tronqué et les données de ticket) doivent être traitées dans le respect du RGPD, avec des durées de conservation et des droits d'accès strictement définis. La portabilité et la suppression des données sont implémentées dans les systèmes concernés.
+    source: RGPD (UE 2016/679)
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-sla-autorisation-800ms
+    title: "SLA d'autorisation : temps de réponse inférieur à 800 ms"
+    statement: Le moteur d'autorisation doit répondre à 99 % des demandes en moins de 800 millisecondes, end-to-end depuis la réception au point d'entrée Terminalink jusqu'à la transmission de la réponse au terminal. Ce SLA est mesuré et reporté en continu.
+    source: Contrat de niveau de service réseau CB
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-emv-specifications
+    title: Conformité aux spécifications EMV
+    statement: Les terminaux et les composants de traitement de la chaîne d'acceptation doivent respecter les spécifications EMV en vigueur (EMV Book 1 à 4) pour garantir l'interopérabilité interbancaire. Toute dérogation aux spécifications EMV doit être formellement autorisée par le réseau concerné.
+    source: EMVCo Specifications
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-delai-chargeback-reseaux
+    title: Délais de réponse aux chargebacks imposés par les réseaux
+    statement: La réponse à toute demande de chargeback reçue d'un réseau doit être transmise dans les délais contractuels propres à chaque réseau (entre 7 et 30 jours calendaires selon le type de litige). Le dépassement d'un délai réseau rend la contestation caduque de plein droit.
+    source: Règles interbancaires Visa et CB
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-ticket-demateriasation-loi
+    title: Obligation légale de dématérialisation des tickets
+    statement: La loi impose qu'à compter du 1er janvier 2025, les tickets de caisse ne soient plus imprimés systématiquement mais proposés au format numérique par défaut. Les systèmes de caisse et les terminaux doivent prendre en charge cette fonctionnalité pour les commerçants concernés.
+    source: Loi AGEC (2020) – article 49
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-retention-journaux-audit
+    title: Conservation des journaux d'audit pendant dix ans
+    statement: Les journaux d'événements liés aux transactions, aux accès aux systèmes et aux modifications de configuration de la chaîne d'acceptation doivent être conservés pendant dix ans et être consultables dans un délai de 24 heures sur demande réglementaire.
+    source: Règlement délégué (UE) 2018/389 et instructions ACPR
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-lcb-ft-commercant
+    title: Obligations LCB-FT applicables aux commerçants
+    statement: La banque acquéreur est tenue d'appliquer des mesures de vigilance renforcées envers les commerçants présentant un risque LCB-FT élevé, notamment en ce qui concerne la surveillance des transactions et la fréquence des réévaluations KYB. Tout soupçon de blanchiment doit faire l'objet d'une déclaration de soupçon auprès de l'autorité compétente.
+    source: Code monétaire et financier – article L561-2
+    severity: high
+    domains: [tpe-acceptation, lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-sepa-mandat-prelevement
+    title: Règles SEPA applicables aux mandats de prélèvement
+    statement: Tout mandat de prélèvement récurrent initié depuis un terminal doit être établi en conformité avec le Rulebook SEPA Direct Debit, incluant la signature électronique du porteur et la conservation sécurisée du mandat pendant la durée réglementaire. L'identifiant unique de mandat (RUM) doit être communiqué au porteur avant la première échéance.
+    source: SEPA Direct Debit Rulebook
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-disponibilite-99-9
+    title: Disponibilité minimale de 99,9 % pour les services d'autorisation
+    statement: L'ensemble de la chaîne d'autorisation (Terminalink, Routex, Secugate) doit maintenir une disponibilité mensuelle d'au moins 99,9 %, correspondant à moins de 44 minutes d'interruption par mois. Les fenêtres de maintenance sont planifiées hors heures de pointe et notifiées en avance.
+    source: Contrat d'acquéreur réseau CB
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-cryptographie-approved
+    title: Algorithmes cryptographiques approuvés uniquement
+    statement: Seuls les algorithmes cryptographiques figurant sur la liste approuvée par l'équipe sécurité peuvent être utilisés dans la chaîne d'acceptation. Les algorithmes obsolètes (DES simple, MD5 pour la signature, etc.) sont formellement interdits même en mode de rétrocompatibilité.
+    source: Politique de sécurité cryptographique interne
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-taux-fraude-plafond-reseaux
+    title: Plafond de taux de fraude imposé par les réseaux
+    statement: Le taux de fraude mensuel sur les transactions acquérées ne doit pas dépasser les seuils fixés par chaque réseau interbancaire. Le franchissement d'un seuil d'alerte déclenche un plan d'action formalisé ; le franchissement du seuil critique expose la banque à des pénalités financières et à des restrictions opérationnelles.
+    source: Règles Visa Fraud Monitoring Program et CB
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-pci-p2pe-perimetre
+    title: Périmètre PCI P2PE pour les données de piste chiffrées
+    statement: Les composants de la chaîne de déchiffrement (Secugate, HSM) doivent être certifiés conformes PCI P2PE. Les données de carte chiffrées ne doivent jamais être déchiffrées en dehors des équipements certifiés du périmètre P2PE.
+    source: PCI P2PE Standard v3.0
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-iso8583-version-reseau
+    title: Conformité aux versions ISO 8583 imposées par les réseaux
+    statement: Les messages échangés avec chaque réseau interbancaire via Translink doivent respecter la version du protocole ISO 8583 et les extensions propriétaires spécifiées dans les guides d'implémentation réseau en vigueur. Toute évolution de version réseau nécessite une mise à jour de Translink validée avant le déploiement.
+    source: Guides techniques Visa et CB
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-nexo-retailer-certification
+    title: Certification Nexo Retailer pour les logiciels de caisse
+    statement: Les logiciels de caisse communiquant avec les terminaux via le protocole Nexo Retailer doivent avoir complété les tests de certification Nexo avant leur mise en production dans l'environnement d'acceptation de la banque. Les résultats de certification sont enregistrés dans Nexoterm.
+    source: Standard Nexo Retailer
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-kyb-delai-verification
+    title: Délai maximal de vérification KYB à la souscription
+    statement: La vérification KYB d'un nouveau commerçant doit être complétée dans un délai de cinq jours ouvrés à compter de la réception d'un dossier complet. Au-delà de ce délai, l'équipe conformité dispose d'un accès dédié dans Kybcheck pour identifier et débloquer les dossiers en attente.
+    source: Procédure interne de conformité commerçants
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-segregation-roles-caisse
+    title: Ségrégation des rôles dans les systèmes de caisse
+    statement: Les droits d'accès aux fonctions d'annulation, de remboursement et de consultation des journaux de caisse doivent être attribués séparément des droits d'encaissement standard. Aucun utilisateur ne peut cumuler les droits d'encaissement et d'annulation sans validation par un responsable.
+    source: Politique de contrôle interne
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-tests-firmware-obligatoires
+    title: Tests obligatoires post-déploiement firmware
+    statement: Après chaque déploiement de mise à jour firmware, un jeu de tests fonctionnels automatisés doit être exécuté sur le terminal avant la reprise de service. Les tests couvrent au minimum les transactions EMV contact, sans contact et le flux de validation PIN.
+    source: Procédure de déploiement Nexoterm
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-reversements-j1
+    title: Délai de reversement aux commerçants à J+1
+    statement: Les fonds correspondant aux transactions compensées doivent être crédités sur le compte du commerçant au plus tard le jour ouvré suivant la date de clôture du lot de compensation. Tout dépassement de ce délai doit être signalé et justifié à l'équipe compensation.
+    source: Conditions générales d'acceptation commerçant
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-ban-donnees-carte-clear
+    title: Interdiction de stocker les données de carte en clair
+    statement: Aucun système de la chaîne d'acceptation n'est autorisé à stocker les numéros de carte en clair ou les données de piste complètes, que ce soit en base de données, dans des journaux ou dans des fichiers temporaires. Les violations de cette règle sont traitées comme des incidents de sécurité majeurs.
+    source: PCI DSS exigence 3.3 et politique interne de sécurité
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-scoring-delai-80ms
+    title: Délai maximal de scoring fraude de 80 ms
+    statement: Le scoring Fraudwatch doit retourner son résultat en moins de 80 millisecondes pour 99 % des transactions, afin de s'insérer dans le budget temps global d'autorisation sans dépasser le SLA de 800 ms. Tout dépassement systématique déclenche une investigation de performance.
+    source: Architecture technique décision dec-dtpe-scoring-fraudwatch-temps-reel
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-tls-version-minimale
+    title: Version TLS minimale 1.2 pour les communications chiffrées
+    statement: Toutes les communications entre les terminaux, les back-ends d'acceptation et les partenaires réseau doivent utiliser TLS 1.2 au minimum. L'usage de SSL ou de TLS 1.0/1.1 est interdit et détecté automatiquement par la supervision sécurité.
+    source: Politique de sécurité des communications
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-mcc-commercant-obligatoire
+    title: Code MCC obligatoire dans les paramètres commerçant
+    statement: Tout contrat commerçant doit inclure un code MCC (Merchant Category Code) valide, conforme aux listes officielles des réseaux. Ce code conditionne l'application des règles de routage, de tarification et de scoring fraude et ne peut pas être modifié sans validation de l'équipe conformité réseaux.
+    source: Règles d'adhésion réseaux CB et Visa
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-rotation-logs-90jours
+    title: Rotation des journaux opérationnels à 90 jours en ligne
+    statement: Les journaux opérationnels des systèmes d'acceptation (logs applicatifs, traces de routage) sont conservés en ligne dans les systèmes de collecte pendant 90 jours. Au-delà, ils sont archivés à froid pour la durée réglementaire applicable à chaque type de journal.
+    source: Politique de gestion des journaux
+    severity: low
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-deploiement-hors-heures-pointe
+    title: Déploiements techniques hors heures de pointe
+    statement: Les déploiements applicatifs susceptibles d'interrompre le service d'acceptation doivent être planifiés entre 23h et 5h ou pendant les fenêtres de maintenance validées par le comité opérationnel. Les déploiements en urgence hors fenêtre nécessitent une dérogation formelle du responsable des opérations.
+    source: Procédure de gestion des changements
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-refus-terminal-non-certifie
+    title: Refus de connexion des terminaux non certifiés
+    statement: Les terminaux dont le certificat est absent, expiré ou révoqué doivent se voir refuser toute connexion aux back-ends d'acceptation. Cette règle s'applique sans exception et sans mécanisme de grâce automatique pour éviter les failles de sécurité.
+    source: Politique de sécurité des terminaux
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-format-iban-reversement
+    title: Validation IBAN avant activation du reversement
+    statement: L'IBAN de reversement déclaré par le commerçant lors de la souscription doit être validé par un contrôle de structure et un contrôle de cohérence de domiciliation avant toute activation du service. Un reversement vers un IBAN invalide est bloqué et notifié à l'équipe commerciale.
+    source: Règles SEPA Credit Transfer
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-cle-hsm-certified
+    title: Opérations cryptographiques sur HSM certifié
+    statement: Toutes les opérations cryptographiques sensibles (génération de clés, déchiffrement de piste, validation PIN) doivent être réalisées exclusivement sur des modules HSM certifiés PCI HSM. Les logiciels de remplacement de HSM sont formellement interdits dans la chaîne d'acceptation.
+    source: PCI DSS exigence 6.3 et PCI HSM
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-echeancier-taux-usure
+    title: Respect du taux d'usure pour les paiements fractionnés
+    statement: Les offres de paiement fractionné proposées via Debitdiff doivent respecter les plafonds de taux effectif global (TEG) fixés par la Banque de France chaque trimestre. La vérification de conformité est automatisée lors de la création de chaque échéancier.
+    source: Code de la consommation – article L314-6
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-notification-incident-1h
+    title: Notification des incidents majeurs sous une heure
+    statement: Tout incident impactant la disponibilité ou la sécurité de la chaîne d'acceptation pendant plus de quinze minutes doit faire l'objet d'une notification initiale au comité de gestion des incidents dans un délai d'une heure. Les incidents de sécurité impliquant des données de carte sont également notifiés à l'ACPR conformément aux obligations légales.
+    source: Politique de gestion des incidents
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-rapport-regulatoire-bdf
+    title: Déclarations réglementaires périodiques à la Banque de France
+    statement: Les statistiques de transactions acquérées (volumes, montants, taux de fraude) doivent être déclarées à la Banque de France selon les formats et calendriers définis dans ses instructions. Rapporteur est responsable de la génération et de la transmission de ces déclarations.
+    source: Instructions de la Banque de France sur la surveillance des moyens de paiement
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-isolation-env-prod
+    title: Isolation stricte entre les environnements de production et de test
+    statement: Les systèmes de test et de recette de la chaîne d'acceptation ne doivent pas pouvoir accéder aux données de production. Les configurations réseau et les certificats de test sont distincts des certificats de production et ne sont pas interchangeables.
+    source: PCI DSS exigence 6.4 et politique de gestion des environnements
+    severity: high
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dtpe-validation-schema-message
+    title: Validation stricte des schémas de messages à l'entrée
+    statement: Tout message entrant dans la chaîne d'acceptation via Terminalink doit être validé structurellement et sémantiquement avant traitement. Les messages non conformes sont rejetés avec un code d'erreur explicite et journalisés pour analyse.
+    source: Architecture technique Terminalink
+    severity: medium
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  # =========================================================
+  # RISKS (17)
+  # =========================================================
+  - type: risk
+    id: risk-dtpe-compromission-cles-terminaux
+    title: Compromission des clés de chiffrement terminaux
+    statement: Une faille dans la procédure de gestion des clés ou une vulnérabilité du HSM pourrait permettre l'extraction des clés de chiffrement utilisées pour protéger les données de carte, exposant l'ensemble du parc à une fraude massive. Ce risque est amplifié par la taille du parc et la durée de vie des clés.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Audit annuel du HSM et de la procédure de gestion des clés
+      - Rotation annuelle systématique des clés et révocation immédiate en cas de suspicion
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-desynchronisation-paramhub
+    title: Désynchronisation des paramètres entre systèmes
+    statement: Un défaut de propagation dans Paramhub pourrait conduire à des incohérences de paramétrage entre Nexoterm, Routex et Secugate, générant des refus d'autorisation erronés ou des comportements de routage inattendus sur une partie du parc. Ce risque est particulièrement sensible lors des modifications de tables de BIN.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Monitoring des acquittements de propagation avec alerte sur non-réception
+      - Vérification de cohérence quotidienne automatisée entre les paramètres des systèmes abonnés
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-accumulation-chargebacks
+    title: Accumulation de chargebacks sur un segment commerçant
+    statement: Une dégradation rapide du comportement frauduleux sur un segment commerçant mal couvert par les règles Fraudwatch pourrait provoquer une accumulation de chargebacks dépassant les seuils réseau avant que les alertes ne soient détectées et traitées. La banque serait exposée à des pénalités et restrictions opérationnelles.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Surveillance quotidienne du ratio chargebacks par segment dans Acceptostat
+      - Révision mensuelle des règles Fraudwatch par segment à risque élevé
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-indispo-reseau-interbancaire
+    title: Indisponibilité prolongée d'un réseau interbancaire
+    statement: Une panne prolongée d'un réseau interbancaire majeur sans réseau de secours disponible entraînerait le refus systématique des transactions des porteurs de ce réseau sur l'ensemble du parc. Les commerçants subiraient une perte de chiffre d'affaires et pourraient invoquer les SLA contractuels.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Configuration de réseaux de secours pour les transactions co-badgées dans Routex
+      - Tests de bascule trimestriels en environnement de production hors heures de pointe
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-firmware-defectueux-parc
+    title: Déploiement d'un firmware défectueux sur le parc
+    statement: Un bug non détecté en recette dans une mise à jour firmware pourrait se propager sur un grand nombre de terminaux avant détection, paralysant les paiements chez les commerçants affectés et nécessitant un rollback d'urgence à grande échelle. Ce risque est amplifié par la taille et la diversité du parc.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Déploiement progressif par vagues avec critères de go/no-go automatisés
+      - Mécanisme de rollback automatique post-flashage dans Nexoterm
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-derive-modele-fraude-tpe
+    title: Dérive du modèle de scoring fraude TPE
+    statement: L'évolution des patterns de fraude sans réentraînement suffisamment fréquent du modèle Fraudwatch pourrait dégrader sa performance détective, augmentant le taux de fraude non détectée ou le taux de faux positifs impactant le taux d'acceptation des commerçants. Ce risque est accentué lors des périodes de forte activité commerciale.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Suivi mensuel des métriques de performance du modèle (précision, rappel, AUC)
+      - Réentraînement trimestriel systématique avec les données labellisées récentes
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-defaillance-clearvault
+    title: Défaillance de la compensation avec perte de fichiers
+    statement: Une panne de Clearvault avec corruption ou perte de fichiers de compensation pourrait entraîner des retards de reversement aux commerçants et des discordances avec les réseaux nécessitant une réconciliation manuelle fastidieuse. Le risque financier est proportionnel aux volumes journaliers traités.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Sauvegarde temps réel des fichiers de compensation sur un stockage redondant
+      - Plan de reprise d'activité testé semestriellement avec objectif RTO de 4 heures
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-non-conformite-pci
+    title: Non-conformité PCI DSS détectée lors de l'audit annuel
+    statement: Des écarts de conformité PCI DSS non identifiés pourraient être relevés lors de l'audit annuel par le QSA, exposant la banque à une perte de la certification, à des pénalités réseau et à une dégradation de la confiance des partenaires commerçants.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Self-assessment trimestriel par l'équipe sécurité sur les exigences PCI DSS clés
+      - Correction en continu des écarts de conformité identifiés lors des revues internes
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-surcharge-terminalink
+    title: Surcharge de la passerelle Terminalink en période de pic
+    statement: Un pic de transactions simultanées supérieur aux capacités dimensionnées de Terminalink (notamment pendant les soldes ou les fêtes) pourrait provoquer des dégradations de temps de réponse ou des rejets de connexion entraînant des pertes de transactions pour les commerçants. Le dimensionnement actuel est basé sur les historiques et peut être insuffisant en cas de croissance rapide du parc.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Tests de charge annuels sur Terminalink avec simulation de 150 % du pic historique
+      - Architecture de scaling horizontal activable en autonomie par les équipes ops
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-litiges-mandat-prelevement
+    title: Litiges porteurs sur les mandats de prélèvement récurrent
+    statement: Des contestations de porteurs affirmant ne pas avoir consenti à un mandat de prélèvement récurrent pourraient se multiplier si la traçabilité des consentements dans Debitdiff est insuffisante ou si des commerçants exploitent abusivement les mandats. La banque acquéreur serait exposée à des chargebacks récurrents difficiles à défendre.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Horodatage et archivage sécurisé de chaque consentement porteur dans Debitdiff
+      - Procédure de révocation du mandat accessible en libre-service via le service client
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-retard-kyb-activation
+    title: Retard de vérification KYB bloquant l'activation des commerçants
+    statement: Des pics de demandes d'onboarding ou des dysfonctionnements de Kybcheck pourraient entraîner des retards de vérification KYB dépassant les cinq jours ouvrés contractuels, générant une insatisfaction commerçant et des pertes commerciales pour la banque. Ce risque est particulièrement sensible en période de campagne commerciale.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - File d'attente prioritaire dans Kybcheck pour les dossiers à enjeu commercial fort
+      - Tableau de suivi des délais de traitement partagé avec l'équipe commerciale
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-obsolescence-terminaux-anciens
+    title: Obsolescence des terminaux non compatibles avec les nouvelles exigences réseau
+    statement: L'évolution des exigences techniques des réseaux interbancaires (nouvelles versions EMV, nouvelles exigences de sécurité) pourrait rendre certains terminaux anciens du parc non conformes avant la fin de leur durée de vie prévue, nécessitant des remplacements anticipés coûteux.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Veille proactive sur les évolutions des spécifications réseau et des timelines imposées
+      - Suivi des versions firmware par modèle dans Nexoterm pour anticiper les fins de support
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-perte-cle-kyb-commercant
+    title: Perte de traçabilité des décisions KYB
+    statement: Un dysfonctionnement de Kybcheck ou une mauvaise gestion des archives pourrait conduire à l'incapacité de prouver les vérifications KYB réalisées lors d'un contrôle réglementaire, exposant la banque à des sanctions pour absence de justification des diligences de connaissance client.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Archivage immuable et redondant de chaque décision KYB avec ses justificatifs dans Kybcheck
+      - Test annuel de restitution des dossiers d'archive sur demande simulée régulateur
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-fuite-donnees-ticket
+    title: Fuite des données des tickets numériques
+    statement: Une vulnérabilité dans Ticketnum ou une mauvaise configuration du contrôle d'accès aux tickets archivés pourrait permettre à un acteur malveillant d'accéder aux données personnelles et transactionnelles contenues dans les tickets de caisse numériques, exposant la banque à des sanctions RGPD et à une atteinte à la réputation.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Audit de contrôle d'accès semestriel sur l'entrepôt d'archivage des tickets
+      - Chiffrement des données de ticket au repos avec rotation annuelle des clés
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-concentration-reseau-translink
+    title: Concentration des flux sur un seul point de connexion réseau
+    statement: La concentration de l'ensemble des flux interbancaires vers un seul composant Translink sans redondance suffisante crée un point de défaillance unique dont la panne entraînerait l'interruption totale des autorisations. Ce risque est aggravé par la complexité des sessions ISO 8583 nécessitant un état partagé.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Architecture active-passive de Translink avec bascule automatique en moins de 30 secondes
+      - Tests de bascule mensuelle en production pour valider le bon fonctionnement du basculement automatique
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-donnees-bilan-provisions-faux
+    title: Sous-provisionnement des risques acquéreur
+    statement: Une mauvaise calibration des modèles de Provisioncraft ou l'utilisation de données historiques insuffisamment représentatives pourrait conduire à un sous-provisionnement du risque acquéreur, créant un écart comptable significatif lors de la matérialisation des pertes. Ce risque est accentué lors de l'onboarding de nouveaux segments de commerçants sans historique.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Backtesting mensuel des modèles de provisionnement sur les données réalisées
+      - Marge de prudence paramétrable par segment pour les commerçants sans historique suffisant
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dtpe-erreur-reconciliation-compensation
+    title: Erreurs silencieuses de réconciliation de compensation
+    statement: Des écarts entre les montants transmis aux réseaux et les montants réglés pourraient ne pas être détectés en temps utile si les seuils d'alerte de Clearvault sont mal calibrés, entraînant des pertes financières non identifiées pendant plusieurs jours. Ce risque est amplifié par les délais de règlement variables selon les réseaux.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Revue bihebdomadaire des rapports de réconciliation par l'équipe compensation
+      - Alerte automatique sur tout écart de réconciliation supérieur à 500 euros par lot
+    domains: [tpe-acceptation]
+    created_from: synthetic
+
+edges:
+  # PART_OF — one per feature (67 features)
+  - {source_id: feat-dtpe-nexoterm-enreg-terminal, target_id: sys-dtpe-nexoterm, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-nexoterm-telech-params, target_id: sys-dtpe-nexoterm, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-nexoterm-supervision, target_id: sys-dtpe-nexoterm, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-nexoterm-maj-firmware, target_id: sys-dtpe-nexoterm, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-mercapay-creation-contrat, target_id: sys-dtpe-mercapay, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-mercapay-gestion-tarifs, target_id: sys-dtpe-mercapay, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-mercapay-facturation, target_id: sys-dtpe-mercapay, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-routex-selection-reseau, target_id: sys-dtpe-routex, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-routex-bascule-secours, target_id: sys-dtpe-routex, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-routex-regles-least-cost, target_id: sys-dtpe-routex, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-clearvault-generation-fichiers, target_id: sys-dtpe-clearvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-clearvault-reconciliation, target_id: sys-dtpe-clearvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-clearvault-archivage-transactions, target_id: sys-dtpe-clearvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-clearvault-gestion-litiges, target_id: sys-dtpe-clearvault, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-secugate-dechiffrement-emv, target_id: sys-dtpe-secugate, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-secugate-validation-pin, target_id: sys-dtpe-secugate, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-secugate-detection-intrusion, target_id: sys-dtpe-secugate, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-secugate-gestion-cles, target_id: sys-dtpe-secugate, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-onboardpro-souscription, target_id: sys-dtpe-onboardpro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-onboardpro-kyb-verification, target_id: sys-dtpe-onboardpro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-onboardpro-activation-services, target_id: sys-dtpe-onboardpro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-scoring-tpe, target_id: sys-dtpe-fraudwatch, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-regles-metier, target_id: sys-dtpe-fraudwatch, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-apprentissage, target_id: sys-dtpe-fraudwatch, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-rapporteur-rapport-regulatoire, target_id: sys-dtpe-rapporteur, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-rapporteur-tableau-bord, target_id: sys-dtpe-rapporteur, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-rapporteur-export-donnees, target_id: sys-dtpe-rapporteur, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-paramhub-gestion-bin, target_id: sys-dtpe-paramhub, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-paramhub-plafonds-sans-contact, target_id: sys-dtpe-paramhub, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-contactless360-validation-emv-cl, target_id: sys-dtpe-contactless360, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-contactless360-suivi-conformite-nfc, target_id: sys-dtpe-contactless360, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-loyaltrack-calcul-points, target_id: sys-dtpe-loyaltrack, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-loyaltrack-consultation-solde, target_id: sys-dtpe-loyaltrack, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-debitdiff-creation-echeancier, target_id: sys-dtpe-debitdiff, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-debitdiff-gestion-impayes, target_id: sys-dtpe-debitdiff, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-debitdiff-recurrence, target_id: sys-dtpe-debitdiff, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalink-api-autorisation, target_id: sys-dtpe-terminalink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalink-auth-terminaux, target_id: sys-dtpe-terminalink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalink-resilience, target_id: sys-dtpe-terminalink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-ticketnum-generation-ticket, target_id: sys-dtpe-ticketnum, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-ticketnum-envoi-multicanal, target_id: sys-dtpe-ticketnum, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-cashdesk-session-encaissement, target_id: sys-dtpe-cashdesk, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-cashdesk-interface-tpe, target_id: sys-dtpe-cashdesk, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-cashdesk-cloture-journee, target_id: sys-dtpe-cashdesk, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-refuselab-classification-refus, target_id: sys-dtpe-refuselab, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-refuselab-analyse-tendances, target_id: sys-dtpe-refuselab, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-refuselab-recommandations, target_id: sys-dtpe-refuselab, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalcert-emission-certificat, target_id: sys-dtpe-terminalcert, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalcert-revocation, target_id: sys-dtpe-terminalcert, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-acceptostat-mesure-taux-approbation, target_id: sys-dtpe-acceptostat, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-acceptostat-sla-contractuels, target_id: sys-dtpe-acceptostat, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-translink-connexion-iso8583, target_id: sys-dtpe-translink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-translink-supervision-liens, target_id: sys-dtpe-translink, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-acquiportal-consultation-transactions, target_id: sys-dtpe-acquiportal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-acquiportal-suivi-reversements, target_id: sys-dtpe-acquiportal, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-chargeback360-reception-demande, target_id: sys-dtpe-chargeback360, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-chargeback360-assemblage-preuves, target_id: sys-dtpe-chargeback360, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-chargeback360-suivi-dossiers, target_id: sys-dtpe-chargeback360, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-provisioncraft-calcul-reserves, target_id: sys-dtpe-provisioncraft, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-provisioncraft-simulation-scenarions, target_id: sys-dtpe-provisioncraft, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-multicaisse-repartition-charge, target_id: sys-dtpe-multicaisse, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-multicaisse-synchro-catalogue, target_id: sys-dtpe-multicaisse, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-integrator-connecteurs-erp, target_id: sys-dtpe-integrator, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-integrator-transformation-format, target_id: sys-dtpe-integrator, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-kybcheck-interrogation-registres, target_id: sys-dtpe-kybcheck, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-kybcheck-criblage-sanctions, target_id: sys-dtpe-kybcheck, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dtpe-kybcheck-scoring-risque-kyb, target_id: sys-dtpe-kybcheck, type: PART_OF, created_from: synthetic}
+
+  # OPERATES_ON (30)
+  - {source_id: sys-dtpe-nexoterm, target_id: obj-dtpe-terminal-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-nexoterm, target_id: obj-dtpe-firmware-version, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-mercapay, target_id: obj-dtpe-contrat-commercant, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-mercapay, target_id: obj-dtpe-grille-tarifaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-routex, target_id: obj-dtpe-transaction-tpe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-clearvault, target_id: obj-dtpe-lot-compensation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-clearvault, target_id: obj-dtpe-rapport-compensation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-clearvault, target_id: obj-dtpe-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-fraudwatch, target_id: obj-dtpe-alerte-fraude-tpe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-fraudwatch, target_id: obj-dtpe-transaction-tpe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-terminalcert, target_id: obj-dtpe-certificat-terminal, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-onboardpro, target_id: obj-dtpe-profil-commercant, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-kybcheck, target_id: obj-dtpe-profil-commercant, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-ticketnum, target_id: obj-dtpe-ticket-caisse-num, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-cashdesk, target_id: obj-dtpe-session-caisse, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-debitdiff, target_id: obj-dtpe-echeancier-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-debitdiff, target_id: obj-dtpe-mandat-prelevement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-chargeback360, target_id: obj-dtpe-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-provisioncraft, target_id: obj-dtpe-provision-risque, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-acceptostat, target_id: obj-dtpe-rapport-sla, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-routex-selection-reseau, target_id: obj-dtpe-transaction-tpe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-clearvault-reconciliation, target_id: obj-dtpe-lot-compensation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-scoring-tpe, target_id: obj-dtpe-alerte-fraude-tpe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-mercapay-facturation, target_id: obj-dtpe-grille-tarifaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-debitdiff-creation-echeancier, target_id: obj-dtpe-echeancier-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-debitdiff-recurrence, target_id: obj-dtpe-mandat-prelevement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-ticketnum-generation-ticket, target_id: obj-dtpe-ticket-caisse-num, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-chargeback360-assemblage-preuves, target_id: obj-dtpe-dossier-chargeback, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-kybcheck-scoring-risque-kyb, target_id: obj-dtpe-profil-commercant, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-acceptostat-sla-contractuels, target_id: obj-dtpe-rapport-sla, type: OPERATES_ON, created_from: synthetic}
+
+  # DEPENDS_ON (15)
+  - {source_id: sys-dtpe-routex, target_id: sys-dtpe-translink, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-routex, target_id: sys-dtpe-paramhub, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-secugate, target_id: sys-dtpe-terminalcert, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-terminalink, target_id: sys-dtpe-secugate, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-onboardpro, target_id: sys-dtpe-kybcheck, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-onboardpro, target_id: sys-dtpe-mercapay, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-fraudwatch, target_id: sys-dtpe-paramhub, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-clearvault, target_id: sys-dtpe-translink, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-nexoterm, target_id: sys-dtpe-terminalcert, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dtpe-nexoterm, target_id: sys-dtpe-paramhub, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-fraudwatch-scoring-tpe, target_id: feat-dtpe-paramhub-gestion-bin, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-routex-selection-reseau, target_id: feat-dtpe-paramhub-gestion-bin, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-onboardpro-activation-services, target_id: feat-dtpe-onboardpro-kyb-verification, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-cashdesk-cloture-journee, target_id: feat-dtpe-clearvault-generation-fichiers, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dtpe-terminalink-auth-terminaux, target_id: feat-dtpe-terminalcert-emission-certificat, type: DEPENDS_ON, created_from: synthetic}
+
+  # CONSTRAINS (25)
+  - {source_id: con-dtpe-pci-dss-scope, target_id: sys-dtpe-secugate, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-pci-dss-scope, target_id: sys-dtpe-clearvault, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-rgpd-porteur, target_id: sys-dtpe-ticketnum, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-rgpd-porteur, target_id: sys-dtpe-clearvault, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-sla-autorisation-800ms, target_id: sys-dtpe-terminalink, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-sla-autorisation-800ms, target_id: sys-dtpe-routex, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-emv-specifications, target_id: sys-dtpe-contactless360, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-delai-chargeback-reseaux, target_id: sys-dtpe-chargeback360, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-ticket-demateriasation-loi, target_id: sys-dtpe-ticketnum, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-lcb-ft-commercant, target_id: sys-dtpe-kybcheck, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-sepa-mandat-prelevement, target_id: sys-dtpe-debitdiff, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-disponibilite-99-9, target_id: sys-dtpe-translink, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-cryptographie-approved, target_id: sys-dtpe-secugate, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-taux-fraude-plafond-reseaux, target_id: sys-dtpe-fraudwatch, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-pci-p2pe-perimetre, target_id: sys-dtpe-secugate, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-ban-donnees-carte-clear, target_id: sys-dtpe-clearvault, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-scoring-delai-80ms, target_id: feat-dtpe-fraudwatch-scoring-tpe, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-tls-version-minimale, target_id: sys-dtpe-terminalink, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-echeancier-taux-usure, target_id: feat-dtpe-debitdiff-creation-echeancier, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dtpe-reversements-j1, target_id: feat-dtpe-clearvault-generation-fichiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dtpe-protocole-nexo-retailer, target_id: sys-dtpe-cashdesk, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dtpe-auth-certificat-terminal, target_id: sys-dtpe-terminalink, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dtpe-scoring-fraudwatch-temps-reel, target_id: feat-dtpe-fraudwatch-scoring-tpe, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dtpe-paramhub-source-verite-unique, target_id: sys-dtpe-paramhub, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dtpe-plafond-sans-contact-50eur, target_id: feat-dtpe-paramhub-plafonds-sans-contact, type: CONSTRAINS, created_from: synthetic}

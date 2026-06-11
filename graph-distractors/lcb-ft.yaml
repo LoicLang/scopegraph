@@ -1,0 +1,2553 @@
+nodes:
+
+  # ── Système 1 : Plateforme de déclarations de soupçon ──────────────────────
+  - type: system
+    id: sys-dlcb-plateforme-ds
+    name: Plateforme de Déclarations de Soupçon
+    description: >-
+      Gère le cycle de vie complet des déclarations de soupçon (DS) transmises
+      à TRACFIN. Centralise la saisie, la validation interne et l'envoi
+      électronique via le portail réglementaire, avec traçabilité intégrale.
+    owner_team: Équipe Conformité LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-saisie-ds
+    name: Saisie et rédaction de déclaration de soupçon
+    description: >-
+      Permet aux analystes de rédiger une DS à partir d'un dossier d'alerte,
+      en guidant la structuration des faits suspects selon le format attendu
+      par l'autorité compétente.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-validation-ds
+    name: Circuit de validation interne des DS
+    description: >-
+      Soumet chaque déclaration rédigée à une chaîne de validation hiérarchique
+      (analyste senior puis RCCI) avant transmission. Tout rejet est motivé et
+      archivé pour audit.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-transmission-tracfin
+    name: Transmission électronique vers TRACFIN
+    description: >-
+      Assure l'envoi sécurisé des DS validées au portail ERMES de TRACFIN et
+      conserve l'accusé de réception horodaté comme preuve de dépôt.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-archivage-ds
+    name: Archivage réglementaire des DS
+    description: >-
+      Conserve l'intégralité des DS et de leur historique de validation pendant
+      cinq ans dans un espace de stockage scellé et auditable.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 2 : Moteur de cartographie des risques LCB-FT ──────────────────
+  - type: system
+    id: sys-dlcb-carto-risques
+    name: Moteur de Cartographie des Risques LCB-FT
+    description: >-
+      Produit la cartographie annuelle des risques de blanchiment et de
+      financement du terrorisme. Agrège les données opérationnelles, les
+      incidents et les évolutions réglementaires pour alimenter le rapport
+      ACPR.
+    owner_team: Équipe Risques Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-collecte-indicateurs
+    name: Collecte des indicateurs de risque
+    description: >-
+      Interroge les systèmes sources (portefeuille client, transactions,
+      alertes) pour consolider les indicateurs quantitatifs entrant dans la
+      cartographie semestrielle.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-scoring-risque-pays
+    name: Scoring de risque pays
+    description: >-
+      Attribue un niveau de risque aux pays de contrepartie d'après une
+      taxonomie interne alignée sur les listes GAFI et UE. Le score influence
+      le niveau de vigilance appliqué aux opérations transfrontières.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-rapport-carto
+    name: Génération du rapport de cartographie
+    description: >-
+      Produit automatiquement le document de cartographie annuel au format
+      requis par l'ACPR, en agrégeant les scores de risque par segment client
+      et par canal d'entrée en relation.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-mise-a-jour-taxonomie
+    name: Mise à jour de la taxonomie de risque
+    description: >-
+      Permet aux équipes conformité de réviser les pondérations et les critères
+      de la taxonomie sans déploiement technique, via une interface d'édition
+      paramétrée et versionnée.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 3 : Surveillance des Personnes Politiquement Exposées ───────────
+  - type: system
+    id: sys-dlcb-surveillance-ppe
+    name: Système de Surveillance des PPE
+    description: >-
+      Identifie et surveille en continu les clients qualifiés de Personnes
+      Politiquement Exposées. Consolide les données issues de sources tierces
+      et internes pour déclencher des revues renforcées à fréquence imposée.
+    owner_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-identification-ppe
+    name: Identification des PPE à l'entrée en relation
+    description: >-
+      Croise les données déclaratives du client avec les référentiels de PPE
+      lors de l'ouverture de compte. Un match positif déclenche le statut de
+      vigilance renforcée et bloque l'onboarding automatique.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-revue-periodique-ppe
+    name: Revue périodique des dossiers PPE
+    description: >-
+      Programme et suit les revues annuelles (ou ad hoc) des dossiers PPE.
+      Chaque revue documente l'origine du patrimoine, la nature des mandats
+      et la conformité des opérations observées.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-alerte-changement-statut
+    name: Alertes sur changement de statut PPE
+    description: >-
+      Génère une notification interne dès qu'un flux tiers signale un
+      changement de fonction ou de statut d'exposition pour un client
+      existant, afin de réévaluer le niveau de vigilance applicable.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 4 : Plateforme de gel des avoirs ────────────────────────────────
+  - type: system
+    id: sys-dlcb-gel-avoirs
+    name: Plateforme de Gel des Avoirs
+    description: >-
+      Exécute et documente les mesures de gel d'avoirs ordonnées par arrêté
+      ministériel ou règlement européen. Bloque les flux financiers concernés
+      et notifie les autorités dans le délai réglementaire.
+    owner_team: Équipe Sanctions et Gel
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-chargement-listes-gel
+    name: Chargement et réconciliation des listes de gel
+    description: >-
+      Importe quotidiennement les listes officielles de gel (OFAC, UE, DGTRESOR)
+      et les réconcilie avec le référentiel client pour détecter toute nouvelle
+      correspondance dans un délai contrôlé.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-blocage-flux
+    name: Blocage automatique des flux vers personnes gelées
+    description: >-
+      Intercepte en temps réel les ordres de paiement dont le bénéficiaire ou
+      le donneur d'ordre figure sur une liste de gel active, et les suspend
+      pour traitement manuel par l'équipe dédiée.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-notification-autorites
+    name: Notification réglementaire des mesures de gel
+    description: >-
+      Génère et transmet la notification formelle à la DGTRESOR dans les
+      quarante-huit heures suivant l'exécution d'une mesure de gel, avec
+      accusé de réception archivé.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-degel-procedure
+    name: Procédure de dégel et levée de restriction
+    description: >-
+      Orchestre la levée d'une mesure de gel lorsque l'arrêté correspondant est
+      abrogé ou que la personne est retirée de la liste, en rétablissant les
+      accès aux comptes et en archivant la décision.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 5 : Moteur de détection des opérations atypiques ───────────────
+  - type: system
+    id: sys-dlcb-detection-atypiques
+    name: Moteur de Détection des Opérations Atypiques
+    description: >-
+      Analyse les flux transactionnels pour repérer des schémas inhabituels
+      (smurfing, structuration, virements en boucle) à l'aide de règles
+      métier et de modèles comportementaux. Alimente la file de travail des
+      analystes LCB-FT.
+    owner_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-regles-comportementales
+    name: Moteur de règles comportementales
+    description: >-
+      Évalue chaque transaction contre un catalogue de règles paramétrées
+      (seuils, fréquences, géographies) et produit un score d'atypicité
+      utilisé pour prioriser les alertes.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-detection-smurfing
+    name: Détection du smurfing et de la structuration
+    description: >-
+      Repère les séquences de versements fractionnés en dessous des seuils de
+      déclaration, en agrégeant les opérations sur glissement de période pour
+      identifier les schémas de fractionnement intentionnel.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-analyse-reseau
+    name: Analyse réseau des flux de fonds
+    description: >-
+      Construit un graphe de relations entre entités (comptes, contreparties,
+      bénéficiaires) et détecte les clusters suspects de transferts circulaires
+      ou concentrés sur un nœud intermédiaire.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-priorisation-alertes
+    name: Priorisation et routage des alertes
+    description: >-
+      Classe les alertes générées selon leur score de gravité et les affecte
+      automatiquement à la file de travail de l'analyste compétent selon les
+      règles de routage configurées.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 6 : Portail de formation conformité ─────────────────────────────
+  - type: system
+    id: sys-dlcb-formation-conformite
+    name: Portail de Formation Conformité LCB-FT
+    description: >-
+      Plateforme e-learning interne dédiée aux formations obligatoires LCB-FT.
+      Trace les complétions de parcours, gère les attestations et produit les
+      rapports d'avancement requis par la réglementation.
+    owner_team: Équipe Formation Réglementaire
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-parcours-lcb-ft
+    name: Parcours de formation LCB-FT obligatoire
+    description: >-
+      Propose un curriculum structuré couvrant la réglementation LCB-FT,
+      les typologies de blanchiment et les procédures internes, avec évaluation
+      certificative en fin de module.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-suivi-completions
+    name: Suivi des complétions et relances automatiques
+    description: >-
+      Enregistre l'avancement de chaque collaborateur et déclenche des
+      rappels automatisés auprès des salariés dont la formation est échue
+      ou incomplète, avec escalade au manager.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-attestations
+    name: Génération des attestations de formation
+    description: >-
+      Émet une attestation PDF horodatée pour chaque module réussi, permettant
+      de justifier la conformité de la politique de formation lors d'un contrôle
+      ACPR.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 7 : Référentiel des bénéficiaires effectifs ────────────────────
+  - type: system
+    id: sys-dlcb-ref-benef-effectifs
+    name: Référentiel des Bénéficiaires Effectifs
+    description: >-
+      Stocke et maintient la chaîne de détention des structures juridiques
+      clientes afin d'identifier les bénéficiaires effectifs au sens de la
+      directive anti-blanchiment. Supporte les mises à jour déclenchées par
+      des événements capitalistiques.
+    owner_team: Équipe KYC Entreprises
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-saisie-actionnariat
+    name: Saisie de la structure d'actionnariat
+    description: >-
+      Permet de décrire la chaîne de détention en renseignant chaque niveau
+      d'entité intermédiaire, jusqu'à atteindre les personnes physiques
+      détenant plus de vingt-cinq pour cent du capital ou des droits de vote.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-calcul-detention
+    name: Calcul automatisé du seuil de détention
+    description: >-
+      Agrège les participations directes et indirectes pour calculer le
+      pourcentage de détention effectif de chaque personne physique et
+      détermine si le seuil réglementaire d'identification est atteint.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-mise-a-jour-evenements
+    name: Mise à jour sur événements capitalistiques
+    description: >-
+      Déclenche automatiquement une demande de mise à jour du dossier de
+      bénéficiaire effectif lors d'une cession de parts, d'une fusion ou d'une
+      modification des statuts signalée par une source externe.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 8 : Moteur de due diligence renforcée ──────────────────────────
+  - type: system
+    id: sys-dlcb-due-diligence
+    name: Moteur de Due Diligence Renforcée
+    description: >-
+      Orchestre les processus de vigilance renforcée pour les clients à risque
+      élevé (PPE, pays tiers, secteurs sensibles). Collecte les pièces
+      justificatives, pilote les validations et archive les conclusions.
+    owner_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-collecte-justificatifs
+    name: Collecte numérique des justificatifs EDD
+    description: >-
+      Permet au client ou à la banque d'alimenter un dossier de due diligence
+      avec les documents requis (justificatifs de revenus, origine de patrimoine,
+      actes notariés) dans un espace sécurisé et horodaté.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-validation-edd
+    name: Workflow de validation EDD
+    description: >-
+      Fait circuler le dossier EDD entre analyste junior, analyste senior et
+      RCCI pour validation séquentielle ; chaque étape est contrainte par un
+      délai maximum et génère un enregistrement d'audit.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-scoring-edd
+    name: Calcul du score de risque EDD
+    description: >-
+      Agrège les éléments du dossier (pays, secteur, structure juridique,
+      antécédents d'alertes) pour produire un score de risque résiduel guidant
+      la décision d'acceptation ou de refus d'entrée en relation.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 9 : Tableau de bord réglementaire LCB-FT ───────────────────────
+  - type: system
+    id: sys-dlcb-tableau-bord-reglementaire
+    name: Tableau de Bord Réglementaire LCB-FT
+    description: >-
+      Consolide les indicateurs clés de la conformité LCB-FT (taux de
+      clôture des alertes, délais de déclaration, couverture de formation)
+      à destination du RCCI et du Conseil d'Administration.
+    owner_team: Équipe Pilotage Conformité
+    domains: [lcb-ft, editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-kpi-alertes
+    name: Tableau de KPI des alertes LCB-FT
+    description: >-
+      Affiche en temps quasi réel le volume d'alertes ouvertes, les délais
+      moyens de traitement et le taux de conversion en déclaration de soupçon,
+      par équipe et par canal transactionnel.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-rapport-acpr
+    name: Rapport de reporting ACPR
+    description: >-
+      Génère les données statistiques exigées dans le rapport annuel de contrôle
+      interne transmis à l'ACPR, en agrégeant les indicateurs LCB-FT sur la
+      période de référence.
+    domains: [lcb-ft, editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-suivi-plans-action
+    name: Suivi des plans d'action conformité
+    description: >-
+      Recense et pilote les actions correctives issues des contrôles internes
+      et des recommandations ACPR, avec des jalons, des responsables et un
+      état d'avancement actualisé.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 10 : Moteur de profilage comportemental ────────────────────────
+  - type: system
+    id: sys-dlcb-profilage-comportemental
+    name: Moteur de Profilage Comportemental Client
+    description: >-
+      Construit et met à jour en continu le profil transactionnel de chaque
+      client pour détecter les déviances par rapport au comportement habituel.
+      Alimente le moteur de détection des opérations atypiques en scores de
+      déviance normalisés.
+    owner_team: Équipe Modélisation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-construction-profil
+    name: Construction du profil transactionnel
+    description: >-
+      Agrège l'historique des transactions sur une fenêtre glissante pour
+      établir les habitudes de dépenses, les montants typiques et les
+      contreparties récurrentes propres à chaque client.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-retraining-modeles
+    name: Réentraînement périodique des modèles de profilage
+    description: >-
+      Planifie et exécute le réentraînement mensuel des modèles de profilage
+      à partir des nouvelles données transactionnelles validées, avec rapport
+      de dérive et validation par l'équipe modèles.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 11 : Gestionnaire de cas d'investigation ───────────────────────
+  - type: system
+    id: sys-dlcb-gestion-cas
+    name: Gestionnaire de Cas d'Investigation LCB-FT
+    description: >-
+      Centralise les cas d'investigation ouverts à partir des alertes LCB-FT.
+      Permet aux analystes de documenter leurs diligences, de joindre des
+      pièces et de conclure chaque cas avec une décision motivée et traçable.
+    owner_team: Équipe Investigation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-ouverture-cas
+    name: Ouverture automatique de cas depuis une alerte
+    description: >-
+      Crée un dossier d'investigation pré-rempli à partir des données de
+      l'alerte (client, opérations, scores) en un clic depuis la file de
+      travail, sans ressaisie manuelle.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-timeline-cas
+    name: Timeline d'investigation du cas
+    description: >-
+      Affiche une chronologie interactive des opérations et événements
+      associés au client sous investigation, permettant de repérer visuellement
+      les ruptures de comportement.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-cloture-cas
+    name: Clôture et motif de décision
+    description: >-
+      Impose la saisie d'un motif structuré lors de la clôture de chaque cas
+      (faux positif, renvoi en DS, transmission interne) et archive la décision
+      pour exploitation statistique.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 12 : Référentiel des listes de surveillance ─────────────────────
+  - type: system
+    id: sys-dlcb-listes-surveillance
+    name: Référentiel des Listes de Surveillance
+    description: >-
+      Agrège et normalise les listes de surveillance externes (sanctions
+      internationales, PPE, médias défavorables) et les listes internes de
+      clients sous surveillance renforcée. Sert de source unique pour les
+      criblages de l'ensemble des applications LCB-FT.
+    owner_team: Équipe Données Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-import-listes-externes
+    name: Import et normalisation des listes externes
+    description: >-
+      Récupère automatiquement les flux de listes tiers (formats XML, CSV, API)
+      et les normalise selon le schéma interne avant indexation, avec rapport
+      de delta quotidien.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-gestion-listes-internes
+    name: Gestion des listes de surveillance internes
+    description: >-
+      Permet aux équipes de conformité d'ajouter, modifier ou retirer des
+      entrées dans les listes de surveillance maison, avec journalisation de
+      chaque modification et approbation à deux niveaux.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-api-criblage
+    name: API de criblage temps réel
+    description: >-
+      Expose un endpoint synchrone permettant à n'importe quel système LCB-FT
+      de cribler une entité (personne, société, IBAN) contre l'ensemble des
+      listes actives et d'obtenir un résultat structuré en sous-cent-milliseconde.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 13 : Moteur de surveillance des virements internationaux ─────────
+  - type: system
+    id: sys-dlcb-surveillance-vir-intl
+    name: Moteur de Surveillance des Virements Internationaux
+    description: >-
+      Applique des contrôles LCB-FT spécifiques aux virements transfrontières :
+      vérification des mentions obligatoires, contrôle du pays de destination,
+      et blocage des opérations vers des juridictions sous embargo.
+    owner_team: Équipe Contrôles Internationaux
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-controle-mentions-swift
+    name: Contrôle des mentions obligatoires SWIFT
+    description: >-
+      Vérifie la présence et la complétude des champs réglementaires imposés
+      par le règlement sur les transferts de fonds (RTF) dans chaque message
+      SWIFT sortant.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-blocage-pays-embargo
+    name: Blocage des opérations vers pays sous embargo
+    description: >-
+      Intercepte les virements destinés à des pays figurant sur la liste
+      d'embargo en vigueur et les suspend pour décision manuelle, en journalisant
+      le motif réglementaire du blocage.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-reporting-rtf
+    name: Reporting réglementaire RTF
+    description: >-
+      Produit les rapports périodiques relatifs au règlement sur les transferts
+      de fonds, en agrégeant les volumes d'opérations contrôlées, les rejets
+      et les blocages sur la période de référence.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 14 : Plateforme de gestion des tiers à risque ───────────────────
+  - type: system
+    id: sys-dlcb-tiers-a-risque
+    name: Plateforme de Gestion des Tiers à Risque
+    description: >-
+      Recense et évalue les prestataires, agents et distributeurs exposant
+      la banque à des risques LCB-FT tiers. Centralise les évaluations
+      initiales et les réévaluations périodiques de chaque tiers.
+    owner_team: Équipe Risques Tiers
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-onboarding-tiers
+    name: Onboarding et évaluation initiale des tiers
+    description: >-
+      Collecte les informations KYB du tiers, réalise le criblage initial
+      et produit une évaluation de risque documentée avant toute entrée en
+      relation commerciale.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-reevaluation-tiers
+    name: Réévaluation périodique des tiers
+    description: >-
+      Programme les réévaluations selon la fréquence définie par le niveau
+      de risque du tiers (annuelle pour les risques élevés, biennale pour
+      les risques faibles) et alerte en cas d'échéance dépassée.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 15 : Moteur d'analyse sémantique des alertes ────────────────────
+  - type: system
+    id: sys-dlcb-analyse-semantique
+    name: Moteur d'Analyse Sémantique des Alertes
+    description: >-
+      Enrichit chaque alerte avec une analyse NLP du libellé transactionnel
+      et des notes d'investigation antérieures pour proposer une classification
+      automatique de la typologie de blanchiment suspectée.
+    owner_team: Équipe IA Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-classification-nlp
+    name: Classification NLP des libellés transactionnels
+    description: >-
+      Applique un modèle de langage fine-tuné sur des typologies LCB-FT pour
+      catégoriser automatiquement le libellé de chaque transaction suspecte
+      et prépopuler le champ de typologie dans le dossier d'alerte.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-suggestion-typologies
+    name: Suggestion de typologies de blanchiment
+    description: >-
+      Propose à l'analyste une liste ordonnée de typologies candidates (GAFI,
+      CTIF) correspondant aux caractéristiques du cas, avec explication des
+      facteurs ayant motivé chaque suggestion.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 16 : Outil de simulation de scénarios de contrôle ───────────────
+  - type: system
+    id: sys-dlcb-simulation-scenarios
+    name: Outil de Simulation de Scénarios de Contrôle
+    description: >-
+      Permet aux équipes de conformité de tester de nouveaux scénarios de
+      détection sur des données historiques avant mise en production, en
+      évaluant la précision, le rappel et le taux de faux positifs attendu.
+    owner_team: Équipe Modélisation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-backtesting-scenarios
+    name: Backtesting des scénarios de détection
+    description: >-
+      Exécute un scénario de détection candidat sur un historique de transactions
+      labellisé et produit les métriques de performance comparées au scénario
+      de référence actuellement en production.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-champion-challenger
+    name: Comparaison champion-challenger
+    description: >-
+      Met en parallèle les résultats du scénario en production (champion) et
+      d'un scénario alternatif (challenger) sur la même fenêtre de données pour
+      faciliter la décision de bascule.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 17 : Registre des incidents de conformité ──────────────────────
+  - type: system
+    id: sys-dlcb-registre-incidents
+    name: Registre des Incidents de Conformité LCB-FT
+    description: >-
+      Consigne tous les incidents de non-conformité LCB-FT identifiés en
+      production (déclaration en retard, blocage erroné, données manquantes).
+      Supporte l'analyse des causes racines et le suivi des mesures correctives.
+    owner_team: Équipe Qualité Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-saisie-incident
+    name: Saisie et classification des incidents
+    description: >-
+      Permet la création d'un incident de conformité avec qualification du type,
+      de la sévérité et des systèmes impactés, en liant l'incident aux alertes
+      ou dossiers concernés.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-analyse-causes-racines
+    name: Analyse des causes racines des incidents
+    description: >-
+      Guide l'analyste dans la documentation des facteurs contributifs selon
+      une taxonomie interne de causes racines, facilitant l'identification de
+      tendances systémiques.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 18 : Portail client de justification des opérations ─────────────
+  - type: system
+    id: sys-dlcb-portail-justification
+    name: Portail Client de Justification des Opérations
+    description: >-
+      Permet à la banque de solliciter le client pour obtenir des explications
+      sur des opérations atypiques détectées, et au client de soumettre
+      ses justificatifs en ligne de façon sécurisée.
+    owner_team: Équipe Relation Client Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-demande-justification
+    name: Envoi de demande de justification
+    description: >-
+      Génère et adresse au client une demande de justification pré-rédigée
+      via canal sécurisé, en associant la demande au cas d'investigation
+      correspondant.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-reception-justificatifs
+    name: Réception et indexation des justificatifs client
+    description: >-
+      Réceptionne les documents soumis par le client, les indexe dans le
+      dossier d'investigation et notifie l'analyste responsable pour relecture.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 19 : Moteur de rapprochement des identités ──────────────────────
+  - type: system
+    id: sys-dlcb-rapprochement-identites
+    name: Moteur de Rapprochement des Identités
+    description: >-
+      Réconcilie les identités des contreparties de transactions avec le
+      référentiel client et les listes de surveillance, en gérant les
+      variations orthographiques et translittérations pour réduire les
+      faux négatifs de criblage.
+    owner_team: Équipe Données Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-normalisation-noms
+    name: Normalisation et translittération des noms
+    description: >-
+      Applique des règles de normalisation phonétique et de translittération
+      multi-alphabets pour rapprocher des variantes orthographiques d'un même
+      nom dans les contextes multilingues.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-scoring-similarite
+    name: Scoring de similarité d'identité
+    description: >-
+      Calcule un score de similarité composite (chaîne, phonétique, sémantique)
+      pour chaque paire entité-liste afin de calibrer le seuil d'alerte de
+      criblage et de minimiser les faux positifs.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 20 : Orchestrateur de workflows de vigilance ────────────────────
+  - type: system
+    id: sys-dlcb-orchestrateur-vigilance
+    name: Orchestrateur de Workflows de Vigilance
+    description: >-
+      Pilote les processus de vigilance client (standard, simplifiée, renforcée)
+      en enchaînant les étapes de collecte, de criblage et de validation selon
+      le profil de risque calculé. Gère les délais et escalades associés.
+    owner_team: Équipe Processus Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-selection-niveau-vigilance
+    name: Sélection du niveau de vigilance applicable
+    description: >-
+      Détermine automatiquement si le client doit faire l'objet d'une vigilance
+      simplifiée, standard ou renforcée à partir du score de risque EDD et des
+      critères réglementaires.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-suivi-delais-vigilance
+    name: Suivi des délais de vigilance réglementaires
+    description: >-
+      Contrôle le respect des délais imposés à chaque étape du processus de
+      vigilance et déclenche des alertes d'escalade lorsqu'un jalón est dépassé.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-historique-vigilance
+    name: Historique des actions de vigilance
+    description: >-
+      Constitue et conserve un journal horodaté de toutes les actions de
+      vigilance réalisées sur un client, opposable lors d'un contrôle
+      réglementaire ou d'une procédure judiciaire.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 21 : Moteur de contrôle de cohérence KYC ───────────────────────
+  - type: system
+    id: sys-dlcb-controle-coherence-kyc
+    name: Moteur de Contrôle de Cohérence KYC
+    description: >-
+      Détecte les incohérences entre les données déclarées par le client
+      et les données observées (flux, géographie, contreparties) afin
+      d'identifier les dossiers KYC à mettre à jour en priorité.
+    owner_team: Équipe Qualité Données KYC
+    domains: [lcb-ft, referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-comparaison-declaratif-transactionnel
+    name: Comparaison données déclaratives et transactionnelles
+    description: >-
+      Met en regard les informations déclarées lors de l'entrée en relation
+      (profession, revenus, domicile) avec les flux réellement observés pour
+      détecter les discordances significatives.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-flagging-kyc-obsolete
+    name: Flagging des dossiers KYC à rafraîchir
+    description: >-
+      Identifie et liste les dossiers dont la dernière mise à jour KYC dépasse
+      le délai maximum autorisé par le niveau de risque du client, pour planification
+      des campagnes de collecte.
+    domains: [lcb-ft, referentiel-client]
+    created_from: synthetic
+
+  # ── Système 22 : Moteur de consolidation des alertes multi-sources ──────────
+  - type: system
+    id: sys-dlcb-consolidation-alertes
+    name: Moteur de Consolidation des Alertes Multi-Sources
+    description: >-
+      Reçoit les alertes produites par les différents moteurs de détection et
+      les consolide par client pour éviter la multiplication de cas isolés
+      portant sur un même risque. Produit une vue unifiée du risque client.
+    owner_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-deduplication-alertes
+    name: Déduplification et regroupement des alertes
+    description: >-
+      Identifie les alertes portant sur le même client dans une fenêtre
+      temporelle et les fusionne en un cas unique, en préservant la traçabilité
+      de chaque signal d'origine.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-score-consolide-client
+    name: Score de risque consolidé par client
+    description: >-
+      Calcule un score de risque LCB-FT global par client en agrégeant les
+      scores des alertes en cours, l'historique des déclarations et le profil
+      de risque statique.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 23 : Plateforme de conformité produits ──────────────────────────
+  - type: system
+    id: sys-dlcb-conformite-produits
+    name: Plateforme de Conformité des Produits Bancaires
+    description: >-
+      Évalue l'exposition LCB-FT de chaque produit bancaire (compte, crédit,
+      assurance) et documente les dispositifs de contrôle associés dans une
+      fiche de conformité produit actualisée annuellement.
+    owner_team: Équipe Conformité Produits
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-fiche-conformite-produit
+    name: Fiche de conformité LCB-FT par produit
+    description: >-
+      Génère et maintient une fiche structurée recensant les risques LCB-FT
+      spécifiques à chaque produit, les contrôles compensatoires et les
+      mesures d'atténuation en vigueur.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-revue-annuelle-produits
+    name: Revue annuelle de l'exposition LCB-FT des produits
+    description: >-
+      Programme et suit la revue annuelle obligatoire de chaque fiche produit,
+      en intégrant les évolutions réglementaires et les incidents observés
+      dans l'exercice.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 24 : Outil de veille réglementaire LCB-FT ──────────────────────
+  - type: system
+    id: sys-dlcb-veille-reglementaire
+    name: Outil de Veille Réglementaire LCB-FT
+    description: >-
+      Surveille les publications réglementaires (ACPR, ABE, GAFI, CTIF-CF) et
+      les décisions de jurisprudence pour alerter les équipes conformité lors
+      de toute évolution impactant les dispositifs LCB-FT en place.
+    owner_team: Équipe Veille Juridique
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-collecte-textes-reglementaires
+    name: Collecte automatique des textes réglementaires
+    description: >-
+      Agrège les publications officielles via flux RSS et APIs documentaires,
+      les indexe et les met à disposition des juristes avec un résumé
+      automatique des points clés.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-analyse-impact
+    name: Analyse d'impact réglementaire
+    description: >-
+      Associe chaque nouveau texte réglementaire aux systèmes et processus
+      LCB-FT potentiellement impactés, et génère une liste de points de
+      vigilance à arbitrer par les équipes conformité.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Système 25 : Moteur de simulation de gel d'avoirs ───────────────────────
+  - type: system
+    id: sys-dlcb-simulation-gel
+    name: Moteur de Simulation d'Impact Gel d'Avoirs
+    description: >-
+      Simule l'impact financier et opérationnel d'une mise en application de
+      mesures de gel sur un périmètre client donné, afin d'évaluer la
+      faisabilité et les risques d'exécution avant la mise en œuvre effective.
+    owner_team: Équipe Sanctions et Gel
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-perimetre-gel-simule
+    name: Définition du périmètre de simulation de gel
+    description: >-
+      Permet de spécifier les critères de sélection des entités à inclure
+      dans une simulation (listes, secteurs, géographies) et calcule l'empreinte
+      financière estimée sur les comptes correspondants.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dlcb-rapport-impact-gel
+    name: Rapport d'impact de la simulation de gel
+    description: >-
+      Produit un rapport synthétique indiquant le nombre de clients concernés,
+      les encours bloqués estimés et les opérations en cours impactées par
+      le scénario de gel simulé.
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Business objects ────────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-dlcb-declaration-soupcon
+    name: Déclaration de soupçon
+    description: >-
+      Document formel transmis à TRACFIN signalant une suspicion de blanchiment
+      ou de financement du terrorisme. Comporte les données du client, les
+      opérations visées et la motivation de la suspicion.
+    steward_team: Équipe Conformité LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-alerte-lcb-ft
+    name: Alerte LCB-FT
+    description: >-
+      Signal généré par un moteur de détection signalant une opération ou un
+      comportement potentiellement suspect. Contient le score, la règle
+      déclenchante, le client concerné et les transactions rattachées.
+    steward_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-dossier-edd
+    name: Dossier de due diligence renforcée
+    description: >-
+      Ensemble documentaire constitué lors d'une procédure EDD, regroupant
+      les justificatifs d'origine des fonds, la fiche de risque et les
+      conclusions de validation.
+    steward_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-profil-client-lcb
+    name: Profil de risque LCB-FT client
+    description: >-
+      Fiche synthétique associée à chaque client indiquant le niveau de risque
+      LCB-FT calculé, le niveau de vigilance applicable, la date de dernière
+      revue et les facteurs de risque identifiés.
+    steward_team: Équipe Qualité Données KYC
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-liste-sanctions
+    name: Liste de sanctions
+    description: >-
+      Ensemble de données externes identifiant les personnes physiques, morales
+      et entités soumises à des mesures restrictives (gel, embargo) publiées
+      par des autorités nationales ou internationales.
+    steward_team: Équipe Données Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-personne-ppe
+    name: Personne politiquement exposée
+    description: >-
+      Personne physique exerçant ou ayant exercé une fonction publique
+      éminente, identifiée comme telle dans le référentiel PPE et soumise
+      à des obligations de vigilance renforcée.
+    steward_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-mesure-gel
+    name: Mesure de gel d'avoirs
+    description: >-
+      Décision administrative ou judiciaire ordonnant le blocage des fonds
+      et ressources économiques détenus par une personne ou entité désignée,
+      assortie d'une obligation de notification aux autorités.
+    steward_team: Équipe Sanctions et Gel
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-beneficiaire-effectif
+    name: Bénéficiaire effectif
+    description: >-
+      Personne physique détenant en dernier ressort une participation
+      significative dans une structure juridique cliente, identifiée et
+      documentée conformément à la quatrième directive anti-blanchiment.
+    steward_team: Équipe KYC Entreprises
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-cas-investigation
+    name: Cas d'investigation
+    description: >-
+      Dossier ouvert pour approfondir l'analyse d'une ou plusieurs alertes
+      LCB-FT, regroupant les diligences réalisées, les documents collectés
+      et la décision finale de l'analyste.
+    steward_team: Équipe Investigation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-rapport-cartographie
+    name: Rapport de cartographie des risques
+    description: >-
+      Document annuel formalisé présentant la classification des risques de
+      blanchiment par produit, canal et géographie, destiné à l'ACPR et au
+      Conseil d'Administration.
+    steward_team: Équipe Risques Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-incident-conformite
+    name: Incident de conformité LCB-FT
+    description: >-
+      Événement documenté de non-conformité au dispositif LCB-FT, avec
+      qualification de la sévérité, analyse causale et suivi des actions
+      correctives associées.
+    steward_team: Équipe Qualité Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-tiers-a-risque
+    name: Tiers à risque LCB-FT
+    description: >-
+      Partenaire commercial (agent, distributeur, sous-traitant) évalué
+      sous l'angle du risque LCB-FT qu'il représente pour l'établissement,
+      avec score de risque et fréquence de réévaluation documentée.
+    steward_team: Équipe Risques Tiers
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-operation-atypique
+    name: Opération atypique
+    description: >-
+      Transaction présentant des caractéristiques déviantes par rapport au
+      profil habituel du client ou aux normes sectorielles, ayant déclenché
+      une alerte dans le moteur de détection.
+    steward_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-attestation-formation
+    name: Attestation de formation LCB-FT
+    description: >-
+      Certificat numérique émis à l'issue d'un module de formation validé,
+      archivé comme preuve de la politique de formation obligatoire en cas
+      de contrôle ACPR.
+    steward_team: Équipe Formation Réglementaire
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-justificatif-origine-fonds
+    name: Justificatif d'origine des fonds
+    description: >-
+      Document fourni par le client pour attester la provenance licite de
+      fonds importants (relevé bancaire, acte de vente, contrat de
+      prestation) collecté dans le cadre d'une EDD.
+    steward_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-rapport-rtf
+    name: Rapport de conformité RTF
+    description: >-
+      Rapport périodique documentant le volume et les résultats des contrôles
+      appliqués aux virements internationaux au titre du règlement sur les
+      transferts de fonds.
+    steward_team: Équipe Contrôles Internationaux
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dlcb-scoring-risque-pays
+    name: Score de risque pays
+    description: >-
+      Note attribuée à chaque pays selon la taxonomie interne LCB-FT,
+      reflétant le niveau d'exposition au risque de blanchiment et de
+      financement du terrorisme pour les opérations transfrontières.
+    steward_team: Équipe Risques Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Projets ─────────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-dlcb-refonte-ds
+    name: Refonte de la plateforme de déclarations de soupçon
+    description: >-
+      Remplacement de l'ancien outil de saisie DS par la nouvelle plateforme
+      intégrée, incluant la connexion directe au portail ERMES et la refonte
+      du circuit de validation hiérarchique.
+    status: done
+    owner_team: Équipe Conformité LCB-FT
+    domains: [lcb-ft]
+    outcomes: Délai moyen de dépôt réduit de 4 jours à 18 heures ; suppression de la ressaisie manuelle dans le portail TRACFIN.
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-cartographie-risques-v2
+    name: Cartographie des risques LCB-FT v2
+    description: >-
+      Refonte du moteur de cartographie pour intégrer une granularité produit
+      et une dimension géographique manquantes dans la version précédente,
+      en réponse aux recommandations ACPR.
+    status: done
+    owner_team: Équipe Risques Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-surveillance-ppe-automation
+    name: Automatisation de la surveillance des PPE
+    description: >-
+      Déploiement du module d'alertes automatiques sur changements de statut
+      PPE et mise en place du planning de revues périodiques intégré au
+      système de surveillance.
+    status: done
+    owner_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-gel-avoirs-integration
+    name: Intégration de la plateforme de gel des avoirs
+    description: >-
+      Branchement de la plateforme de gel d'avoirs sur le moteur de paiements
+      pour permettre le blocage en temps réel des flux vers des personnes
+      gelées nouvellement désignées.
+    status: done
+    owner_team: Équipe Sanctions et Gel
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-detection-smurfing
+    name: Déploiement du module de détection du smurfing
+    description: >-
+      Ajout du scénario de détection des fractionnements intentionnels dans
+      le moteur de détection des opérations atypiques, avec calibration sur
+      données historiques labellisées.
+    status: done
+    owner_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-formation-lcb-ft-2024
+    name: Campagne de formation LCB-FT 2024
+    description: >-
+      Déploiement des nouveaux modules de formation obligatoires mis à jour
+      pour intégrer la cinquième directive anti-blanchiment, avec suivi de
+      complétions et relances automatisées.
+    status: done
+    owner_team: Équipe Formation Réglementaire
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-ref-benef-effectifs-v1
+    name: Lancement du référentiel des bénéficiaires effectifs
+    description: >-
+      Mise en production du référentiel de chaîne de détention, avec
+      alimentation initiale par les données collectées lors de la campagne
+      KYB des clients personnes morales.
+    status: done
+    owner_team: Équipe KYC Entreprises
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-edd-digitalisation
+    name: Digitalisation du processus EDD
+    description: >-
+      Remplacement des échanges par mail pour la collecte EDD par le portail
+      de justification en ligne, avec intégration au moteur de due diligence
+      et au gestionnaire de cas.
+    status: done
+    owner_team: Équipe Connaissance Client
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-tableau-bord-rcci
+    name: Tableau de bord RCCI en temps réel
+    description: >-
+      Construction du tableau de bord réglementaire offrant au RCCI une vision
+      temps quasi réel des indicateurs clés LCB-FT, en remplacement des
+      reportings hebdomadaires manuels.
+    status: done
+    owner_team: Équipe Pilotage Conformité
+    domains: [lcb-ft, editique-reporting]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-profilage-comportemental-v1
+    name: Déploiement du profilage comportemental client
+    description: >-
+      Mise en production du moteur de profilage transactionnel alimentant
+      les scores de déviance utilisés par les règles de détection d'opérations
+      atypiques.
+    status: done
+    owner_team: Équipe Modélisation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-consolidation-alertes
+    name: Consolidation multi-sources des alertes LCB-FT
+    description: >-
+      Déploiement du moteur de consolidation permettant de regrouper par client
+      les alertes issues des différents systèmes de détection et d'éliminer
+      la redondance des cas ouverts.
+    status: done
+    owner_team: Équipe Détection LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-listes-surveillance-unif
+    name: Unification du référentiel des listes de surveillance
+    description: >-
+      Centralisation de l'ensemble des listes de surveillance (sanctions,
+      PPE, internes) dans un référentiel unique exposant une API de criblage
+      commune à tous les systèmes LCB-FT.
+    status: done
+    owner_team: Équipe Données Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-analyse-reseau-v2
+    name: Analyse réseau des flux suspects v2
+    description: >-
+      Extension du module d'analyse réseau pour intégrer les contreparties
+      de clients tiers et améliorer la détection des circuits de blanchiment
+      impliquant plusieurs entités liées.
+    status: ongoing
+    owner_team: Équipe Modélisation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-nlp-libelles
+    name: Classification NLP des libellés transactionnels
+    description: >-
+      Entraînement et déploiement du modèle de langage spécialisé pour la
+      classification automatique des libellés de transactions suspectes selon
+      les typologies LCB-FT reconnues.
+    status: ongoing
+    owner_team: Équipe IA Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-veille-reglementaire-auto
+    name: Automatisation de la veille réglementaire
+    description: >-
+      Déploiement de l'outil de veille réglementaire automatisé intégrant
+      l'analyse d'impact et la liaison aux systèmes LCB-FT, pour réduire
+      la dépendance aux remontées manuelles des juristes.
+    status: ongoing
+    owner_team: Équipe Veille Juridique
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-simulation-gel-outil
+    name: Outil de simulation d'impact gel d'avoirs
+    description: >-
+      Construction du moteur de simulation permettant d'évaluer l'empreinte
+      financière d'un scénario de gel avant exécution, à destination des
+      équipes sanctions et de la direction des risques.
+    status: ongoing
+    owner_team: Équipe Sanctions et Gel
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-coherence-kyc-automatisation
+    name: Automatisation du contrôle de cohérence KYC
+    description: >-
+      Mise en production du moteur de contrôle de cohérence KYC permettant
+      de détecter automatiquement les discordances entre données déclaratives
+      et flux observés sans intervention manuelle.
+    status: ongoing
+    owner_team: Équipe Qualité Données KYC
+    domains: [lcb-ft, referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-due-diligence-tiers
+    name: Extension EDD aux tiers à risque
+    description: >-
+      Adaptation du moteur de due diligence renforcée pour couvrir les
+      partenaires commerciaux à risque LCB-FT en complément des clients
+      personnes physiques et morales.
+    status: ongoing
+    owner_team: Équipe Risques Tiers
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dlcb-rapprochement-identites-v2
+    name: Amélioration du rapprochement des identités v2
+    description: >-
+      Enrichissement du moteur de rapprochement avec de nouveaux algorithmes
+      de translittération et d'une base de données de variantes de noms
+      multiculturels pour réduire les faux négatifs de criblage.
+    status: ongoing
+    owner_team: Équipe Données Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Décisions ───────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-dlcb-api-criblage-unique
+    title: API de criblage centralisée comme source unique
+    statement: >-
+      Tout système LCB-FT doit utiliser l'API exposée par le référentiel des
+      listes de surveillance pour ses criblages. L'interrogation directe de
+      listes locales est interdite.
+    rationale: >-
+      Éviter la divergence entre les versions de listes utilisées par les
+      différents moteurs et garantir une mise à jour cohérente et synchrone.
+    date: "2023-03-15"
+    decided_by: Comité Architecture SI
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-ds-sous-48h
+    title: Délai maximal de dépôt des DS fixé à 48 heures
+    statement: >-
+      Toute déclaration de soupçon validée par le RCCI doit être transmise
+      à TRACFIN dans un délai maximal de quarante-huit heures ouvrées suivant
+      la signature de validation.
+    rationale: >-
+      Répondre aux exigences de célérité formulées lors du dernier contrôle
+      ACPR et réduire le risque de dépassement de délai réglementaire.
+    date: "2023-06-01"
+    decided_by: RCCI
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-edd-obligatoire-ppe
+    title: EDD obligatoire pour tous les clients PPE dès l'entrée en relation
+    statement: >-
+      Tout client identifié comme PPE lors du processus d'onboarding est
+      automatiquement soumis à une procédure de due diligence renforcée avant
+      l'activation de son accès aux produits bancaires.
+    rationale: >-
+      Conformité avec la cinquième directive anti-blanchiment et alignement
+      avec les recommandations GAFI relatives aux PPE.
+    date: "2022-09-10"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-gel-blocage-temps-reel
+    title: Blocage en temps réel des flux vers personnes gelées
+    statement: >-
+      Les ordres de paiement impliquant une entité figurant sur une liste de
+      gel active doivent être interceptés et suspendus avant exécution, sans
+      exception ni mode dégradé.
+    rationale: >-
+      Éviter tout risque de sanction administrative liée à l'exécution
+      d'une opération en faveur d'une personne désignée.
+    date: "2021-11-22"
+    decided_by: Comité Risques
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-profilage-fenetre-90j
+    title: Fenêtre de profilage comportemental fixée à 90 jours glissants
+    statement: >-
+      Le profil transactionnel servant au calcul du score de déviance est
+      construit sur une fenêtre glissante de quatre-vingt-dix jours. Cette
+      durée est paramétrable uniquement par le modèle validé par le comité.
+    rationale: >-
+      Équilibre entre la réactivité aux changements récents de comportement
+      et la robustesse statistique du profil sur une durée suffisante.
+    date: "2023-10-05"
+    decided_by: Comité Modèles LCB-FT
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-seuil-similarite-85
+    title: Seuil de similarité d'identité fixé à 85 %
+    statement: >-
+      Le moteur de rapprochement des identités doit déclencher une alerte
+      pour tout score de similarité composite supérieur ou égal à quatre-vingt-
+      cinq pour cent entre une entité et une entrée de liste de surveillance.
+    rationale: >-
+      Calibration issue des tests A/B menés sur données historiques, visant
+      à maximiser le rappel tout en maintenant le taux de faux positifs sous
+      le seuil d'acceptabilité opérationnelle.
+    date: "2023-07-18"
+    decided_by: Comité Modèles LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-cartographie-annuelle
+    title: Mise à jour de la cartographie des risques sur cycle annuel
+    statement: >-
+      La cartographie des risques LCB-FT est mise à jour au minimum une fois
+      par an, avant le 31 mars, pour intégrer les données de l'exercice
+      précédent et les évolutions de l'environnement réglementaire.
+    rationale: >-
+      Respecter le calendrier de reporting exigé par l'ACPR et disposer d'une
+      base de risques actualisée pour calibrer les contrôles de l'année.
+    date: "2022-01-14"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-formation-annuelle-obligatoire
+    title: Formation LCB-FT annuelle obligatoire pour tous les collaborateurs
+    statement: >-
+      Chaque collaborateur de l'établissement doit compléter le module de
+      formation LCB-FT de base chaque année civile. L'absence de complétion
+      dans les délais est remontée au responsable hiérarchique.
+    rationale: >-
+      Satisfaire l'obligation réglementaire de sensibilisation et réduire
+      le risque de non-détection par méconnaissance des procédures.
+    date: "2021-02-08"
+    decided_by: Direction des Ressources Humaines
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-score-risque-4-niveaux
+    title: Échelle à quatre niveaux pour le score de risque client
+    statement: >-
+      Le score de risque LCB-FT des clients est exprimé sur une échelle à
+      quatre niveaux (faible, modéré, élevé, très élevé). Chaque niveau
+      est associé à un niveau de vigilance et à une fréquence de revue définis.
+    rationale: >-
+      Simplifier la prise de décision des analystes et aligner la segmentation
+      interne avec les pratiques de la profession recommandées par l'ABE.
+    date: "2022-05-30"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-notification-gel-48h
+    title: Notification des mesures de gel sous 48 heures à la DGTRESOR
+    statement: >-
+      Toute mesure de gel exécutée doit faire l'objet d'une notification
+      formelle à la Direction générale du Trésor dans un délai de quarante-
+      huit heures. Ce délai est suivi par la plateforme et son dépassement
+      génère une alerte au directeur conformité.
+    rationale: >-
+      Conformité avec l'article R. 562-4 du code monétaire et financier
+      imposant ce délai de notification.
+    date: "2020-12-01"
+    decided_by: Comité Juridique
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-backtesting-avant-prod
+    title: Backtesting obligatoire avant mise en production d'un scénario
+    statement: >-
+      Aucun scénario de détection ne peut être déployé en production sans
+      qu'un backtesting sur au minimum six mois de données historiques ait
+      été réalisé et validé par le comité modèles.
+    rationale: >-
+      Prévenir la dégradation du ratio signal-bruit en production et garantir
+      la maîtrise du volume d'alertes générées.
+    date: "2023-04-20"
+    decided_by: Comité Modèles LCB-FT
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-beeff-seuil-25pct
+    title: Seuil de 25 % pour l'identification des bénéficiaires effectifs
+    statement: >-
+      Toute personne physique détenant directement ou indirectement vingt-
+      cinq pour cent ou plus du capital ou des droits de vote d'un client
+      personne morale est identifiée et documentée comme bénéficiaire effectif.
+    rationale: >-
+      Alignement avec les exigences de la directive anti-blanchiment et
+      des recommandations GAFI sur la transparence des bénéficiaires effectifs.
+    date: "2019-07-10"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-revue-ppe-annuelle
+    title: Revue annuelle obligatoire de tous les dossiers PPE actifs
+    statement: >-
+      Chaque dossier PPE actif doit faire l'objet d'une revue complète au
+      minimum une fois par an. Tout dossier non révisé dans l'année génère
+      une alerte d'escalade au RCCI.
+    rationale: >-
+      Garantir l'actualisation des données de vigilance renforcée et détecter
+      au plus tôt toute évolution du profil de risque des clients PPE.
+    date: "2022-03-14"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-cas-investigation-72h
+    title: Délai de premier traitement des cas d'investigation fixé à 72 heures
+    statement: >-
+      Chaque cas d'investigation ouvert doit faire l'objet d'une première
+      action documentée dans les soixante-douze heures suivant son ouverture.
+      L'absence d'action déclenche une escalade automatique.
+    rationale: >-
+      Réduire les délais de traitement des alertes et prévenir l'accumulation
+      d'un backlog non traité pouvant constituer un manquement réglementaire.
+    date: "2023-09-05"
+    decided_by: Responsable Investigation LCB-FT
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-rtf-controle-synchrone
+    title: Contrôle RTF en mode synchrone sur le chemin des virements
+    statement: >-
+      Les vérifications imposées par le règlement sur les transferts de fonds
+      sont exécutées de manière synchrone avant validation de chaque virement
+      international, sans mode asynchrone ou de rattrapage.
+    rationale: >-
+      Garantir qu'aucun virement non conforme au RTF ne puisse être exécuté
+      même en cas de délai de traitement du contrôle.
+    date: "2022-11-08"
+    decided_by: Comité Architecture SI
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-listes-gel-mise-a-jour-j
+    title: Mise à jour des listes de gel en moins de 4 heures après publication
+    statement: >-
+      Lorsqu'une nouvelle liste de gel est publiée par une autorité compétente
+      (DGTRESOR, UE, OFAC), le référentiel des listes doit être mis à jour
+      et le criblage relancé dans un délai maximal de quatre heures.
+    rationale: >-
+      Minimiser la fenêtre de risque entre la désignation publique d'une
+      entité et le blocage effectif des opérations la concernant.
+    date: "2021-05-17"
+    decided_by: Comité Risques
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-veille-reglementaire-mensuelle
+    title: Revue mensuelle de veille réglementaire LCB-FT
+    statement: >-
+      Un point de veille réglementaire formalisé est organisé chaque mois
+      par l'équipe juridique pour partager les évolutions réglementaires
+      récentes et évaluer leur impact sur le dispositif en place.
+    rationale: >-
+      Structurer la diffusion de l'information réglementaire et réduire
+      le risque de non-conformité par méconnaissance.
+    date: "2023-01-10"
+    decided_by: Direction Conformité
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-consolidation-alertes-actif
+    title: Consolidation des alertes avant ouverture de cas obligatoire
+    statement: >-
+      Avant l'ouverture d'un cas d'investigation, le moteur de consolidation
+      doit être consulté pour vérifier l'existence d'alertes pendantes sur
+      le même client et les intégrer au cas si pertinent.
+    rationale: >-
+      Éviter la redondance des cas ouverts pour un même risque et améliorer
+      la cohérence du traitement des alertes multi-sources.
+    date: "2024-02-22"
+    decided_by: Responsable Investigation LCB-FT
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-tiers-risque-eleve-annuel
+    title: Réévaluation annuelle obligatoire des tiers à risque élevé
+    statement: >-
+      Les tiers classés à risque élevé dans la plateforme de gestion des
+      tiers à risque font l'objet d'une réévaluation complète chaque année.
+      Un tiers non réévalué dans le délai est automatiquement suspendu.
+    rationale: >-
+      Garantir la mise à jour continue de l'évaluation des risques tiers
+      dans un contexte réglementaire et opérationnel évolutif.
+    date: "2023-11-30"
+    decided_by: Comité Risques Tiers
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-profilage-retraining-mensuel
+    title: Réentraînement mensuel imposé aux modèles de profilage
+    statement: >-
+      Les modèles de profilage comportemental sont réentraînés mensuellement
+      sur données fraîches. Tout écart de performance de plus de cinq points
+      par rapport au mois précédent déclenche une revue obligatoire par
+      le comité modèles.
+    rationale: >-
+      Prévenir la dérive silencieuse des modèles qui dégraderait la qualité
+      de détection sans signal d'alerte visible.
+    date: "2024-01-15"
+    decided_by: Comité Modèles LCB-FT
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-edd-score-seuil-70
+    title: Seuil EDD de score de risque fixé à 70 sur 100
+    statement: >-
+      Tout client dont le score de risque EDD est supérieur ou égal à
+      soixante-dix est systématiquement soumis à une procédure de due
+      diligence renforcée, quelle que soit son ancienneté ou son statut.
+    rationale: >-
+      Calibration issue des retours du dernier contrôle ACPR demandant
+      un abaissement du seuil pour élargir la couverture de la population
+      à risque.
+    date: "2024-04-01"
+    decided_by: Comité Conformité
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dlcb-simulation-gel-avant-exec
+    title: Simulation d'impact obligatoire avant tout gel de masse
+    statement: >-
+      Toute mesure de gel concernant plus de cinq entités simultanément
+      doit faire l'objet d'une simulation d'impact préalable validée par
+      le directeur des risques avant exécution.
+    rationale: >-
+      Anticiper les effets opérationnels d'un gel de masse sur les systèmes
+      et prévenir les situations d'indisponibilité non planifiée.
+    date: "2024-06-10"
+    decided_by: Direction des Risques
+    domains: [lcb-ft]
+    still_active: true
+    created_from: synthetic
+
+  # ── Contraintes ─────────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-dlcb-conservation-ds-5ans
+    title: Conservation des DS pendant cinq ans
+    statement: >-
+      Les déclarations de soupçon et l'ensemble de leur historique de validation
+      doivent être conservés pendant une durée minimale de cinq ans à compter
+      de la date de transmission à TRACFIN.
+    source: Article L. 561-12 CMF
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-tracabilite-actions-vigilance
+    title: Traçabilité intégrale des actions de vigilance
+    statement: >-
+      Toute action de vigilance (collecte, criblage, revue, décision) doit
+      être journalisée avec horodatage, identifiant de l'opérateur et référence
+      au dossier client. L'effacement de ces journaux est techniquement
+      impossible.
+    source: Directive UE 2015/849
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-criblage-avant-paiement
+    title: Criblage obligatoire avant tout paiement vers tiers inconnu
+    statement: >-
+      Tout virement vers un bénéficiaire ne figurant pas encore dans le
+      référentiel client doit être criblé contre les listes de sanctions actives
+      avant d'être accepté. Aucune exception n'est autorisée.
+    source: Règlement UE 2580/2001 et décrets nationaux gel
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-notification-gel-delai
+    title: Délai de notification gel d'avoirs de 48 heures
+    statement: >-
+      La notification d'une mesure de gel à la DGTRESOR doit intervenir
+      dans un délai de quarante-huit heures. Ce délai est imposé par la
+      réglementation et son non-respect est constitutif d'une infraction.
+    source: Article R. 562-4 CMF
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-ppe-vigilance-renforcee
+    title: Vigilance renforcée obligatoire pour les PPE
+    statement: >-
+      Les clients identifiés comme PPE sont soumis sans délai à une procédure
+      de vigilance renforcée incluant l'identification de l'origine des fonds.
+      L'application de la vigilance standard est interdite pour ce segment.
+    source: Directive UE 2015/849 art. 20
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-mise-a-jour-kyb-3ans
+    title: Mise à jour KYB des personnes morales tous les trois ans
+    statement: >-
+      Les dossiers KYB des clients personnes morales doivent être actualisés
+      au moins tous les trois ans. Pour les clients à risque élevé, la
+      fréquence minimale est d'un an.
+    source: Lignes directrices conjointes ACPR-AMF LCB-FT
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-mentions-rtf-obligatoires
+    title: Mentions obligatoires RTF dans les virements internationaux
+    statement: >-
+      Tout virement international doit comporter le nom, l'adresse et le
+      numéro de compte du donneur d'ordre conformément au règlement sur les
+      transferts de fonds. Les messages incomplets sont rejetés automatiquement.
+    source: Règlement UE 2015/847 (RTF)
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-formation-annuelle-reglementaire
+    title: Formation LCB-FT annuelle imposée à tous les agents
+    statement: >-
+      L'article L. 561-34 du CMF impose à chaque établissement de former
+      l'ensemble de son personnel aux obligations LCB-FT au moins une fois
+      par an. L'absence de formation est sanctionnée par l'ACPR.
+    source: Article L. 561-34 CMF
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-identification-beneficiaires-effectifs
+    title: Identification des bénéficiaires effectifs obligatoire à l'entrée
+    statement: >-
+      Pour tout client personne morale, les bénéficiaires effectifs au-delà
+      du seuil de vingt-cinq pour cent doivent être identifiés et leur identité
+      vérifiée avant l'ouverture d'un compte ou la fourniture d'un service.
+    source: Directive UE 2015/849 art. 13
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-rapport-acpr-annuel
+    title: Rapport de contrôle interne annuel transmis à l'ACPR
+    statement: >-
+      L'établissement est tenu de transmettre chaque année à l'ACPR un rapport
+      de contrôle interne incluant une section LCB-FT avec indicateurs
+      d'activité, incidents notables et plans d'action en cours.
+    source: Arrêté du 3 novembre 2014 art. 258
+    severity: high
+    domains: [lcb-ft, editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-gel-blocage-immediat
+    title: Blocage immédiat sans délai de grâce à la désignation
+    statement: >-
+      Dès réception d'une liste de gel mise à jour, le blocage des avoirs
+      des entités nouvellement désignées doit être opéré sans délai. Aucune
+      opération de la personne désignée ne peut être exécutée après la
+      publication de l'acte de désignation.
+    source: Règlement UE 2016/1686 et arrêtés nationaux
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-audit-ds-opposable
+    title: Audit trail des DS opposable en procédure judiciaire
+    statement: >-
+      L'ensemble des données relatives à une déclaration de soupçon (version,
+      modifications, validations, date de transmission) doit être conservé
+      de manière immuable et produire un journal opposable devant une juridiction.
+    source: Recommandation GAFI n° 20
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-sla-criblage-100ms
+    title: SLA du service de criblage temps réel inférieur à 100 ms
+    statement: >-
+      L'API de criblage doit répondre en moins de cent millisecondes au
+      95e percentile pour les requêtes synchrones. Tout dépassement persistant
+      déclenche une alerte de disponibilité.
+    source: SLA interne Architecture Conformité
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-beeff-registre-national
+    title: Cohérence avec le Registre national des bénéficiaires effectifs
+    statement: >-
+      Les données de bénéficiaires effectifs stockées dans le référentiel interne
+      doivent être rapprochées avec le Registre national des bénéficiaires
+      effectifs (RNBE) lors de chaque mise à jour dossier.
+    source: Article L. 561-46 CMF
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-donnees-perso-minimisation
+    title: Minimisation des données personnelles dans les systèmes LCB-FT
+    statement: >-
+      Les données à caractère personnel collectées dans le cadre des procédures
+      LCB-FT doivent être limitées aux informations strictement nécessaires,
+      conformément au principe de minimisation du RGPD.
+    source: RGPD art. 5(1)(c) / CNIL délibération 2021-027
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-restriction-acces-ds
+    title: Accès aux déclarations de soupçon restreint aux habilités
+    statement: >-
+      La consultation et la modification des déclarations de soupçon sont
+      réservées aux collaborateurs expressément habilités. L'accès est journalisé
+      et les tentatives non autorisées génèrent une alerte de sécurité.
+    source: Article L. 561-19 CMF (confidentialité des DS)
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-rpp-revue-annuelle
+    title: Revue annuelle de la politique de gestion du risque LCB-FT
+    statement: >-
+      La politique interne de gestion du risque LCB-FT est révisée au moins
+      une fois par an et approuvée par l'organe de direction avant le 31 mars
+      de chaque année.
+    source: Lignes directrices conjointes ACPR-AMF LCB-FT 2019
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-gel-avoirs-perimetre-complet
+    title: Périmètre de gel incluant tous les comptes et dépôts de l'entité
+    statement: >-
+      Une mesure de gel doit couvrir l'intégralité des avoirs de l'entité
+      désignée détenus dans l'établissement, sans exception de produit ou
+      de canal. Aucun compte ne peut être exclu du gel.
+    source: Règlement UE 2016/1686 art. 2
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-incidents-signalement-24h
+    title: Signalement interne des incidents LCB-FT majeurs sous 24 heures
+    statement: >-
+      Tout incident de conformité LCB-FT qualifié de sévérité haute doit être
+      signalé au RCCI et enregistré dans le registre des incidents dans les
+      vingt-quatre heures suivant sa détection.
+    source: Charte de gestion des risques opérationnels
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-cloisonnement-donnees-cas
+    title: Cloisonnement des données entre cas d'investigation distincts
+    statement: >-
+      Les données et documents d'un cas d'investigation ne peuvent être
+      consultés que par les analystes affectés à ce cas. L'accès croisé
+      entre cas sans habilitation est techniquement bloqué.
+    source: Politique de sécurité des données conformité
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-virement-intl-controle-pays
+    title: Contrôle systématique du pays de destination avant virement
+    statement: >-
+      Tout virement international déclenche une vérification automatique du
+      pays de destination contre la liste des pays sous embargo et des pays
+      à risque élevé. L'opération est bloquée si le pays figure sur ces listes.
+    source: Décrets nationaux et règlements UE gel et embargo
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-edd-validee-rcci
+    title: Toute procédure EDD validée par le RCCI avant entrée en relation
+    statement: >-
+      Pour les clients soumis à une EDD, l'entrée en relation ou l'activation
+      d'un produit ne peut avoir lieu avant que le RCCI ou son délégué ait
+      formellement validé le dossier EDD complet.
+    source: Procédure interne conformité n° PROC-LCB-007
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-ppe-source-doc-trois-ans
+    title: Justificatif d'origine des fonds PPE renouvelé tous les trois ans
+    statement: >-
+      Pour les clients PPE, le justificatif d'origine des fonds doit être
+      actualisé à chaque revue annuelle et remplacé par un document daté de
+      moins de trois ans pour les montants significatifs.
+    source: Lignes directrices ABE sur la vigilance renforcée 2021
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-modeles-validation-comite
+    title: Validation comité obligatoire avant déploiement d'un nouveau modèle
+    statement: >-
+      Tout nouveau modèle de profilage, de scoring ou de détection doit être
+      approuvé par le comité modèles LCB-FT avant son déploiement en production.
+      Les modifications de paramètres existants au-delà de seuils définis
+      sont soumises à la même exigence.
+    source: Charte de gouvernance des modèles LCB-FT
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-surete-modele-nlp
+    title: Validation humaine obligatoire des suggestions NLP avant clôture de cas
+    statement: >-
+      Les suggestions de typologies produites par le moteur d'analyse sémantique
+      ne peuvent pas être utilisées comme seul fondement de la décision de clôture
+      d'un cas. Une validation humaine explicite est requise dans tous les cas.
+    source: Politique de gouvernance des modèles IA conformité
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-interop-ermes-certifiee
+    title: Interface ERMES certifiée par TRACFIN
+    statement: >-
+      Le connecteur d'envoi des déclarations de soupçon vers ERMES doit être
+      conforme aux spécifications techniques publiées par TRACFIN et sa
+      certification doit être maintenue à jour lors de chaque mise à jour
+      du protocole.
+    source: Spécifications techniques TRACFIN ERMES v4
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-disponibilite-criblage-99-9
+    title: Disponibilité du service de criblage à 99,9 %
+    statement: >-
+      L'API de criblage temps réel doit afficher une disponibilité mensuelle
+      d'au moins 99,9 %. Toute interruption de service doit être compensée
+      par le déclenchement automatique d'un mode dégradé documenté.
+    source: SLA contractuel fournisseur listes sanctions
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-historique-modifications-kyb
+    title: Historique complet des modifications KYB conservé
+    statement: >-
+      Toute modification apportée à un dossier KYB (personne morale) est
+      journalisée avec l'identité de l'opérateur et l'horodatage. L'historique
+      complet des versions du dossier est conservé pendant la durée légale
+      de cinq ans après la fin de la relation.
+    source: Article L. 561-12 CMF
+    severity: high
+    domains: [lcb-ft, referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-rapport-carto-acpr-format
+    title: Format ACPR respecté pour la cartographie annuelle
+    statement: >-
+      Le rapport de cartographie des risques LCB-FT transmis à l'ACPR doit
+      respecter le format et la nomenclature définis dans le questionnaire
+      annuel de l'autorité. Tout écart de format entraîne le renvoi du rapport.
+    source: Questionnaire ACPR cartographie des risques LCB-FT
+    severity: medium
+    domains: [lcb-ft, editique-reporting]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-partage-info-interdit
+    title: Interdiction de divulguer l'existence d'une DS à la personne visée
+    statement: >-
+      Il est interdit de divulguer à la personne faisant l'objet d'une
+      déclaration de soupçon, ou à des tiers non autorisés, l'existence de
+      cette déclaration ou les informations qu'elle contient (tipping-off).
+    source: Article L. 561-19 CMF
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-scenario-detection-documente
+    title: Documentation obligatoire de chaque scénario de détection
+    statement: >-
+      Chaque scénario de détection déployé en production doit disposer d'une
+      fiche de documentation précisant la logique de détection, les paramètres,
+      les performances mesurées et la date de dernière validation.
+    source: Charte de gouvernance des modèles LCB-FT
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-drp-lcb-ft-teste
+    title: Plan de reprise d'activité LCB-FT testé annuellement
+    statement: >-
+      Le plan de reprise d'activité couvrant les systèmes LCB-FT critiques
+      (criblage, gel, déclarations) doit être testé au moins une fois par
+      an et les résultats documentés transmis au RCCI.
+    source: Politique de continuité d'activité
+    severity: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dlcb-externalisation-encadree
+    title: Toute externalisation de traitement LCB-FT encadrée par convention
+    statement: >-
+      Lorsqu'un traitement LCB-FT est externalisé à un prestataire, une
+      convention de service incluant des clauses d'audit, de confidentialité
+      et de continuité doit être signée avant toute mise en production.
+    source: Lignes directrices ABE sur l'externalisation 2019
+    severity: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  # ── Risques ─────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-dlcb-retard-ds
+    title: Retard de transmission des déclarations de soupçon à TRACFIN
+    statement: >-
+      Les délais de validation interne des DS, notamment lors d'absence du
+      RCCI, peuvent dépasser le délai réglementaire de quarante-huit heures
+      et exposer l'établissement à une sanction ACPR.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Mise en place d'un délégué RCCI avec délégation de signature permanente
+      - Relances automatiques dès dépassement de vingt-quatre heures dans le circuit
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-faux-negatifs-criblage
+    title: Faux négatifs de criblage par translittération insuffisante
+    statement: >-
+      Des variantes orthographiques de noms figurant sur des listes de
+      sanctions peuvent passer à travers le moteur de rapprochement si
+      le score de similarité est inférieur au seuil configuré, générant
+      un faux négatif aux conséquences potentiellement graves.
+    likelihood: medium
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-surcharge-alertes
+    title: Surcharge des analystes par volume excessif d'alertes
+    statement: >-
+      Une dégradation des scénarios de détection ou un changement brutal de
+      comportements peut générer un pic de volume d'alertes dépassant la
+      capacité de traitement des équipes et créant un backlog réglementairement
+      inacceptable.
+    likelihood: medium
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-derive-modele-profilage
+    title: Dérive silencieuse des modèles de profilage comportemental
+    statement: >-
+      Les modèles de profilage peuvent perdre en pertinence progressivement
+      sans signal d'alerte visible si le monitoring de dérive n'est pas actif
+      ou si les réentraînements sont retardés.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Monitoring mensuel des métriques de performance avec rapport automatique
+      - Réentraînement mensuel obligatoire sur données fraîches validées
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-indisponibilite-gel
+    title: Indisponibilité de la plateforme de gel lors d'une désignation urgente
+    statement: >-
+      Une panne de la plateforme de gel au moment d'une désignation urgente
+      pourrait empêcher le blocage immédiat des avoirs requis et exposer
+      l'établissement à une infraction réglementaire.
+    likelihood: low
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-ppe-non-detecte
+    title: Client PPE non identifié à l'entrée en relation
+    statement: >-
+      Une lacune dans les référentiels PPE utilisés ou une erreur de saisie
+      peut conduire à l'onboarding d'un PPE sans déclenchement de la procédure
+      de vigilance renforcée, exposant l'établissement à un risque réglementaire.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Multiplication des sources de référentiels PPE tiers
+      - Re-criblage périodique du stock client contre les référentiels mis à jour
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-tipping-off-accidentel
+    title: Divulgation accidentelle de l'existence d'une DS au client
+    statement: >-
+      Un conseiller mal informé ou un message automatique mal configuré
+      pourrait révéler au client qu'il fait l'objet d'une déclaration de
+      soupçon, constituant une infraction grave au secret des DS.
+    likelihood: low
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-donnees-kyb-obsoletes
+    title: Dossiers KYB de personnes morales non actualisés
+    statement: >-
+      Des dossiers KYB non renouvelés dans les délais exposent l'établissement
+      à traiter des clients dont la structure de détention a évolué sans
+      que la banque en ait connaissance, avec risque de méconnaissance des
+      bénéficiaires effectifs réels.
+    likelihood: high
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-cas-non-traite-72h
+    title: Cas d'investigation non traité dans le délai de 72 heures
+    statement: >-
+      Un afflux de cas ou une absence non anticipée dans l'équipe peut
+      entraîner le dépassement du délai de premier traitement sur un nombre
+      significatif de cas, constituant un risque de non-conformité interne.
+    likelihood: medium
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-virement-intl-non-controle
+    title: Virement international traité sans contrôle RTF complet
+    statement: >-
+      Un dysfonctionnement du module de contrôle RTF pourrait laisser passer
+      des virements avec des mentions obligatoires incomplètes, exposant
+      l'établissement à une infraction au règlement sur les transferts de fonds.
+    likelihood: low
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-formation-incomplete
+    title: Taux de complétion de la formation LCB-FT insuffisant
+    statement: >-
+      Un taux de complétion de la formation LCB-FT inférieur au seuil requis
+      par la politique interne constituerait un manquement à l'obligation de
+      formation et serait relevé lors d'un contrôle ACPR.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Relances automatiques et escalade hiérarchique avant l'échéance annuelle
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-cartographie-non-a-jour
+    title: Cartographie des risques non mise à jour dans les délais
+    statement: >-
+      Un retard dans la production de la cartographie annuelle ou une qualité
+      insuffisante des données sources peut conduire à la transmission d'un
+      rapport ACPR incomplet ou hors délai.
+    likelihood: low
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-tiers-risque-non-revalue
+    title: Tiers à risque élevé non réévalué dans le délai annuel
+    statement: >-
+      Un partenaire classé à risque élevé dont la réévaluation est omise ou
+      retardée peut voir son profil de risque évoluer négativement sans que
+      l'établissement en prenne connaissance, exposant à des risques LCB-FT
+      non couverts.
+    likelihood: medium
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-fragmentation-listes
+    title: Fragmentation des listes de surveillance entre systèmes
+    statement: >-
+      Avant l'unification des listes, différents systèmes pouvaient utiliser
+      des versions désynchronisées des listes de sanctions. La persistance
+      de sources locales non migrées représente un risque de cohérence résiduel.
+    likelihood: low
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-backtesting-biais
+    title: Biais de backtesting sur données historiques non représentatives
+    statement: >-
+      Si les données historiques utilisées pour le backtesting des scénarios
+      de détection sont biaisées ou non représentatives des comportements
+      récents, les performances réelles en production peuvent diverger
+      significativement des projections.
+    likelihood: medium
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-ermes-indisponible
+    title: Indisponibilité du portail ERMES de TRACFIN
+    statement: >-
+      Une indisponibilité prolongée du portail ERMES peut empêcher la
+      transmission de DS dans les délais réglementaires, sans possibilité
+      de substitution immédiate, constituant un risque de non-conformité
+      indépendant des processus internes.
+    likelihood: low
+    impact: medium
+    domains: [lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dlcb-acces-non-habilite-ds
+    title: Accès non habilité aux déclarations de soupçon
+    statement: >-
+      Une erreur de configuration des droits d'accès pourrait permettre
+      à un collaborateur non habilité de consulter des DS, exposant
+      l'établissement à une infraction au secret des DS et à un risque RGPD.
+    likelihood: low
+    impact: high
+    domains: [lcb-ft]
+    created_from: synthetic
+
+edges:
+
+  # ── PART_OF : feature → system ─────────────────────────────────────────────
+  - {source_id: feat-dlcb-saisie-ds, target_id: sys-dlcb-plateforme-ds, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-validation-ds, target_id: sys-dlcb-plateforme-ds, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-transmission-tracfin, target_id: sys-dlcb-plateforme-ds, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-archivage-ds, target_id: sys-dlcb-plateforme-ds, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-collecte-indicateurs, target_id: sys-dlcb-carto-risques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-risque-pays, target_id: sys-dlcb-carto-risques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-rapport-carto, target_id: sys-dlcb-carto-risques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-mise-a-jour-taxonomie, target_id: sys-dlcb-carto-risques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-identification-ppe, target_id: sys-dlcb-surveillance-ppe, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-revue-periodique-ppe, target_id: sys-dlcb-surveillance-ppe, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-alerte-changement-statut, target_id: sys-dlcb-surveillance-ppe, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-chargement-listes-gel, target_id: sys-dlcb-gel-avoirs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-blocage-flux, target_id: sys-dlcb-gel-avoirs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-notification-autorites, target_id: sys-dlcb-gel-avoirs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-degel-procedure, target_id: sys-dlcb-gel-avoirs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-regles-comportementales, target_id: sys-dlcb-detection-atypiques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-detection-smurfing, target_id: sys-dlcb-detection-atypiques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-analyse-reseau, target_id: sys-dlcb-detection-atypiques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-priorisation-alertes, target_id: sys-dlcb-detection-atypiques, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-parcours-lcb-ft, target_id: sys-dlcb-formation-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-suivi-completions, target_id: sys-dlcb-formation-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-attestations, target_id: sys-dlcb-formation-conformite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-saisie-actionnariat, target_id: sys-dlcb-ref-benef-effectifs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-calcul-detention, target_id: sys-dlcb-ref-benef-effectifs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-mise-a-jour-evenements, target_id: sys-dlcb-ref-benef-effectifs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-collecte-justificatifs, target_id: sys-dlcb-due-diligence, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-validation-edd, target_id: sys-dlcb-due-diligence, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-edd, target_id: sys-dlcb-due-diligence, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-kpi-alertes, target_id: sys-dlcb-tableau-bord-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-rapport-acpr, target_id: sys-dlcb-tableau-bord-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-suivi-plans-action, target_id: sys-dlcb-tableau-bord-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-construction-profil, target_id: sys-dlcb-profilage-comportemental, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-retraining-modeles, target_id: sys-dlcb-profilage-comportemental, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-ouverture-cas, target_id: sys-dlcb-gestion-cas, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-timeline-cas, target_id: sys-dlcb-gestion-cas, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-cloture-cas, target_id: sys-dlcb-gestion-cas, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-import-listes-externes, target_id: sys-dlcb-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-gestion-listes-internes, target_id: sys-dlcb-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-api-criblage, target_id: sys-dlcb-listes-surveillance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-controle-mentions-swift, target_id: sys-dlcb-surveillance-vir-intl, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-blocage-pays-embargo, target_id: sys-dlcb-surveillance-vir-intl, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-reporting-rtf, target_id: sys-dlcb-surveillance-vir-intl, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-onboarding-tiers, target_id: sys-dlcb-tiers-a-risque, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-reevaluation-tiers, target_id: sys-dlcb-tiers-a-risque, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-classification-nlp, target_id: sys-dlcb-analyse-semantique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-suggestion-typologies, target_id: sys-dlcb-analyse-semantique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-backtesting-scenarios, target_id: sys-dlcb-simulation-scenarios, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-champion-challenger, target_id: sys-dlcb-simulation-scenarios, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-saisie-incident, target_id: sys-dlcb-registre-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-analyse-causes-racines, target_id: sys-dlcb-registre-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-demande-justification, target_id: sys-dlcb-portail-justification, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-reception-justificatifs, target_id: sys-dlcb-portail-justification, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-normalisation-noms, target_id: sys-dlcb-rapprochement-identites, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-similarite, target_id: sys-dlcb-rapprochement-identites, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-selection-niveau-vigilance, target_id: sys-dlcb-orchestrateur-vigilance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-suivi-delais-vigilance, target_id: sys-dlcb-orchestrateur-vigilance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-historique-vigilance, target_id: sys-dlcb-orchestrateur-vigilance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-comparaison-declaratif-transactionnel, target_id: sys-dlcb-controle-coherence-kyc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-flagging-kyc-obsolete, target_id: sys-dlcb-controle-coherence-kyc, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-deduplication-alertes, target_id: sys-dlcb-consolidation-alertes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-score-consolide-client, target_id: sys-dlcb-consolidation-alertes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-fiche-conformite-produit, target_id: sys-dlcb-conformite-produits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-revue-annuelle-produits, target_id: sys-dlcb-conformite-produits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-collecte-textes-reglementaires, target_id: sys-dlcb-veille-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-analyse-impact, target_id: sys-dlcb-veille-reglementaire, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-perimetre-gel-simule, target_id: sys-dlcb-simulation-gel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dlcb-rapport-impact-gel, target_id: sys-dlcb-simulation-gel, type: PART_OF, created_from: synthetic}
+
+  # ── OPERATES_ON : feature|system → business_object ─────────────────────────
+  - {source_id: feat-dlcb-saisie-ds, target_id: obj-dlcb-declaration-soupcon, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-validation-ds, target_id: obj-dlcb-declaration-soupcon, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-transmission-tracfin, target_id: obj-dlcb-declaration-soupcon, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-archivage-ds, target_id: obj-dlcb-declaration-soupcon, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-priorisation-alertes, target_id: obj-dlcb-alerte-lcb-ft, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-ouverture-cas, target_id: obj-dlcb-alerte-lcb-ft, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-deduplication-alertes, target_id: obj-dlcb-alerte-lcb-ft, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-collecte-justificatifs, target_id: obj-dlcb-dossier-edd, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-validation-edd, target_id: obj-dlcb-dossier-edd, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-edd, target_id: obj-dlcb-profil-client-lcb, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-chargement-listes-gel, target_id: obj-dlcb-liste-sanctions, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-import-listes-externes, target_id: obj-dlcb-liste-sanctions, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-api-criblage, target_id: obj-dlcb-liste-sanctions, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-identification-ppe, target_id: obj-dlcb-personne-ppe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-revue-periodique-ppe, target_id: obj-dlcb-personne-ppe, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-blocage-flux, target_id: obj-dlcb-mesure-gel, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-notification-autorites, target_id: obj-dlcb-mesure-gel, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-calcul-detention, target_id: obj-dlcb-beneficiaire-effectif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-saisie-actionnariat, target_id: obj-dlcb-beneficiaire-effectif, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-ouverture-cas, target_id: obj-dlcb-cas-investigation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-cloture-cas, target_id: obj-dlcb-cas-investigation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-rapport-carto, target_id: obj-dlcb-rapport-cartographie, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-saisie-incident, target_id: obj-dlcb-incident-conformite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-onboarding-tiers, target_id: obj-dlcb-tiers-a-risque, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-reevaluation-tiers, target_id: obj-dlcb-tiers-a-risque, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-regles-comportementales, target_id: obj-dlcb-operation-atypique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-detection-smurfing, target_id: obj-dlcb-operation-atypique, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-attestations, target_id: obj-dlcb-attestation-formation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-reception-justificatifs, target_id: obj-dlcb-justificatif-origine-fonds, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-reporting-rtf, target_id: obj-dlcb-rapport-rtf, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-risque-pays, target_id: obj-dlcb-scoring-risque-pays, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-carto-risques, target_id: obj-dlcb-rapport-cartographie, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gel-avoirs, target_id: obj-dlcb-mesure-gel, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-listes-surveillance, target_id: obj-dlcb-liste-sanctions, type: OPERATES_ON, created_from: synthetic}
+
+  # ── DEPENDS_ON : system→system, feature→feature, feature→system ────────────
+  - {source_id: feat-dlcb-blocage-flux, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-identification-ppe, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-chargement-listes-gel, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-onboarding-tiers, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-regles-comportementales, target_id: sys-dlcb-profilage-comportemental, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-priorisation-alertes, target_id: feat-dlcb-regles-comportementales, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-ouverture-cas, target_id: feat-dlcb-priorisation-alertes, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-saisie-ds, target_id: feat-dlcb-cloture-cas, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-detection-atypiques, target_id: sys-dlcb-profilage-comportemental, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gestion-cas, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-consolidation-alertes, target_id: sys-dlcb-detection-atypiques, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-plateforme-ds, target_id: sys-dlcb-gestion-cas, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-gel-avoirs, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-surveillance-ppe, target_id: sys-dlcb-listes-surveillance, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-tableau-bord-reglementaire, target_id: sys-dlcb-gestion-cas, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dlcb-analyse-semantique, target_id: sys-dlcb-gestion-cas, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-scoring-edd, target_id: feat-dlcb-scoring-risque-pays, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dlcb-rapport-acpr, target_id: feat-dlcb-kpi-alertes, type: DEPENDS_ON, created_from: synthetic}
+
+  # ── CONSTRAINS : constraint|decision → system|feature|business_object|project
+  - {source_id: con-dlcb-conservation-ds-5ans, target_id: sys-dlcb-plateforme-ds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-tracabilite-actions-vigilance, target_id: sys-dlcb-orchestrateur-vigilance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-criblage-avant-paiement, target_id: feat-dlcb-blocage-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-notification-gel-delai, target_id: feat-dlcb-notification-autorites, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-ppe-vigilance-renforcee, target_id: feat-dlcb-identification-ppe, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-mise-a-jour-kyb-3ans, target_id: sys-dlcb-controle-coherence-kyc, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-mentions-rtf-obligatoires, target_id: feat-dlcb-controle-mentions-swift, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-formation-annuelle-reglementaire, target_id: sys-dlcb-formation-conformite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-identification-beneficiaires-effectifs, target_id: sys-dlcb-ref-benef-effectifs, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-rapport-acpr-annuel, target_id: feat-dlcb-rapport-acpr, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-gel-blocage-immediat, target_id: sys-dlcb-gel-avoirs, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-audit-ds-opposable, target_id: feat-dlcb-archivage-ds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-sla-criblage-100ms, target_id: feat-dlcb-api-criblage, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-beeff-registre-national, target_id: sys-dlcb-ref-benef-effectifs, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-donnees-perso-minimisation, target_id: sys-dlcb-due-diligence, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-restriction-acces-ds, target_id: sys-dlcb-plateforme-ds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-rpp-revue-annuelle, target_id: proj-dlcb-cartographie-risques-v2, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-gel-avoirs-perimetre-complet, target_id: feat-dlcb-blocage-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-incidents-signalement-24h, target_id: sys-dlcb-registre-incidents, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-cloisonnement-donnees-cas, target_id: sys-dlcb-gestion-cas, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-virement-intl-controle-pays, target_id: feat-dlcb-blocage-pays-embargo, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-edd-validee-rcci, target_id: feat-dlcb-validation-edd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-ppe-source-doc-trois-ans, target_id: obj-dlcb-justificatif-origine-fonds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-modeles-validation-comite, target_id: sys-dlcb-profilage-comportemental, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-interop-ermes-certifiee, target_id: feat-dlcb-transmission-tracfin, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-disponibilite-criblage-99-9, target_id: sys-dlcb-listes-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-historique-modifications-kyb, target_id: sys-dlcb-ref-benef-effectifs, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-rapport-carto-acpr-format, target_id: feat-dlcb-rapport-carto, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-partage-info-interdit, target_id: sys-dlcb-plateforme-ds, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-scenario-detection-documente, target_id: sys-dlcb-simulation-scenarios, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-drp-lcb-ft-teste, target_id: sys-dlcb-gel-avoirs, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-externalisation-encadree, target_id: sys-dlcb-listes-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dlcb-surete-modele-nlp, target_id: feat-dlcb-suggestion-typologies, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-api-criblage-unique, target_id: sys-dlcb-listes-surveillance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-ds-sous-48h, target_id: feat-dlcb-transmission-tracfin, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-edd-obligatoire-ppe, target_id: feat-dlcb-identification-ppe, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-gel-blocage-temps-reel, target_id: feat-dlcb-blocage-flux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-profilage-fenetre-90j, target_id: feat-dlcb-construction-profil, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-seuil-similarite-85, target_id: feat-dlcb-scoring-similarite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-cartographie-annuelle, target_id: sys-dlcb-carto-risques, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-formation-annuelle-obligatoire, target_id: proj-dlcb-formation-lcb-ft-2024, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-score-risque-4-niveaux, target_id: obj-dlcb-profil-client-lcb, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-notification-gel-48h, target_id: feat-dlcb-notification-autorites, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-backtesting-avant-prod, target_id: sys-dlcb-simulation-scenarios, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-beeff-seuil-25pct, target_id: feat-dlcb-calcul-detention, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-revue-ppe-annuelle, target_id: feat-dlcb-revue-periodique-ppe, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-cas-investigation-72h, target_id: sys-dlcb-gestion-cas, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-rtf-controle-synchrone, target_id: feat-dlcb-controle-mentions-swift, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-listes-gel-mise-a-jour-j, target_id: feat-dlcb-chargement-listes-gel, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-veille-reglementaire-mensuelle, target_id: sys-dlcb-veille-reglementaire, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-consolidation-alertes-actif, target_id: feat-dlcb-deduplication-alertes, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-tiers-risque-eleve-annuel, target_id: feat-dlcb-reevaluation-tiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-profilage-retraining-mensuel, target_id: feat-dlcb-retraining-modeles, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-edd-score-seuil-70, target_id: feat-dlcb-scoring-edd, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dlcb-simulation-gel-avant-exec, target_id: sys-dlcb-simulation-gel, type: CONSTRAINS, created_from: synthetic}

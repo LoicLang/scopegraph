@@ -1,0 +1,2878 @@
+nodes:
+
+  # ── SYSTÈME 1 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-concentrateur-flux
+    name: Concentrateur de flux instantanés
+    description: >-
+      Centralise l'ensemble des ordres de virement instantané entrants et sortants
+      avant leur routage vers les rails interbancaires. Assure la déduplication
+      des messages et la transformation des formats propriétaires vers ISO 20022.
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-reception-ordre-inst
+    name: Réception d'ordre instantané
+    description: >-
+      Ingère les ordres de virement instantané depuis les canaux clients et les
+      soumet au concentrateur pour validation syntaxique et enrichissement.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-transformation-iso20022
+    name: Transformation ISO 20022
+    description: >-
+      Convertit les messages internes au format pacs.008 requis par les chambres
+      de compensation. Gère les variantes de schéma selon le réseau cible.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-deduplication-messages
+    name: Déduplication des messages
+    description: >-
+      Détecte et rejette les doublons d'ordre de paiement sur la base d'une
+      empreinte combinant IBAN, montant et horodatage à la milliseconde.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 2 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-moteur-rapprochement
+    name: Moteur de rapprochement instantané
+    description: >-
+      Réconcilie en continu les ordres émis avec les accusés de règlement reçus
+      des chambres de compensation. Détecte les ordres en suspens et déclenche
+      les procédures de recouvrement automatique.
+    owner_team: Équipe Comptabilité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-reconciliation-temps-reel
+    name: Réconciliation temps réel
+    description: >-
+      Apparie chaque accusé de règlement à l'ordre correspondant dès réception,
+      sans attendre la fin de journée. Les écarts sont signalés immédiatement
+      à l'équipe d'exploitation.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-gestion-suspens
+    name: Gestion des suspens de règlement
+    description: >-
+      Identifie les ordres sans accusé de règlement passé le délai réglementaire
+      et ouvre automatiquement un dossier de réclamation auprès du réseau.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-export-comptable
+    name: Export comptable journalier
+    description: >-
+      Produit en fin de journée les écritures comptables consolidées à destination
+      du système de comptabilité générale, en distinguant flux débit et crédit.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 3 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-hub-notification
+    name: Hub de notification paiement
+    description: >-
+      Orchestre l'envoi de notifications aux clients sur l'état de leurs virements
+      instantanés via push mobile, SMS et e-mail. Garantit la délivrabilité et
+      conserve un journal d'envoi pour audit.
+    owner_team: Équipe Expérience Client
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-notification-emission
+    name: Notification d'émission confirmée
+    description: >-
+      Envoie un acquittement au client expéditeur dès confirmation du règlement
+      par la chambre de compensation, en moins de 15 secondes après l'émission.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-notification-reception
+    name: Notification de réception de fonds
+    description: >-
+      Alerte le bénéficiaire en temps réel lors du crédit de son compte, avec
+      indication du donneur d'ordre et du libellé de l'opération.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-notification-rejet
+    name: Notification de rejet instantané
+    description: >-
+      Informe l'émetteur du rejet de son ordre en précisant le code motif
+      réglementaire et les actions correctrices disponibles.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 4 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-portail-tresorerie
+    name: Portail trésorerie instantanée
+    description: >-
+      Interface opérateur permettant aux équipes de trésorerie de suivre en
+      temps réel la position de liquidité sur les comptes de règlement SEPA Inst.
+      Offre des vues agrégées par devise et par contrepartie.
+    owner_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-vue-position-liquidite
+    name: Vue position de liquidité
+    description: >-
+      Affiche en continu le solde disponible sur les comptes de règlement avec
+      une granularité à la minute, permettant d'anticiper les tensions de liquidité.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-alerte-seuil-liquidite
+    name: Alerte seuil de liquidité
+    description: >-
+      Déclenche une alerte opérateur lorsque le solde de règlement descend sous
+      un seuil paramétrable, afin d'initier un rechargement préventif.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-transfert-provision
+    name: Transfert de provision inter-comptes
+    description: >-
+      Permet à un trésorier habilité de déplacer de la liquidité entre comptes
+      de règlement SEPA Inst et nostro en quelques clics, avec double validation.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 5 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-bus-evenements
+    name: Bus d'événements paiement
+    description: >-
+      Infrastructure de messagerie asynchrone diffusant les événements du cycle
+      de vie des virements instantanés à l'ensemble des systèmes abonnés. Basé
+      sur un paradigme publish-subscribe avec garantie de livraison exacte.
+    owner_team: Équipe Socle Technique
+    domains: [paiement-instantane, socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-publication-evenement
+    name: Publication d'événement de paiement
+    description: >-
+      Publie sur le bus un événement structuré à chaque transition d'état d'un
+      virement, depuis la création jusqu'au règlement définitif ou au rejet.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-abonnement-evenement
+    name: Gestion des abonnements aux événements
+    description: >-
+      Permet aux systèmes consommateurs de s'abonner à des catégories d'événements
+      avec filtrage par type d'opération, montant ou code établissement.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-replay-evenement
+    name: Rejeu d'événements
+    description: >-
+      Offre la capacité de rejouer un flux d'événements historiques sur une
+      fenêtre glissante de 72 heures pour les traitements en retard ou les
+      reconstructions d'état après incident.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 6 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-gestionnaire-mandats
+    name: Gestionnaire de mandats de paiement
+    description: >-
+      Gère les mandats d'autorisation permanents permettant à des partenaires
+      d'initier des virements instantanés au nom du client. Assure la révocation
+      en temps réel et la traçabilité des accès délégués.
+    owner_team: Équipe Open Banking
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-creation-mandat
+    name: Création de mandat d'initiation
+    description: >-
+      Enregistre un nouveau mandat signé électroniquement par le client, avec
+      les paramètres de plafond, de durée et de catégorie de bénéficiaires autorisés.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-revocation-mandat
+    name: Révocation de mandat
+    description: >-
+      Invalide immédiatement un mandat actif à la demande du client ou en cas
+      de détection d'usage suspect, bloquant tout nouvel ordre émis sous ce mandat.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-consultation-mandats
+    name: Consultation des mandats actifs
+    description: >-
+      Expose via API la liste des mandats en cours associés à un compte, avec
+      leur historique d'utilisation et les ordres récents qu'ils ont générés.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 7 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-validateur-rib
+    name: Validateur de coordonnées bancaires
+    description: >-
+      Vérifie la validité structurelle et l'accessibilité SEPA Inst d'un IBAN
+      avant tout enregistrement de bénéficiaire ou émission d'ordre. Interroge
+      le répertoire interbancaire en temps réel pour confirmer l'éligibilité.
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-validation-iban
+    name: Validation structurelle IBAN
+    description: >-
+      Contrôle le format, la clé de contrôle et le code BIC associé à un IBAN
+      avant toute soumission au réseau, rejetant les coordonnées invalides à la source.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-verification-eligibilite-inst
+    name: Vérification d'éligibilité SEPA Inst
+    description: >-
+      Interroge le répertoire centralisé pour confirmer que la banque destinataire
+      est bien participante aux rails instantanés avant d'accepter l'ordre.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-cache-eligibilite
+    name: Cache d'éligibilité des établissements
+    description: >-
+      Maintient un cache local des statuts d'éligibilité SEPA Inst mis à jour
+      toutes les quatre heures, réduisant la latence des contrôles de validation.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 8 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-simulateur-liquidite
+    name: Simulateur de liquidité intraday
+    description: >-
+      Projette l'évolution probable du solde de règlement sur la journée en cours
+      à partir des ordres planifiés et des tendances historiques. Alimente les
+      décisions de rechargement préventif des comptes de règlement.
+    owner_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-projection-solde
+    name: Projection de solde intraday
+    description: >-
+      Calcule une courbe de solde prévisionnelle sur un horizon de 8 heures en
+      intégrant les ordres en file d'attente et les tombées contractuelles connues.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-scenario-stress
+    name: Scénario de stress liquidité
+    description: >-
+      Simule un pic de trafic instantané à trois fois le volume moyen pour évaluer
+      la résistance du solde de règlement et dimensionner le tampon de sécurité.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 9 ──────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-archiveur-ordres
+    name: Archiveur d'ordres de paiement
+    description: >-
+      Conserve l'intégralité des messages ISO 20022 échangés avec les chambres
+      de compensation pendant dix ans dans un coffre-fort numérique immuable.
+      Répond aux demandes de production réglementaire sous 24 heures.
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-archivage-message
+    name: Archivage de message de paiement
+    description: >-
+      Stocke chaque message pacs.008 et pacs.002 dans un référentiel immuable
+      horodaté, avec empreinte cryptographique garantissant l'intégrité.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-recherche-archives
+    name: Recherche dans les archives
+    description: >-
+      Permet aux équipes conformité de retrouver un ordre archivé par référence,
+      date, montant ou IBAN en moins de cinq secondes sur dix ans d'historique.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 10 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-routeur-multicanal
+    name: Routeur multicanal paiement
+    description: >-
+      Sélectionne le canal d'émission optimal (SEPA Inst, SEPA CT, virement
+      express interne) selon la disponibilité des rails, le montant et les
+      préférences client. Bascule automatiquement en mode dégradé en cas
+      d'indisponibilité du rail instantané.
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-selection-canal
+    name: Sélection de canal de paiement
+    description: >-
+      Applique un arbre de décision configurable pour choisir le rail de paiement
+      le plus adapté à chaque ordre, en tenant compte du montant, de l'heure et
+      de l'éligibilité du destinataire.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-bascule-mode-degrade
+    name: Bascule mode dégradé
+    description: >-
+      Reroute automatiquement les ordres vers SEPA CT standard lorsque le rail
+      instantané est indisponible, en notifiant le client du délai supplémentaire.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-prioritisation-ordres
+    name: Priorisation des ordres en file
+    description: >-
+      Ordonnance la file d'attente des virements selon des règles de priorité
+      métier : ordres urgents clients premium traités en premier, puis ordres
+      standards par ordre chronologique.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 11 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-moniteur-sla
+    name: Moniteur de SLA instantané
+    description: >-
+      Mesure en continu les délais de traitement de chaque ordre de virement
+      instantané et émet des alertes dès qu'un seuil de SLA est approché ou
+      dépassé. Produit des rapports hebdomadaires de conformité opérationnelle.
+    owner_team: Équipe Production Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-mesure-latence
+    name: Mesure de latence de traitement
+    description: >-
+      Enregistre les horodatages à chaque étape du cycle de vie d'un ordre et
+      calcule la latence bout en bout pour chaque virement traité.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-tableau-bord-sla
+    name: Tableau de bord SLA temps réel
+    description: >-
+      Restitue sur un écran opérateur les percentiles P50, P95 et P99 de latence
+      actualisés à la minute, avec un code couleur par rapport aux seuils cibles.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-rapport-conformite-sla
+    name: Rapport de conformité SLA
+    description: >-
+      Génère chaque semaine un rapport synthétique indiquant le taux de virements
+      traités sous dix secondes et les incidents ayant dégradé la performance.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 12 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-moteur-regles-ip
+    name: Moteur de règles IP
+    description: >-
+      Évalue à chaque ordre de paiement un ensemble de règles métier configurables
+      portant sur les plafonds, les horaires d'autorisation et les contrôles de
+      cohérence. Les règles sont versionnées et auditables.
+    owner_team: Équipe Règles Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-evaluation-regles
+    name: Évaluation des règles métier
+    description: >-
+      Exécute de façon synchrone l'ensemble du catalogue de règles applicable à
+      un ordre, en retournant une décision d'autorisation ou de rejet avec motif.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-gestion-regles
+    name: Gestion du catalogue de règles
+    description: >-
+      Fournit une interface de configuration permettant aux équipes métier de
+      créer, modifier ou désactiver une règle sans redéploiement applicatif.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-simulation-regle
+    name: Simulation d'impact de règle
+    description: >-
+      Permet d'évaluer en sandbox l'effet qu'une nouvelle règle aurait eu sur
+      le trafic des 30 derniers jours avant toute mise en production.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 13 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-console-exploitation
+    name: Console d'exploitation paiement
+    description: >-
+      Outil opérateur centralisé pour le suivi, le diagnostic et l'intervention
+      manuelle sur les ordres de virement instantané. Permet la relance d'un ordre
+      bloqué et la consultation de l'historique complet d'un paiement.
+    owner_team: Équipe Production Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-recherche-ordre
+    name: Recherche d'ordre de paiement
+    description: >-
+      Localise un ordre de virement par référence unique, IBAN émetteur ou
+      destinataire, montant ou plage de dates en moins de deux secondes.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-relance-ordre
+    name: Relance manuelle d'ordre
+    description: >-
+      Autorise un opérateur habilité à rejouer un ordre bloqué après correction
+      de la cause racine, avec traçabilité complète de l'intervention.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-annulation-ordre
+    name: Annulation d'ordre en cours
+    description: >-
+      Permet l'annulation d'un ordre non encore soumis au réseau interbancaire,
+      sous réserve d'une double habilitation opérateur et superviseur.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 14 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-catalogue-frais
+    name: Catalogue de frais paiement instantané
+    description: >-
+      Référentiel des grilles tarifaires applicables aux virements instantanés
+      selon le segment client, le montant et le canal d'initiation. Alimente
+      la facturation en temps réel et les rapports de revenus.
+    owner_team: Équipe Tarification
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-calcul-frais
+    name: Calcul des frais en temps réel
+    description: >-
+      Détermine le montant des frais applicables à chaque ordre instantané
+      au moment de son initiation, avant confirmation client.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-gestion-grille-tarifaire
+    name: Gestion de la grille tarifaire
+    description: >-
+      Offre une interface d'administration pour créer et modifier les grilles
+      tarifaires avec entrée en vigueur à date, sans interruption de service.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 15 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-referentiel-comptes
+    name: Référentiel des comptes de paiement
+    description: >-
+      Maintient la liste des comptes internes éligibles au virement instantané
+      avec leurs caractéristiques (plafonds personnalisés, restrictions, statut
+      d'activation). Sert de source de vérité pour les contrôles pré-émission.
+    owner_team: Équipe Référentiel
+    domains: [paiement-instantane, referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-activation-compte-inst
+    name: Activation compte au virement instantané
+    description: >-
+      Enregistre l'éligibilité d'un compte à émettre et recevoir des virements
+      instantanés après validation des conditions d'éligibilité réglementaires.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-mise-a-jour-plafonds
+    name: Mise à jour des plafonds personnalisés
+    description: >-
+      Applique les modifications de plafonds demandées par le client ou décidées
+      par le risque, avec prise d'effet immédiate sur le moteur de règles.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 16 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-ecran-reconciliation
+    name: Écran de réconciliation opérateur
+    description: >-
+      Interface graphique destinée aux équipes comptables pour visualiser et
+      valider les rapprochements de fin de journée entre les flux instantanés
+      et les entrées du grand livre. Permet l'approbation lot par lot.
+    owner_team: Équipe Comptabilité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-validation-lot-reconciliation
+    name: Validation en lot des rapprochements
+    description: >-
+      Permet à un comptable d'approuver en une action un ensemble de
+      rapprochements automatiques jugés conformes, après revue de l'échantillon.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-traitement-ecarts
+    name: Traitement des écarts de réconciliation
+    description: >-
+      Isole les entrées non rapprochées et guide l'opérateur dans leur résolution
+      en proposant les contreparties candidates les plus probables.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 17 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-passerelle-interbancaire
+    name: Passerelle interbancaire SEPA Inst
+    description: >-
+      Gère la connexion technique aux infrastructures de règlement interbancaire
+      SEPA Inst, incluant la gestion des sessions, la signature des messages et
+      le traitement des accusés de règlement entrants.
+    owner_team: Équipe Infrastructure Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-gestion-session-reseau
+    name: Gestion de session réseau interbancaire
+    description: >-
+      Maintient les sessions TCP persistantes avec l'infrastructure de règlement,
+      gère les reconnexions automatiques et les cycles de heartbeat.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-signature-message-reseau
+    name: Signature cryptographique des messages
+    description: >-
+      Applique une signature numérique sur chaque message sortant à l'aide du
+      certificat de l'établissement, garantissant la non-répudiation des ordres.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-traitement-accuse-reglement
+    name: Traitement des accusés de règlement
+    description: >-
+      Réceptionne et décode les messages pacs.002 de retour, en extrayant le
+      statut de règlement et en notifiant les systèmes internes concernés.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 18 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-detecteur-anomalies
+    name: Détecteur d'anomalies de flux
+    description: >-
+      Surveille les patterns de trafic sur les rails instantanés et signale
+      les comportements inhabituels : pics soudains, séquences répétitives ou
+      montants atypiques susceptibles d'indiquer une fraude coordonnée.
+    owner_team: Équipe Sécurité Paiements
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-detection-pic-trafic
+    name: Détection de pic de trafic anormal
+    description: >-
+      Déclenche une alerte lorsque le volume d'ordres par minute dépasse deux
+      écarts-types au-dessus de la baseline historique ajustée par saison.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-detection-sequence-repetitive
+    name: Détection de séquences répétitives
+    description: >-
+      Identifie les ensembles d'ordres présentant des montants et des bénéficiaires
+      identiques sur une fenêtre courte, caractéristiques d'un éventuel test de
+      validité de compte ou d'une fraude automatisée.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 19 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-superviseur-files
+    name: Superviseur de files de traitement
+    description: >-
+      Administre les files d'attente de traitement des ordres instantanés, en
+      assurant la surveillance des consommateurs, la redistribution de charge
+      et la gestion des messages en erreur (dead-letter queues).
+    owner_team: Équipe Socle Technique
+    domains: [paiement-instantane, socle-si]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-surveillance-consommateurs
+    name: Surveillance des consommateurs de file
+    description: >-
+      Monitore le lag de chaque consommateur sur les partitions de la file et
+      émet une alerte si l'accumulation dépasse un seuil de 500 messages.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-gestion-dlq
+    name: Gestion des messages en erreur (DLQ)
+    description: >-
+      Isole les messages non traités dans une file spécifique, les enrichit
+      d'un diagnostic d'échec et permet leur retraitement manuel ou automatique.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 20 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-outil-audit-ip
+    name: Outil d'audit des paiements instantanés
+    description: >-
+      Compile et exporte les journaux d'audit des ordres de virement instantané
+      à destination des contrôleurs internes et des régulateurs. Garantit
+      l'immuabilité des traces via un mécanisme de scellement périodique.
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-export-journal-audit
+    name: Export du journal d'audit
+    description: >-
+      Produit à la demande un fichier structuré contenant l'ensemble des
+      événements auditables sur une période donnée, signé numériquement.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-scellement-journal
+    name: Scellement périodique du journal
+    description: >-
+      Calcule et stocke une empreinte cryptographique enchaînée du journal
+      toutes les heures, rendant toute altération rétroactive détectable.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 21 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-moteur-workflow
+    name: Moteur de workflow paiement
+    description: >-
+      Orchestre les étapes de traitement d'un virement instantané à travers
+      les différents systèmes (validation, scoring, comptabilité, notification)
+      selon un graphe de tâches configurable et tolérant aux pannes.
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-orchestration-etapes
+    name: Orchestration des étapes de traitement
+    description: >-
+      Exécute séquentiellement ou en parallèle les étapes du workflow d'un ordre,
+      en gérant les timeouts et les compensations en cas d'échec partiel.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-compensation-transaction
+    name: Compensation de transaction échouée
+    description: >-
+      Annule les effets des étapes déjà complétées lorsqu'une étape critique
+      échoue, maintenant la cohérence des soldes sans intervention humaine.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 22 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-agregateur-statuts
+    name: Agrégateur de statuts de paiement
+    description: >-
+      Collecte les statuts de traitement en provenance de tous les systèmes
+      participant au cycle de vie d'un virement instantané et les consolide
+      en un état synthétique exposé aux canaux clients.
+    owner_team: Équipe Expérience Client
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-consolidation-statut
+    name: Consolidation de statut de paiement
+    description: >-
+      Fusionne les états partiels remontés par chaque composant pour produire
+      un statut unique et lisible pour le client final (en cours, réglé, rejeté).
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-historique-statuts
+    name: Historique des statuts d'un ordre
+    description: >-
+      Conserve la chronologie complète des transitions de statut d'un ordre,
+      accessible en lecture par les équipes support et les canaux clients.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 23 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-cache-beneficiaires
+    name: Cache des bénéficiaires fréquents
+    description: >-
+      Maintient en mémoire un index des bénéficiaires récemment utilisés par
+      chaque client pour accélérer la saisie et les contrôles d'éligibilité.
+      L'index est invalidé automatiquement en cas de modification du bénéficiaire.
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-auto-completion-beneficiaire
+    name: Auto-complétion bénéficiaire
+    description: >-
+      Suggère en temps réel les bénéficiaires correspondant à la saisie partielle
+      du client, en s'appuyant sur le cache local pour minimiser la latence.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-invalidation-cache
+    name: Invalidation du cache bénéficiaire
+    description: >-
+      Supprime immédiatement une entrée du cache lors de la modification ou
+      suppression d'un bénéficiaire, évitant l'usage de coordonnées périmées.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 24 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-journal-reglementaire
+    name: Journal réglementaire des opérations
+    description: >-
+      Enregistre les informations réglementairement requises sur chaque
+      transaction instantanée (parties, montants, références) dans un format
+      conforme aux exigences de déclaration auprès de la banque centrale.
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-enregistrement-reglementaire
+    name: Enregistrement réglementaire d'opération
+    description: >-
+      Capture en temps réel les champs obligatoires de chaque virement instantané
+      selon le canevas défini par la directive sur les services de paiement.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-generation-rapport-regulateur
+    name: Génération de rapport régulateur
+    description: >-
+      Produit les fichiers de déclaration périodique à la banque centrale selon
+      les formats requis, à partir des données consolidées du journal.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── SYSTÈME 25 ─────────────────────────────────────────────────────────────
+  - type: system
+    id: sys-dpin-tableau-bord-ip
+    name: Tableau de bord paiement instantané
+    description: >-
+      Restitue aux dirigeants et aux responsables métier une vision synthétique
+      de l'activité paiement instantané : volumes, taux de succès, revenus et
+      incidents. Alimenté en quasi-temps réel par le bus d'événements.
+    owner_team: Équipe Pilotage Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-indicateurs-volumes
+    name: Indicateurs de volumes de paiement
+    description: >-
+      Affiche le nombre et le montant cumulé des virements instantanés traités
+      sur des fenêtres glissantes de 1 heure, 24 heures et 30 jours.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-taux-succes-rail
+    name: Taux de succès par rail
+    description: >-
+      Calcule le ratio d'ordres réglés avec succès par rapport aux ordres émis
+      pour chaque rail de paiement, avec ventilation par tranche horaire.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── FEATURES SUPPLÉMENTAIRES ───────────────────────────────────────────────
+  - type: feature
+    id: feat-dpin-rechargement-auto-provision
+    name: Rechargement automatique de la provision
+    description: >-
+      Initie automatiquement un virement de réapprovisionnement du compte de
+      règlement dès que le simulateur de liquidité prédit un passage sous le
+      seuil critique dans les deux heures à venir.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-filtrage-sanctions
+    name: Filtrage des bénéficiaires sous sanctions
+    description: >-
+      Interroge en temps réel la liste consolidée des personnes et entités sous
+      sanctions avant toute validation d'un ordre, bloquant immédiatement les
+      ordres à destination d'un bénéficiaire listé.
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-suivi-provision-rechargement
+    name: Suivi du statut de rechargement
+    description: >-
+      Expose à l'opérateur trésorerie l'état d'avancement de chaque demande
+      de rechargement du compte de règlement, depuis l'initiation jusqu'à la
+      confirmation de crédit.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-export-stats-regulateur
+    name: Export des statistiques réglementaires mensuelles
+    description: >-
+      Produit mensuellement les tableaux statistiques agrégés sur les volumes,
+      montants et délais de virement instantané requis par le régulateur selon
+      un format normalisé.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dpin-monitoring-certificats
+    name: Surveillance des certificats d'authentification
+    description: >-
+      Monitore les dates d'expiration de l'ensemble des certificats TLS utilisés
+      par la passerelle interbancaire et émet des alertes automatiques à J-30
+      et J-7 avant expiration.
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── BUSINESS OBJECTS ───────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-dpin-ordre-virement-inst
+    name: Ordre de virement instantané
+    description: >-
+      Instruction de paiement en temps réel émise par un client ou un partenaire,
+      portant les coordonnées des parties, le montant, le libellé et la référence
+      unique de bout en bout.
+    steward_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-accuse-reglement
+    name: Accusé de règlement
+    description: >-
+      Message pacs.002 retourné par la chambre de compensation confirmant le
+      règlement définitif ou le rejet d'un ordre de virement instantané.
+    steward_team: Équipe Infrastructure Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-mandat-initiation
+    name: Mandat d'initiation de paiement
+    description: >-
+      Autorisation consentie par un client à un partenaire tiers pour émettre
+      des virements instantanés en son nom dans les limites définies par le mandat.
+    steward_team: Équipe Open Banking
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-position-liquidite
+    name: Position de liquidité intraday
+    description: >-
+      Solde disponible sur le compte de règlement SEPA Inst de l'établissement
+      à un instant donné, exprimé en euros et actualisé à chaque mouvement.
+    steward_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-grille-tarif-inst
+    name: Grille tarifaire instantané
+    description: >-
+      Table de tarification associant à chaque segment client et tranche de
+      montant un frais unitaire ou un taux applicable au virement instantané.
+    steward_team: Équipe Tarification
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-session-interbancaire
+    name: Session interbancaire
+    description: >-
+      Connexion TCP maintenue entre la passerelle interbancaire et l'infrastructure
+      de règlement, caractérisée par son état, son identifiant de circuit et
+      ses statistiques de débit.
+    steward_team: Équipe Infrastructure Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-regle-ip
+    name: Règle de contrôle IP
+    description: >-
+      Paramètre de décision configurable appliqué à chaque ordre instantané pour
+      valider sa conformité aux politiques d'usage et aux exigences réglementaires.
+    steward_team: Équipe Règles Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-alerte-anomalie
+    name: Alerte d'anomalie de flux
+    description: >-
+      Signalement généré par le détecteur d'anomalies lorsqu'un pattern de trafic
+      dévie des seuils établis, décrivant la nature de l'écart et les ordres concernés.
+    steward_team: Équipe Sécurité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-journal-audit-ip
+    name: Journal d'audit paiement
+    description: >-
+      Enregistrement immuable de l'ensemble des événements du cycle de vie d'un
+      ordre de virement instantané, conservé à des fins de contrôle interne et
+      de conformité réglementaire.
+    steward_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-message-iso20022
+    name: Message ISO 20022
+    description: >-
+      Envelope XML structurée selon le standard ISO 20022 utilisée pour
+      l'échange des ordres et des réponses de règlement avec les réseaux
+      interbancaires SEPA Inst.
+    steward_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-compte-reglement
+    name: Compte de règlement
+    description: >-
+      Compte détenu auprès de la banque centrale ou d'une infrastructure de
+      règlement servant à couvrir les positions nettes issues des échanges
+      de virements instantanés.
+    steward_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-statut-paiement
+    name: Statut de paiement
+    description: >-
+      État courant d'un ordre de virement instantané dans son cycle de traitement,
+      exposé aux clients et aux systèmes internes sous une représentation normalisée.
+    steward_team: Équipe Expérience Client
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-beneficiaire-inst
+    name: Bénéficiaire instantané
+    description: >-
+      Tiers destinataire enregistré dans le référentiel, dont les coordonnées
+      bancaires ont été vérifiées pour l'éligibilité aux rails SEPA Inst avant
+      tout premier virement.
+    steward_team: Équipe Référentiel
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-incident-suspens
+    name: Incident de suspens
+    description: >-
+      Cas de règlement non confirmé au-delà du délai réglementaire, ouvert
+      automatiquement par le moteur de rapprochement et suivi jusqu'à sa résolution.
+    steward_team: Équipe Comptabilité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-ecart-comptable
+    name: Écart comptable instantané
+    description: >-
+      Divergence constatée lors du rapprochement entre le montant d'un ordre
+      enregistré dans les livres internes et le montant confirmé par l'accusé
+      de règlement interbancaire.
+    steward_team: Équipe Comptabilité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-frais-transaction-inst
+    name: Frais de transaction instantanée
+    description: >-
+      Montant calculé par le catalogue de frais et prélevé sur le compte du
+      donneur d'ordre au moment de l'exécution du virement instantané.
+    steward_team: Équipe Tarification
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dpin-declaration-regulatoire
+    name: Déclaration réglementaire paiement
+    description: >-
+      Fichier structuré transmis périodiquement à la banque centrale contenant
+      les statistiques agrégées de l'activité de virement instantané de l'établissement.
+    steward_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── PROJETS ────────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-dpin-lancement-rails-inst
+    name: Lancement des rails SEPA Inst
+    description: >-
+      Mise en production initiale de la capacité d'émission et de réception de
+      virements instantanés, couvrant la connexion au réseau interbancaire et
+      l'intégration avec le core banking.
+    status: done
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-extension-plafonds
+    name: Extension des plafonds SEPA Inst
+    description: >-
+      Relèvement du plafond unitaire de 15 000 € à 100 000 € pour les clients
+      entreprises, avec adaptation du moteur de règles et des contrôles de risque
+      associés.
+    status: done
+    owner_team: Équipe Règles Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-portail-tresorerie-v2
+    name: Portail trésorerie instantanée v2
+    description: >-
+      Refonte de l'interface de suivi de liquidité avec ajout des fonctions de
+      simulation de stress et d'alerte proactive, pour améliorer la réactivité
+      des équipes de trésorerie.
+    status: done
+    owner_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-integration-mandats
+    name: Intégration des mandats d'initiation
+    description: >-
+      Développement du gestionnaire de mandats et des API associées pour permettre
+      aux partenaires agréés d'initier des virements instantanés au nom de leurs
+      clients.
+    status: done
+    owner_team: Équipe Open Banking
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-archivage-longue-duree
+    name: Archivage longue durée des ordres
+    description: >-
+      Migration des archives de paiement vers un coffre-fort numérique immuable
+      avec garanties d'intégrité cryptographique et respect de la durée légale
+      de conservation de dix ans.
+    status: done
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-detecteur-anomalies-v1
+    name: Détecteur d'anomalies de flux v1
+    description: >-
+      Première version du module de surveillance comportementale des flux instantanés,
+      capable de détecter les pics de trafic et les séquences d'ordres répétitives
+      caractéristiques de la fraude automatisée.
+    status: done
+    owner_team: Équipe Sécurité Paiements
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-migration-iso20022-v2
+    name: Migration ISO 20022 phase 2
+    description: >-
+      Adoption des nouveaux schémas XML ISO 20022 pacs.008 version 9 imposés
+      par le Conseil des paiements européens, nécessitant la mise à jour du
+      concentrateur et de la passerelle interbancaire.
+    status: ongoing
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-bus-evenements-upgrade
+    name: Montée en charge du bus d'événements
+    description: >-
+      Augmentation de la capacité du bus d'événements pour absorber un doublement
+      du volume de transactions instantanées prévu sur les 18 prochains mois.
+    status: ongoing
+    owner_team: Équipe Socle Technique
+    domains: [paiement-instantane, socle-si]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-tableau-bord-temps-reel
+    name: Tableau de bord temps réel dirigeants
+    description: >-
+      Création d'un tableau de bord exécutif affichant en quasi-temps réel les
+      indicateurs clés de l'activité paiement instantané, alimenté directement
+      depuis le bus d'événements.
+    status: ongoing
+    owner_team: Équipe Pilotage Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-refonte-catalogue-frais
+    name: Refonte du catalogue de frais IP
+    description: >-
+      Restructuration du moteur de tarification pour permettre des grilles plus
+      fines par segment et canal, avec simulation d'impact avant déploiement.
+    status: ongoing
+    owner_team: Équipe Tarification
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-consolide-journal-audit
+    name: Consolidation du journal d'audit
+    description: >-
+      Unification des traces d'audit dispersées entre plusieurs systèmes en un
+      journal centralisé scellé, simplifiant les extractions pour les contrôleurs.
+    status: done
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-workflow-orchestration
+    name: Orchestration workflow paiement
+    description: >-
+      Introduction d'un moteur de workflow dédié remplaçant les enchaînements
+      ad-hoc codés en dur dans le concentrateur, avec gestion native des
+      compensations transactionnelles.
+    status: ongoing
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-pilote-virement-programmable
+    name: Pilote virement programmable
+    description: >-
+      Expérimentation d'une fonctionnalité de virement instantané conditionnel
+      déclenché automatiquement à la réalisation d'un événement métier défini
+      par le client.
+    status: ongoing
+    owner_team: Équipe Innovation Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-resilience-reseau
+    name: Résilience réseau interbancaire
+    description: >-
+      Déploiement d'une configuration de haute disponibilité sur la passerelle
+      interbancaire avec basculement automatique sur un circuit de secours en
+      moins de 30 secondes.
+    status: ongoing
+    owner_team: Équipe Infrastructure Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-cache-beneficiaires-impl
+    name: Implémentation du cache bénéficiaires
+    description: >-
+      Mise en place d'un cache distribué des bénéficiaires fréquents pour
+      réduire de 80 % les appels au validateur de coordonnées lors de la saisie
+      d'un nouvel ordre.
+    status: done
+    owner_team: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-reporting-bcf
+    name: Reporting réglementaire banque centrale
+    description: >-
+      Automatisation complète de la production des déclarations périodiques
+      à la banque centrale sur l'activité de virement instantané, remplaçant
+      un processus manuel source d'erreurs.
+    status: done
+    owner_team: Équipe Conformité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-optimisation-reconciliation
+    name: Optimisation du rapprochement intraday
+    description: >-
+      Réduction du délai de rapprochement comptable de H+4 à quasi-temps réel
+      par intégration directe du moteur de rapprochement avec le bus d'événements.
+    status: ongoing
+    owner_team: Équipe Comptabilité Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-simulateur-liquidite-v2
+    name: Simulateur de liquidité v2
+    description: >-
+      Enrichissement du simulateur avec des modèles prédictifs basés sur
+      l'apprentissage automatique pour améliorer la précision des projections
+      de liquidité intraday.
+    status: ongoing
+    owner_team: Équipe Trésorerie
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dpin-formation-operateurs
+    name: Formation des opérateurs à la console
+    description: >-
+      Programme de formation des équipes production à la console d'exploitation
+      paiement, couvrant les procédures d'intervention et les escalades en cas
+      d'incident sur les rails instantanés.
+    status: done
+    owner_team: Équipe Production Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── DÉCISIONS ──────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-dpin-architecture-bus-evenements
+    title: Adoption du bus d'événements pour le cycle de vie des paiements
+    statement: >-
+      L'ensemble des événements du cycle de vie des virements instantanés sera
+      diffusé via un bus d'événements centralisé plutôt que par des appels
+      synchrones point à point entre systèmes.
+    rationale: >-
+      Cette architecture réduit le couplage entre composants et facilite l'ajout
+      de nouveaux consommateurs sans modifier les émetteurs existants. Elle améliore
+      également la résilience en découplant les temps de traitement.
+    date: "2023-09-15"
+    decided_by: Architecture technique paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-iso20022-obligatoire
+    title: ISO 20022 comme format unique d'échange interbancaire
+    statement: >-
+      Tous les messages échangés avec les chambres de compensation SEPA Inst
+      utiliseront exclusivement le format ISO 20022, sans format propriétaire
+      en parallèle.
+    rationale: >-
+      L'harmonisation sur un format standard simplifie la maintenance du
+      concentrateur et garantit la compatibilité avec les évolutions du Conseil
+      des paiements européens sans transformation supplémentaire.
+    date: "2023-03-01"
+    decided_by: Direction Technique Paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-plafond-entreprise-100k
+    title: Plafond SEPA Inst 100 000 € pour les entreprises
+    statement: >-
+      Les clients du segment entreprises bénéficient d'un plafond unitaire de
+      100 000 € par virement instantané, contre 15 000 € pour le retail, sous
+      réserve d'une vérification d'identité renforcée.
+    rationale: >-
+      Les besoins de trésorerie des entreprises justifient un plafond plus élevé.
+      La vérification renforcée compense le risque accru lié aux montants unitaires
+      importants sur un rail irrévocable.
+    date: "2024-06-01"
+    decided_by: Comité Risques Paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-archivage-10-ans
+    title: Conservation des messages de paiement pendant 10 ans
+    statement: >-
+      L'ensemble des messages ISO 20022 échangés dans le cadre des virements
+      instantanés sera conservé pendant dix ans dans un coffre-fort numérique
+      immuable, quelle que soit l'issue du paiement.
+    rationale: >-
+      La durée de dix ans dépasse la prescription bancaire de cinq ans et couvre
+      les délais de contentieux les plus longs observés en matière de fraude
+      sur les paiements, offrant une marge de sécurité juridique.
+    date: "2024-01-15"
+    decided_by: Direction Juridique et Conformité
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-double-validation-tresorerie
+    title: Double validation pour les transferts de provision
+    statement: >-
+      Tout transfert de provision entre comptes de règlement via le portail
+      trésorerie requiert la validation de deux opérateurs distincts, dont
+      au moins un superviseur habilité.
+    rationale: >-
+      Le risque opérationnel lié à un transfert erroné entre comptes de règlement
+      est élevé compte tenu des montants en jeu. La double validation réduit
+      le risque d'erreur humaine et renforce la piste d'audit.
+    date: "2024-02-20"
+    decided_by: Direction des Opérations
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-mode-degrade-ct
+    title: Bascule automatique en mode dégradé SEPA CT
+    statement: >-
+      En cas d'indisponibilité du rail SEPA Inst supérieure à 30 secondes,
+      le routeur multicanal bascule automatiquement les nouveaux ordres vers
+      SEPA Credit Transfer standard, avec information du client.
+    rationale: >-
+      Préserver la continuité de service sur les paiements est prioritaire sur
+      la garantie de l'instantanéité. Le client est informé du délai supplémentaire
+      et peut annuler son ordre si le délai n'est pas compatible avec son besoin.
+    date: "2023-11-05"
+    decided_by: Architecture technique paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-cache-eligibilite-4h
+    title: Rafraîchissement du cache d'éligibilité toutes les 4 heures
+    statement: >-
+      Le cache des statuts d'éligibilité SEPA Inst des établissements tiers est
+      rafraîchi toutes les quatre heures. Un événement de changement de statut
+      forcé invalide l'entrée immédiatement.
+    rationale: >-
+      Le compromis de quatre heures équilibre la fraîcheur des données avec la
+      charge sur le répertoire interbancaire. Les changements de statut urgents
+      (adhésion, suspension) sont propagés en temps réel via une API d'invalidation
+      forcée.
+    date: "2023-07-10"
+    decided_by: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-notification-obligatoire
+    title: Notification client obligatoire pour tout virement instantané
+    statement: >-
+      Chaque virement instantané émis ou reçu donne obligatoirement lieu à une
+      notification au client concerné, quel que soit le canal d'initiation.
+    rationale: >-
+      La traçabilité pour le client est un prérequis réglementaire et un élément
+      de confiance. L'absence de notification pour un ordre irrévocable pourrait
+      retarder la détection de fraude par le client.
+    date: "2024-04-01"
+    decided_by: Direction Expérience Client
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-moteur-regles-versionnement
+    title: Versionnement obligatoire des règles IP
+    statement: >-
+      Toute modification d'une règle dans le moteur de règles IP donne lieu à
+      la création d'une nouvelle version horodatée, l'ancienne version étant
+      conservée et consultable mais inactive.
+    rationale: >-
+      Le versionnement permet de retracer l'état des règles applicables à un
+      ordre passé, condition nécessaire pour les analyses post-incident et les
+      audits réglementaires.
+    date: "2024-03-12"
+    decided_by: Équipe Règles Paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-workflow-compensation
+    title: Compensation automatique en cas d'échec partiel du workflow
+    statement: >-
+      Lorsqu'une étape du workflow de paiement échoue après que des étapes
+      irréversibles ont été complétées, le moteur de workflow déclenche
+      automatiquement les actions compensatoires sans intervention humaine.
+    rationale: >-
+      Sur un rail irrévocable, un état partiel incohérent (mouvement de fonds
+      sans notification, par exemple) génère des litiges clients. L'automatisation
+      de la compensation réduit la fenêtre d'incohérence à quelques secondes.
+    date: "2025-01-08"
+    decided_by: Architecture technique paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-frais-instantane-opt-in
+    title: Frais sur virement instantané en opt-in
+    statement: >-
+      Les frais applicables aux virements instantanés ne sont facturés que pour
+      les clients ayant explicitement activé la fonctionnalité. Pour les clients
+      sur l'offre groupée, le virement instantané est inclus sans surcoût.
+    rationale: >-
+      La facturation à l'opt-in aligne les revenus sur l'usage réel et évite
+      les réclamations de clients qui n'ont pas demandé la fonctionnalité.
+      L'inclusion dans les offres groupées répond à la pression concurrentielle.
+    date: "2024-09-01"
+    decided_by: Direction Commerciale
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-seuil-alerte-dlq
+    title: Seuil d'alerte DLQ fixé à 500 messages
+    statement: >-
+      Une alerte opérateur est déclenchée dès que la dead-letter queue dépasse
+      500 messages en attente de retraitement, requérant une intervention sous
+      30 minutes.
+    rationale: >-
+      Un seuil à 500 messages laisse le temps d'un diagnostic tout en limitant
+      le risque d'accumulation incontrôlée. En deçà, les messages échoués en
+      DLQ sont considérés comme un résidu normal des traitements asynchrones.
+    date: "2023-10-20"
+    decided_by: Équipe Production Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-rapport-sla-hebdo
+    title: Rapport SLA hebdomadaire pour le paiement instantané
+    statement: >-
+      Un rapport de conformité SLA est produit chaque lundi pour la semaine
+      écoulée, distribué automatiquement à la direction des opérations et archivé.
+    rationale: >-
+      La fréquence hebdomadaire est suffisante pour détecter les dégradations
+      tendancielles sans générer un volume excessif de rapports. Les alertes
+      temps réel couvrent les incidents ponctuels.
+    date: "2024-05-06"
+    decided_by: Équipe Production Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-segregation-equipes-audit
+    title: Ségrégation des accès audit / exploitation
+    statement: >-
+      Les équipes exploitation n'ont pas accès en écriture aux journaux d'audit.
+      Seul l'outil d'audit paiements peut y écrire, via un compte de service dédié.
+    rationale: >-
+      La ségrégation garantit l'intégrité des traces d'audit même en cas de
+      compromission d'un compte exploitation. C'est une exigence des auditeurs
+      internes et des référentiels de contrôle de second niveau.
+    date: "2024-02-01"
+    decided_by: RSSI et Direction Conformité
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-rejet-iban-invalide
+    title: Rejet immédiat des IBAN invalides avant soumission réseau
+    statement: >-
+      Tout ordre portant un IBAN dont la structure ou la clé de contrôle est
+      invalide est rejeté par le validateur de coordonnées bancaires avant toute
+      soumission au réseau interbancaire.
+    rationale: >-
+      Soumettre un ordre avec un IBAN invalide génère un rejet réseau et
+      consomme inutilement de la bande passante interbancaire. Le contrôle
+      local à la source est sans coût marginal significatif.
+    date: "2023-05-15"
+    decided_by: Équipe Flux Paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-heartbeat-session
+    title: Heartbeat toutes les 10 secondes sur les sessions interbancaires
+    statement: >-
+      Les sessions TCP maintenues avec l'infrastructure de règlement envoient
+      un message de heartbeat toutes les 10 secondes pour détecter rapidement
+      toute interruption silencieuse de la connexion.
+    rationale: >-
+      Les coupures réseau silencieuses (sans RST TCP) peuvent bloquer le trafic
+      pendant plusieurs minutes avant détection. Un heartbeat à 10 secondes
+      limite cette fenêtre d'inactivité non détectée.
+    date: "2023-08-22"
+    decided_by: Équipe Infrastructure Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-simulation-sandbox
+    title: Environnement sandbox obligatoire pour les nouvelles règles IP
+    statement: >-
+      Toute nouvelle règle IP doit obligatoirement être simulée sur le trafic
+      des 30 derniers jours en sandbox avant d'être activée en production.
+    rationale: >-
+      Les règles IP mal calibrées peuvent générer des rejets massifs d'ordres
+      légitimes. La simulation sandbox permet d'estimer le taux de faux positifs
+      avant tout impact sur les clients.
+    date: "2024-07-01"
+    decided_by: Comité Risques Paiements
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-deduplication-fenetre
+    title: Fenêtre de déduplication fixée à 60 minutes
+    statement: >-
+      Le concentrateur de flux conserve les empreintes des messages pour
+      détecter les doublons sur une fenêtre glissante de 60 minutes. Au-delà,
+      un ordre identique est considéré comme un nouvel ordre légitime.
+    rationale: >-
+      Une fenêtre de 60 minutes couvre les délais de retry maximum observés en
+      pratique tout en limitant la taille du cache de déduplication en mémoire.
+    date: "2023-09-01"
+    decided_by: Équipe Flux Paiements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-priorite-clients-premium
+    title: Priorité de traitement pour les clients premium
+    statement: >-
+      Les ordres émis par des clients du segment premium sont placés en tête de
+      file de traitement du routeur multicanal, devant les ordres standard de
+      même heure d'initiation.
+    rationale: >-
+      La promesse commerciale faite aux clients premium inclut une meilleure
+      réactivité en cas de saturation. La priorisation est plafonnée à un
+      avantage de 5 minutes maximum pour éviter l'affamage des ordres standard.
+    date: "2024-11-15"
+    decided_by: Direction Commerciale et Technique
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-scellement-horaire
+    title: Scellement horaire du journal d'audit
+    statement: >-
+      Le journal d'audit des paiements est scellé par une empreinte cryptographique
+      enchaînée à fréquence horaire, stockée dans un registre séparé non modifiable.
+    rationale: >-
+      Un scellement horaire est suffisamment fréquent pour limiter la fenêtre
+      d'altération non détectable tout en restant techniquement simple à implémenter
+      et à vérifier lors d'un audit.
+    date: "2024-08-10"
+    decided_by: RSSI et Direction Conformité
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-rechargement-preventif
+    title: Rechargement préventif du compte de règlement à 20 % du solde cible
+    statement: >-
+      Un rechargement du compte de règlement SEPA Inst est initié automatiquement
+      lorsque le simulateur de liquidité prédit un passage sous 20 % du solde
+      cible dans les deux heures suivantes.
+    rationale: >-
+      Le rechargement à 20 % du solde cible laisse une marge suffisante pour
+      absorber un pic de trafic imprévu pendant le délai de traitement du virement
+      de réapprovisionnement.
+    date: "2025-02-14"
+    decided_by: Direction Trésorerie
+    still_active: true
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dpin-api-mandats-rest
+    title: API mandats exposée en REST/JSON
+    statement: >-
+      Le gestionnaire de mandats expose ses fonctions de création, consultation
+      et révocation via une API REST/JSON versionnée, conformément au standard
+      d'API interne de l'établissement.
+    rationale: >-
+      L'alignement sur le standard REST/JSON facilite l'intégration par les
+      partenaires open banking et les équipes internes, réduisant les coûts
+      d'intégration et homogénéisant les pratiques API de l'établissement.
+    date: "2024-05-20"
+    decided_by: Architecture technique paiements
+    still_active: true
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  # ── CONTRAINTES ────────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-dpin-delai-reglement-10s
+    title: Délai de règlement SEPA Inst inférieur à 10 secondes
+    statement: >-
+      Le règlement interbancaire d'un virement SEPA Inst doit être confirmé
+      en moins de 10 secondes à compter de la réception de l'ordre par la
+      chambre de compensation, conformément au règlement européen sur les
+      virements instantanés.
+    source: Règlement (UE) 2024/886 sur les virements instantanés
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-disponibilite-24-7
+    title: Disponibilité 24h/24 7j/7 des rails instantanés
+    statement: >-
+      Les systèmes participant au traitement des virements instantanés doivent
+      être disponibles en continu, sans fenêtre de maintenance planifiée
+      interrompant la capacité d'émission ou de réception.
+    source: Règlement (UE) 2024/886 sur les virements instantanés
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-irrevocabilite-ordre
+    title: Irrévocabilité des ordres après soumission réseau
+    statement: >-
+      Un virement instantané soumis au réseau interbancaire est irrévocable.
+      Aucun système interne ne peut annuler un ordre déjà accepté par la chambre
+      de compensation.
+    source: Schéma SEPA Instant Credit Transfer du Conseil des paiements européens
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-plafond-max-100k
+    title: Plafond unitaire maximum de 100 000 € par virement
+    statement: >-
+      Aucun virement instantané ne peut dépasser 100 000 € par ordre, conformément
+      au plafond défini par le schéma SEPA Inst. Les ordres supérieurs doivent
+      être fragmentés ou orientés vers un autre rail.
+    source: Schéma SEPA Instant Credit Transfer v1.2
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-format-iban-sepa
+    title: IBAN SEPA obligatoire pour les ordres instantanés
+    statement: >-
+      Seuls les comptes identifiés par un IBAN conforme aux standards SEPA
+      peuvent être destinataires d'un virement instantané. Les coordonnées
+      non IBAN sont rejetées à la validation.
+    source: Schéma SEPA Instant Credit Transfer
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-conformite-dsp2-initiation
+    title: Consentement explicite requis pour l'initiation par tiers
+    statement: >-
+      Tout virement instantané initié par un prestataire de services de paiement
+      tiers au nom d'un client doit s'appuyer sur un consentement explicite,
+      traçable et révocable conformément à la DSP2.
+    source: Directive (UE) 2015/2366 (DSP2) — Article 64
+    severity: high
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-conservation-5-ans
+    title: Conservation des données de paiement pendant 5 ans minimum
+    statement: >-
+      Les données relatives aux virements instantanés doivent être conservées
+      pendant au moins 5 ans à compter de la date d'exécution, conformément
+      aux obligations de lutte contre le blanchiment.
+    source: Directive (UE) 2015/849 (4e directive LCB-FT) — Article 40
+    severity: high
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-screening-sanctions
+    title: Criblage sanctions obligatoire avant émission
+    statement: >-
+      Chaque bénéficiaire d'un virement instantané doit faire l'objet d'un
+      criblage contre les listes de sanctions en vigueur avant toute soumission
+      au réseau interbancaire.
+    source: Règlement (CE) n° 2580/2001 et listes OFAC/UE actualisées
+    severity: high
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-chiffrement-transit
+    title: Chiffrement TLS 1.2 minimum des communications interbancaires
+    statement: >-
+      Toutes les communications entre la passerelle interbancaire et les
+      infrastructures de règlement doivent utiliser TLS version 1.2 au minimum,
+      avec rotation des certificats tous les 12 mois.
+    source: Politique de sécurité des systèmes d'information de l'établissement
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-tracabilite-mandats
+    title: Traçabilité complète des utilisations de mandats
+    statement: >-
+      Chaque utilisation d'un mandat d'initiation doit être enregistrée avec
+      l'identifiant du mandat, l'heure, le montant et le référence de l'ordre
+      généré, accessible au client sur demande.
+    source: Directive (UE) 2015/2366 (DSP2) — Article 58
+    severity: medium
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-sla-contractuel-partenaires
+    title: SLA contractuel de 99,9 % de disponibilité vis-à-vis des partenaires
+    statement: >-
+      Les API exposées aux partenaires d'initiation de paiements instantanés
+      doivent respecter un taux de disponibilité de 99,9 % mesuré sur chaque
+      mois calendaire, sous peine de pénalités contractuelles.
+    source: Contrats cadres partenaires open banking
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-audit-interne-annuel
+    title: Audit interne annuel du dispositif de paiement instantané
+    statement: >-
+      Le dispositif de contrôle des paiements instantanés fait l'objet d'une
+      revue annuelle par l'audit interne, couvrant la conformité réglementaire,
+      la sécurité et la performance opérationnelle.
+    source: Charte d'audit interne de l'établissement
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-notification-rejet-motif
+    title: Motif de rejet obligatoire dans les notifications client
+    statement: >-
+      Toute notification de rejet d'un virement instantané doit inclure le code
+      motif réglementaire ainsi qu'une explication compréhensible en langage
+      naturel pour le client.
+    source: Règlement (UE) 2024/886 — Article 7
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-rgpd-donnees-paiement
+    title: Minimisation RGPD des données de paiement
+    statement: >-
+      Les données à caractère personnel contenues dans les messages de paiement
+      (nom du donneur d'ordre, libellé) ne peuvent être utilisées qu'à des fins
+      de traitement de l'ordre et de conformité réglementaire.
+    source: Règlement (UE) 2016/679 (RGPD) — Article 5
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-resilience-rto-30min
+    title: RTO de 30 minutes pour la passerelle interbancaire
+    statement: >-
+      En cas de panne totale, la passerelle interbancaire doit être rétablie
+      en moins de 30 minutes pour limiter l'impact sur la continuité du service
+      de paiement instantané.
+    source: Plan de continuité d'activité — Exigences paiements critiques
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-habilitation-relance
+    title: Double habilitation pour la relance manuelle d'ordre
+    statement: >-
+      La relance manuelle d'un ordre de paiement via la console d'exploitation
+      requiert la validation de deux opérateurs distincts, dont l'un disposant
+      du rôle de superviseur.
+    source: Politique de contrôle interne — Ségrégation des tâches
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-plafond-mandat
+    title: Plafond unitaire obligatoire sur chaque mandat d'initiation
+    statement: >-
+      Tout mandat d'initiation de paiement doit comporter un plafond unitaire
+      et un plafond mensuel cumulé définis explicitement par le client lors
+      de sa souscription.
+    source: Directive (UE) 2015/2366 (DSP2)
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-unicite-reference-e2e
+    title: Unicité de la référence bout en bout sur 24 heures
+    statement: >-
+      La référence unique de bout en bout (EndToEndId) d'un virement instantané
+      doit être unique sur une fenêtre glissante de 24 heures par émetteur,
+      le concentrateur rejetant tout doublon.
+    source: Schéma SEPA Instant Credit Transfer — Règles de validation
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-supervision-continue
+    title: Supervision continue des composants critiques paiement
+    statement: >-
+      Les composants classifiés critiques (concentrateur, passerelle interbancaire,
+      moteur de règles) doivent faire l'objet d'une supervision active 24h/24
+      avec alerte sous 2 minutes en cas d'anomalie.
+    source: Politique d'exploitation des systèmes critiques
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-test-reprise-trimestriel
+    title: Test de reprise après sinistre trimestriel
+    statement: >-
+      Un exercice de reprise après sinistre simulant la panne totale du datacenter
+      principal est organisé trimestriellement pour les systèmes de paiement
+      instantané, avec mesure effective du RTO atteint.
+    source: Plan de continuité d'activité — Programme de tests
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-acces-minimum-privilege
+    title: Accès aux systèmes de paiement selon le principe du moindre privilège
+    statement: >-
+      Les droits d'accès aux systèmes de traitement des virements instantanés
+      sont attribués selon le principe du moindre privilège et révisés
+      semestriellement par les responsables d'équipe.
+    source: Politique de sécurité des systèmes d'information
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-latence-api-partenaires
+    title: Latence API partenaires inférieure à 500 ms au P99
+    statement: >-
+      Les appels API exposés aux partenaires d'initiation de paiements doivent
+      répondre en moins de 500 millisecondes au 99e percentile, mesurés côté
+      serveur hors latence réseau partenaire.
+    source: Contrats cadres partenaires open banking
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-journalisation-erreurs
+    title: Journalisation structurée de toutes les erreurs de traitement
+    statement: >-
+      Toute erreur survenant dans le traitement d'un ordre de virement instantané
+      doit être journalisée en format structuré avec le contexte complet de l'ordre,
+      le code d'erreur et la pile d'appels, accessible pendant 90 jours.
+    source: Standard de journalisation applicative de l'établissement
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-separation-env
+    title: Séparation stricte production / recette pour les paiements instantanés
+    statement: >-
+      Les environnements de production et de recette du système de paiement
+      instantané utilisent des comptes de règlement, des certificats et des
+      endpoints réseau entièrement séparés, sans partage de ressource.
+    source: Politique de gouvernance des environnements
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-revue-regles-semestrielle
+    title: Revue semestrielle du catalogue de règles IP
+    statement: >-
+      L'ensemble du catalogue de règles du moteur IP fait l'objet d'une revue
+      semestrielle par l'équipe risques paiements pour s'assurer de la pertinence
+      des seuils et détecter les règles obsolètes.
+    source: Politique de gouvernance des règles métier
+    severity: low
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-protection-donnees-transit
+    title: Données de paiement non persistées en clair dans les files de messages
+    statement: >-
+      Les montants et coordonnées bancaires des ordres de paiement transitant
+      par le bus d'événements sont chiffrés au niveau applicatif avant publication,
+      la clé de déchiffrement n'étant accessible qu'aux consommateurs habilités.
+    source: Politique de sécurité des systèmes d'information — Encryption at rest
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-monitoring-frais-facturation
+    title: Réconciliation quotidienne des frais calculés et facturés
+    statement: >-
+      Les montants de frais calculés par le catalogue de frais doivent être
+      réconciliés quotidiennement avec les montants effectivement facturés
+      dans le système de facturation, avec alerte sur tout écart supérieur à 0,1 %.
+    source: Politique de contrôle de la facturation
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-capacite-pic-3x
+    title: Dimensionnement pour absorber 3 fois le volume moyen en pic
+    statement: >-
+      Les composants de traitement des virements instantanés doivent être
+      dimensionnés pour traiter trois fois le volume moyen journalier sans
+      dégradation du SLA, afin d'absorber les pics saisonniers ou événementiels.
+    source: Politique de dimensionnement des systèmes critiques
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-format-notification-structure
+    title: Format structuré obligatoire pour les notifications de paiement
+    statement: >-
+      Les notifications envoyées aux clients sur leurs virements instantanés
+      doivent suivre un template structuré incluant référence, montant, parties
+      et statut, défini par l'équipe expérience client.
+    source: Charte de communication client paiements
+    severity: low
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-versionnage-api
+    title: Versionnage sémantique des API paiement instantané
+    statement: >-
+      Toutes les API exposées dans le cadre du service de paiement instantané
+      suivent un versionnage sémantique avec maintien de la rétrocompatibilité
+      pendant au moins 12 mois après la publication d'une nouvelle version majeure.
+    source: Standard d'API interne de l'établissement
+    severity: medium
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-rotation-certificats
+    title: Rotation des certificats TLS tous les 12 mois
+    statement: >-
+      Les certificats TLS utilisés pour les sessions interbancaires doivent être
+      renouvelés au moins une fois par an, avec test de la nouvelle configuration
+      en environnement de recette avant bascule en production.
+    source: Politique de gestion des certificats de l'établissement
+    severity: high
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-test-filtrage-sanctions
+    title: Mise à jour quotidienne des listes de sanctions
+    statement: >-
+      Les listes de sanctions utilisées pour le filtrage des bénéficiaires
+      doivent être mises à jour au minimum une fois par jour ouvré, avec
+      notification automatique en cas d'échec de la synchronisation.
+    source: Directive (UE) 2015/849 — Article 18 et listes OFAC/UE
+    severity: high
+    domains: [paiement-instantane, lcb-ft]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dpin-documentation-api-publique
+    title: Documentation OpenAPI obligatoire pour les API partenaires
+    statement: >-
+      Toute API exposée à des partenaires d'initiation de paiement doit disposer
+      d'une spécification OpenAPI 3.0 à jour, publiée sur le portail développeur
+      de l'établissement au plus tard lors de la mise en production.
+    source: Standard d'API interne de l'établissement
+    severity: low
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  # ── RISQUES ────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-dpin-indispo-reseau-interbancaire
+    title: Indisponibilité prolongée du réseau interbancaire SEPA Inst
+    statement: >-
+      Une panne du réseau interbancaire de plusieurs heures interromprait
+      totalement la capacité d'émission et de réception de virements instantanés,
+      sans alternative instantanée disponible pour les clients engagés sur ce rail.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Activation automatique du mode dégradé SEPA CT dès 30 secondes d'indisponibilité
+      - Communication proactive aux clients impactés via le hub de notification
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-tension-liquidite-intraday
+    title: Tension de liquidité intraday sur le compte de règlement
+    statement: >-
+      Un pic de trafic imprévu ou un retard de rechargement peut amener le solde
+      du compte de règlement sous le minimum requis, forçant un rejet des ordres
+      en file d'attente faute de provision suffisante.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Alerte préventive du portail trésorerie à 20 % du solde cible
+      - Simulateur de liquidité projetant le solde sur 8 heures
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-usurpation-mandat
+    title: Usurpation de mandat d'initiation par un acteur malveillant
+    statement: >-
+      Un partenaire compromis ou un acteur frauduleux interceptant un jeton de
+      mandat pourrait initier des virements instantanés irrévocables sans
+      l'accord réel du titulaire du compte.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Révocation immédiate des mandats sur signalement client
+      - Détecteur d'anomalies surveillant les patterns d'utilisation des mandats
+    domains: [paiement-instantane, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-derive-sla-latence
+    title: Dérive progressive du SLA de latence
+    statement: >-
+      L'accumulation de dette technique et la croissance des volumes peut
+      progressivement dégrader les temps de traitement sans qu'une alerte
+      ponctuelle ne soit déclenchée, aboutissant à un non-respect du SLA
+      réglementaire de 10 secondes.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Suivi hebdomadaire des percentiles P95 et P99 de latence
+      - Révision du dimensionnement lors de chaque dépassement de 80 % de capacité
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-corruption-journal-audit
+    title: Corruption ou altération du journal d'audit
+    statement: >-
+      Une erreur logicielle ou une action malveillante pourrait altérer les
+      entrées du journal d'audit, compromettant sa valeur probante lors d'un
+      contrôle réglementaire ou d'un litige.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Scellement horaire par empreinte cryptographique enchaînée
+      - Ségrégation des droits d'écriture entre exploitation et audit
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-accumulation-dlq
+    title: Accumulation incontrôlée de messages en dead-letter queue
+    statement: >-
+      Un bug récurrent dans un consommateur de file peut générer une accumulation
+      rapide de messages en DLQ, bloquant le traitement de lots d'ordres et
+      retardant les réconciliations comptables.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Alerte opérateur dès 500 messages en DLQ
+      - Astreinte 24h/24 pour intervention sous 30 minutes
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-erreur-calcul-frais
+    title: Erreur de calcul des frais de virement instantané
+    statement: >-
+      Un bug dans le catalogue de frais ou une mauvaise configuration d'une
+      grille tarifaire peut entraîner la surfacturation ou la sous-facturation
+      systématique d'une population de clients, avec impact réputationnel et
+      financier.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Réconciliation quotidienne des frais calculés vs facturés
+      - Simulation d'impact obligatoire avant activation d'une nouvelle grille
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-expiration-certificat
+    title: Expiration non détectée d'un certificat interbancaire
+    statement: >-
+      L'expiration silencieuse d'un certificat TLS utilisé pour les sessions
+      interbancaires provoquerait l'interruption totale de la passerelle sans
+      alerte préalable si le monitoring des expirantes n'est pas en place.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Monitoring automatique des dates d'expiration avec alerte à J-30 et J-7
+      - Procédure de rotation documentée et testée annuellement
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-faux-positifs-detecteur
+    title: Taux élevé de faux positifs du détecteur d'anomalies
+    statement: >-
+      Un détecteur d'anomalies mal calibré peut générer un volume excessif
+      d'alertes sur des comportements légitimes, provoquant une fatigue
+      d'alerte des équipes et masquant les vraies menaces.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Revue mensuelle des taux de faux positifs et ajustement des seuils
+      - Journalisation des alertes traitées pour constituer un historique de calibration
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-fragmentation-referentiel-comptes
+    title: Incohérence entre le référentiel des comptes et le moteur de règles
+    statement: >-
+      Un délai de propagation des modifications du référentiel des comptes vers
+      le moteur de règles peut amener ce dernier à appliquer des plafonds périmés,
+      autorisant des ordres qui auraient dû être bloqués ou l'inverse.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Invalidation synchrone du moteur de règles à chaque modification de plafond
+      - Test de cohérence automatique à chaque déploiement
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-perte-evenements-bus
+    title: Perte d'événements lors d'un incident du bus de messages
+    statement: >-
+      Un incident affectant le bus d'événements pendant une fenêtre de maintenance
+      ou un pic de charge extrême peut entraîner la perte d'événements de cycle
+      de vie, compromettant la cohérence des statuts exposés aux clients.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Garantie de livraison exacte configurée sur les partitions critiques
+      - Mécanisme de rejoue des événements sur 72 heures
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-non-conformite-reporting
+    title: Non-conformité des déclarations réglementaires paiement
+    statement: >-
+      Une erreur dans le processus de génération des rapports réglementaires
+      pourrait conduire à la transmission de données erronées à la banque centrale,
+      exposant l'établissement à des sanctions et à une obligation de correction.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Double contrôle automatique de cohérence avant envoi des déclarations
+      - Procédure de validation par l'équipe conformité avant transmission
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-indisponibilite-validateur-rib
+    title: Indisponibilité du répertoire d'éligibilité SEPA Inst
+    statement: >-
+      Si le répertoire interbancaire permettant de vérifier l'éligibilité SEPA Inst
+      d'un IBAN devient indisponible, le validateur ne peut plus confirmer les
+      nouvelles coordonnées, bloquant l'enregistrement de bénéficiaires inédits.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Cache local mis à jour toutes les 4 heures pour les établissements connus
+      - Procédure de repli documentée pour les cas de doute sur les nouveaux établissements
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-interoperabilite-iso20022
+    title: Incompatibilité de version ISO 20022 avec une chambre de compensation
+    statement: >-
+      Une mise à jour non coordonnée du schéma ISO 20022 par une chambre de
+      compensation peut rendre les messages du concentrateur non conformes
+      et provoquer des rejets en masse sur ce circuit.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Veille active sur les publications du Conseil des paiements européens
+      - Tests de conformité automatisés avant chaque montée de version du concentrateur
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-vol-donnees-paiement
+    title: Vol de données personnelles contenues dans les messages de paiement
+    statement: >-
+      Les messages ISO 20022 contiennent des données personnelles (noms, IBAN)
+      qui, si exfiltrées, constitueraient une violation RGPD majeure avec obligation
+      de notification à l'autorité de contrôle dans les 72 heures.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Chiffrement applicatif des données dans le bus d'événements
+      - Accès aux messages archivés restreint aux utilisateurs habilités via journalisation
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-mauvaise-priorisation-ordres
+    title: Mauvaise priorisation causant l'affamage des ordres standard
+    statement: >-
+      Une implémentation défectueuse de la priorisation des ordres pourrait
+      amener les ordres des clients standard à rester bloqués indéfiniment
+      en file d'attente derrière les ordres premium en période de forte charge.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Plafond de 5 minutes sur l'avantage accordé aux ordres premium
+      - Monitoring du temps d'attente moyen par segment client
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dpin-echec-simulation-liquidite
+    title: Précision insuffisante du simulateur de liquidité
+    statement: >-
+      Des modèles prédictifs peu précis dans le simulateur de liquidité peuvent
+      sous-estimer les besoins de rechargement, laissant le compte de règlement
+      descendre sous le seuil minimal malgré les alertes.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Backtesting mensuel du simulateur sur données historiques
+      - Marge de sécurité de 20 % appliquée sur toutes les projections
+    domains: [paiement-instantane]
+    created_from: synthetic
+
+edges:
+
+  # PART_OF — one per feature (67 features)
+  - type: PART_OF
+    source_id: feat-dpin-reception-ordre-inst
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-transformation-iso20022
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-deduplication-messages
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-reconciliation-temps-reel
+    target_id: sys-dpin-moteur-rapprochement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-gestion-suspens
+    target_id: sys-dpin-moteur-rapprochement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-export-comptable
+    target_id: sys-dpin-moteur-rapprochement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-notification-emission
+    target_id: sys-dpin-hub-notification
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-notification-reception
+    target_id: sys-dpin-hub-notification
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-notification-rejet
+    target_id: sys-dpin-hub-notification
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-vue-position-liquidite
+    target_id: sys-dpin-portail-tresorerie
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-alerte-seuil-liquidite
+    target_id: sys-dpin-portail-tresorerie
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-transfert-provision
+    target_id: sys-dpin-portail-tresorerie
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-publication-evenement
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-abonnement-evenement
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-replay-evenement
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-creation-mandat
+    target_id: sys-dpin-gestionnaire-mandats
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-revocation-mandat
+    target_id: sys-dpin-gestionnaire-mandats
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-consultation-mandats
+    target_id: sys-dpin-gestionnaire-mandats
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-validation-iban
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-verification-eligibilite-inst
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-cache-eligibilite
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-projection-solde
+    target_id: sys-dpin-simulateur-liquidite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-scenario-stress
+    target_id: sys-dpin-simulateur-liquidite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-archivage-message
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-recherche-archives
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-selection-canal
+    target_id: sys-dpin-routeur-multicanal
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-bascule-mode-degrade
+    target_id: sys-dpin-routeur-multicanal
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-prioritisation-ordres
+    target_id: sys-dpin-routeur-multicanal
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-mesure-latence
+    target_id: sys-dpin-moniteur-sla
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-tableau-bord-sla
+    target_id: sys-dpin-moniteur-sla
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-rapport-conformite-sla
+    target_id: sys-dpin-moniteur-sla
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-evaluation-regles
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-gestion-regles
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-simulation-regle
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-recherche-ordre
+    target_id: sys-dpin-console-exploitation
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-relance-ordre
+    target_id: sys-dpin-console-exploitation
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-annulation-ordre
+    target_id: sys-dpin-console-exploitation
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-calcul-frais
+    target_id: sys-dpin-catalogue-frais
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-gestion-grille-tarifaire
+    target_id: sys-dpin-catalogue-frais
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-activation-compte-inst
+    target_id: sys-dpin-referentiel-comptes
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-mise-a-jour-plafonds
+    target_id: sys-dpin-referentiel-comptes
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-validation-lot-reconciliation
+    target_id: sys-dpin-ecran-reconciliation
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-traitement-ecarts
+    target_id: sys-dpin-ecran-reconciliation
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-gestion-session-reseau
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-signature-message-reseau
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-traitement-accuse-reglement
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-detection-pic-trafic
+    target_id: sys-dpin-detecteur-anomalies
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-detection-sequence-repetitive
+    target_id: sys-dpin-detecteur-anomalies
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-surveillance-consommateurs
+    target_id: sys-dpin-superviseur-files
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-gestion-dlq
+    target_id: sys-dpin-superviseur-files
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-export-journal-audit
+    target_id: sys-dpin-outil-audit-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-scellement-journal
+    target_id: sys-dpin-outil-audit-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-orchestration-etapes
+    target_id: sys-dpin-moteur-workflow
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-compensation-transaction
+    target_id: sys-dpin-moteur-workflow
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-consolidation-statut
+    target_id: sys-dpin-agregateur-statuts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-historique-statuts
+    target_id: sys-dpin-agregateur-statuts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-auto-completion-beneficiaire
+    target_id: sys-dpin-cache-beneficiaires
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-invalidation-cache
+    target_id: sys-dpin-cache-beneficiaires
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-enregistrement-reglementaire
+    target_id: sys-dpin-journal-reglementaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-generation-rapport-regulateur
+    target_id: sys-dpin-journal-reglementaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-indicateurs-volumes
+    target_id: sys-dpin-tableau-bord-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-taux-succes-rail
+    target_id: sys-dpin-tableau-bord-ip
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-rechargement-auto-provision
+    target_id: sys-dpin-simulateur-liquidite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-filtrage-sanctions
+    target_id: sys-dpin-detecteur-anomalies
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-suivi-provision-rechargement
+    target_id: sys-dpin-portail-tresorerie
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-export-stats-regulateur
+    target_id: sys-dpin-journal-reglementaire
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-dpin-monitoring-certificats
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+
+  # OPERATES_ON — 30 edges (feature|system -> business_object)
+  - type: OPERATES_ON
+    source_id: feat-dpin-reception-ordre-inst
+    target_id: obj-dpin-ordre-virement-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-transformation-iso20022
+    target_id: obj-dpin-message-iso20022
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-deduplication-messages
+    target_id: obj-dpin-ordre-virement-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-reconciliation-temps-reel
+    target_id: obj-dpin-accuse-reglement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-gestion-suspens
+    target_id: obj-dpin-incident-suspens
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-export-comptable
+    target_id: obj-dpin-ecart-comptable
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-notification-emission
+    target_id: obj-dpin-statut-paiement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-notification-reception
+    target_id: obj-dpin-statut-paiement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-vue-position-liquidite
+    target_id: obj-dpin-position-liquidite
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-alerte-seuil-liquidite
+    target_id: obj-dpin-position-liquidite
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-transfert-provision
+    target_id: obj-dpin-compte-reglement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-creation-mandat
+    target_id: obj-dpin-mandat-initiation
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-revocation-mandat
+    target_id: obj-dpin-mandat-initiation
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-consultation-mandats
+    target_id: obj-dpin-mandat-initiation
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-validation-iban
+    target_id: obj-dpin-beneficiaire-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-verification-eligibilite-inst
+    target_id: obj-dpin-beneficiaire-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-projection-solde
+    target_id: obj-dpin-position-liquidite
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-archivage-message
+    target_id: obj-dpin-message-iso20022
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-archivage-message
+    target_id: obj-dpin-journal-audit-ip
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-evaluation-regles
+    target_id: obj-dpin-regle-ip
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-calcul-frais
+    target_id: obj-dpin-frais-transaction-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-gestion-grille-tarifaire
+    target_id: obj-dpin-grille-tarif-inst
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-gestion-session-reseau
+    target_id: obj-dpin-session-interbancaire
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-traitement-accuse-reglement
+    target_id: obj-dpin-accuse-reglement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-detection-pic-trafic
+    target_id: obj-dpin-alerte-anomalie
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-scellement-journal
+    target_id: obj-dpin-journal-audit-ip
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-consolidation-statut
+    target_id: obj-dpin-statut-paiement
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-enregistrement-reglementaire
+    target_id: obj-dpin-declaration-regulatoire
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-generation-rapport-regulateur
+    target_id: obj-dpin-declaration-regulatoire
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-dpin-traitement-ecarts
+    target_id: obj-dpin-ecart-comptable
+    created_from: synthetic
+
+  # DEPENDS_ON — 15 edges
+  - type: DEPENDS_ON
+    source_id: sys-dpin-concentrateur-flux
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-concentrateur-flux
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-moteur-rapprochement
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-hub-notification
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-portail-tresorerie
+    target_id: sys-dpin-simulateur-liquidite
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-routeur-multicanal
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-routeur-multicanal
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-moteur-workflow
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-agregateur-statuts
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-tableau-bord-ip
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-dpin-orchestration-etapes
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-dpin-bascule-mode-degrade
+    target_id: sys-dpin-moniteur-sla
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-dpin-auto-completion-beneficiaire
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-journal-reglementaire
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-dpin-detecteur-anomalies
+    target_id: sys-dpin-bus-evenements
+    created_from: synthetic
+
+  # CONSTRAINS — 20 edges
+  - type: CONSTRAINS
+    source_id: con-dpin-delai-reglement-10s
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-delai-reglement-10s
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-disponibilite-24-7
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-disponibilite-24-7
+    target_id: sys-dpin-routeur-multicanal
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-irrevocabilite-ordre
+    target_id: feat-dpin-annulation-ordre
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-plafond-max-100k
+    target_id: sys-dpin-moteur-regles-ip
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-format-iban-sepa
+    target_id: sys-dpin-validateur-rib
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-conformite-dsp2-initiation
+    target_id: sys-dpin-gestionnaire-mandats
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-conservation-5-ans
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-screening-sanctions
+    target_id: feat-dpin-reception-ordre-inst
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-chiffrement-transit
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-tracabilite-mandats
+    target_id: sys-dpin-gestionnaire-mandats
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-sla-contractuel-partenaires
+    target_id: sys-dpin-concentrateur-flux
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-notification-rejet-motif
+    target_id: feat-dpin-notification-rejet
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-rgpd-donnees-paiement
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-resilience-rto-30min
+    target_id: sys-dpin-passerelle-interbancaire
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-habilitation-relance
+    target_id: feat-dpin-relance-ordre
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-dpin-unicite-reference-e2e
+    target_id: feat-dpin-deduplication-messages
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-dpin-archivage-10-ans
+    target_id: sys-dpin-archiveur-ordres
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-dpin-double-validation-tresorerie
+    target_id: feat-dpin-transfert-provision
+    created_from: synthetic

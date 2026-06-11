@@ -1,0 +1,1905 @@
+nodes:
+
+  # ── Système 1 : Portail Espace Web Particuliers ─────────────────────────────
+  - type: system
+    id: sys-dbel-portail-web-particuliers
+    name: Portail Espace Web Particuliers
+    description: Interface web pour les clients particuliers permettant la consultation de comptes, la gestion documentaire et l'accès aux services en ligne. Constitue le canal historique de la banque en ligne avant le développement des applications mobiles.
+    owner_team: Équipe Canal Web
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-tableau-de-bord-web
+    name: Tableau de bord personnalisé web
+    description: Agrège sur une page d'accueil unique les soldes des comptes, les dernières opérations et les alertes en attente pour le client connecté sur le portail web.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-telechargement-releves
+    name: Téléchargement des relevés de compte
+    description: Permet au client de télécharger ses relevés mensuels au format PDF depuis l'espace documentaire du portail. Les relevés sont générés à la demande et archivés pendant la durée réglementaire applicable.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-messagerie-securisee
+    name: Messagerie sécurisée client-conseiller
+    description: Canal d'échange chiffré entre le client particulier et son conseiller bancaire, intégré au portail web. Chaque message est horodaté et archivé dans le dossier client pendant dix ans.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-modification-donnees-contact
+    name: Modification des données de contact
+    description: Permet au client de mettre à jour son adresse postale, son numéro de téléphone et son courriel directement depuis le portail. Toute modification déclenche une notification de sécurité sur l'ancien canal certifié.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 2 : Agrégateur de comptes externes ──────────────────────────────
+  - type: system
+    id: sys-dbel-agregateur-comptes-externes
+    name: Agrégateur de comptes externes
+    description: Service d'agrégation DSP2 permettant aux clients de visualiser dans l'espace web et mobile leurs comptes détenus dans d'autres établissements. S'appuie sur des connecteurs vers les API d'établissements tiers agréés.
+    owner_team: Équipe Open Banking
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-ajout-compte-tiers
+    name: Ajout de compte externe agrégé
+    description: Parcours d'ajout guidé permettant au client d'associer un compte détenu dans un autre établissement bancaire. Le consentement est recueilli selon le protocole OAuth2 DSP2 et stocké avec une durée de validité de quatre-vingt-dix jours.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-synchronisation-comptes-tiers
+    name: Synchronisation des soldes et opérations tiers
+    description: Déclenche la mise à jour des données des comptes externes agrégés à intervalles réguliers et à la demande du client. En cas d'échec de connexion à l'établissement tiers, une alerte est affichée sans bloquer l'affichage des autres comptes.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-revocation-consentement-agregation
+    name: Révocation du consentement d'agrégation
+    description: Offre au client la possibilité de révoquer à tout moment l'accès de l'agrégateur à un compte externe. La révocation est transmise en temps réel à l'établissement tiers via l'API de notification DSP2.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 3 : Coffre-fort numérique ───────────────────────────────────────
+  - type: system
+    id: sys-dbel-coffre-fort-numerique
+    name: Coffre-fort numérique client
+    description: Espace de stockage sécurisé proposé aux clients pour conserver leurs documents personnels et bancaires importants. Les fichiers sont chiffrés au repos avec une clé propre à chaque client et ne sont accessibles qu'à lui.
+    owner_team: Équipe Coffre Numérique
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-depot-document-coffre
+    name: Dépôt de document dans le coffre
+    description: Permet au client d'uploader un document personnel (pièce d'identité, contrat, justificatif) depuis le portail web ou l'application mobile. Le fichier est chiffré et indexé avant d'être stocké dans le coffre-fort.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-partage-document-coffre
+    name: Partage sécurisé de document depuis le coffre
+    description: Génère un lien de partage à durée limitée permettant au client de transmettre un document coffre-fort à un tiers (conseiller, notaire) sans le télécharger au préalable. Le lien expire automatiquement après soixante-douze heures ou à la première consultation.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-suppression-document-coffre
+    name: Suppression définitive d'un document coffre
+    description: Efface de manière irréversible un fichier stocké dans le coffre-fort, après confirmation explicite du client. Une trace horodatée de la suppression est conservée à des fins d'audit sans conserver le contenu du fichier.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 4 : Moteur de notifications client ──────────────────────────────
+  - type: system
+    id: sys-dbel-moteur-notifications
+    name: Moteur de notifications client
+    description: Orchestrateur centralisé d'envoi de notifications vers les canaux push mobile, courriel et SMS. Gère les préférences de notification par client, le routage multicanal et la déduplication des envois.
+    owner_team: Équipe Engagement Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-notification-operation-carte
+    name: Notification d'opération carte en temps réel
+    description: Envoie une notification push ou SMS au client dès qu'une transaction carte est autorisée sur son compte. Le message inclut le montant, le marchand et le solde estimé après opération.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-alerte-seuil-solde
+    name: Alerte seuil de solde configurable
+    description: Déclenche un avertissement par courriel ou push lorsque le solde d'un compte franchit un seuil défini par le client. Le seuil est paramétrable par compte et par sens (solde inférieur ou supérieur au montant cible).
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-notification-echeance-pret
+    name: Notification d'échéance de prêt
+    description: Rappelle au client par courriel et notification push la prochaine échéance de remboursement de son prêt, sept jours avant la date de prélèvement. Le message précise le montant et le compte débité.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-gestion-preferences-notifications
+    name: Gestion des préférences de notification
+    description: Interface permettant au client de choisir les événements pour lesquels il souhaite être notifié, le canal préféré (push, email, SMS) et les plages horaires d'envoi. Les préférences sont prises en compte en moins de cinq minutes.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 5 : Moteur de personnalisation ──────────────────────────────────
+  - type: system
+    id: sys-dbel-moteur-personnalisation
+    name: Moteur de personnalisation de l'expérience
+    description: Calcule et expose des recommandations contextuelles pour adapter l'interface et les offres présentées au client selon son profil d'usage. S'appuie sur des règles métier et des modèles de segmentation mis à jour quotidiennement.
+    owner_team: Équipe Data Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-recommandation-produit
+    name: Recommandation de produits bancaires
+    description: Affiche au client des suggestions de produits adaptées à son profil (épargne, assurance, crédit) dans la zone merchandising du portail web et de l'application mobile. Les recommandations sont recalculées à chaque connexion.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-personnalisation-menu
+    name: Personnalisation du menu et des raccourcis
+    description: Laisse le client réorganiser les raccourcis de son menu principal selon ses usages les plus fréquents. La configuration est synchronisée entre le portail web et l'application mobile via un profil cloud.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-mode-sombre
+    name: Mode sombre et préférences d'affichage
+    description: Propose un mode sombre et plusieurs tailles de police pour adapter l'interface aux préférences visuelles du client. Ces paramètres sont persistés dans le profil utilisateur et appliqués dès la connexion.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 6 : Plateforme d'accessibilité numérique ───────────────────────
+  - type: system
+    id: sys-dbel-plateforme-accessibilite
+    name: Plateforme d'accessibilité numérique
+    description: Ensemble de composants et de services transversaux garantissant la conformité RGAA des interfaces web et mobiles. Fournit des guides, un scanner automatique et un référentiel de composants accessibles à destination des équipes produit.
+    owner_team: Équipe Accessibilité & Inclusion
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-scan-accessibilite-automatique
+    name: Scan d'accessibilité automatique des pages
+    description: Analyse les pages web publiées à la recherche de violations RGAA de niveaux A et AA et génère un rapport priorisé par équipe. L'analyse est déclenchée à chaque déploiement en environnement de recette.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-composants-accessibles-bibliotheque
+    name: Bibliothèque de composants accessibles
+    description: Met à disposition des équipes de développement une librairie de composants UI (formulaires, tableaux, modales) testés et conformes RGAA. Chaque composant est documenté avec ses attributs ARIA requis et ses cas d'usage recommandés.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 7 : Portail Espace Pro ──────────────────────────────────────────
+  - type: system
+    id: sys-dbel-portail-espace-pro
+    name: Portail Espace Pro
+    description: Interface web dédiée aux clients professionnels et TPE pour la consultation de comptes professionnels, la gestion des remises et le suivi de leur activité financière. Distinct du portail particuliers, il embarque des fonctions de gestion multi-comptes et de délégation d'accès.
+    owner_team: Équipe Canal Web Pro
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-delegation-acces-pro
+    name: Délégation d'accès collaborateur
+    description: Permet au dirigeant d'accorder à un ou plusieurs collaborateurs un accès limité au portail pro selon un profil de droits (lecture seule, validation de virements). Les délégations sont auditées et révocables à tout moment.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-gestion-remises-cheques
+    name: Gestion des remises de chèques
+    description: Permet au client pro de constituer et transmettre électroniquement ses bordereaux de remise de chèques sans se déplacer en agence. Le traitement est intégré au système de compensation bancaire sous quarante-huit heures ouvrées.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-export-comptable-pro
+    name: Export comptable des opérations
+    description: Génère pour le client professionnel un fichier d'export au format OFX ou CSV des opérations bancaires d'une période sélectionnée, prêt à importer dans son logiciel de comptabilité tiers.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 8 : Service d'authentification forte ────────────────────────────
+  - type: system
+    id: sys-dbel-service-authentification-forte
+    name: Service d'authentification forte
+    description: Orchestrateur de l'authentification multifacteur pour l'ensemble des canaux numériques de la banque en ligne. Gère les méthodes SCA (OTP SMS, OTP applicatif, biométrie) et expose une API d'orchestration consommée par les portails web et mobiles.
+    owner_team: Équipe Sécurité Accès
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-enregistrement-biometrie
+    name: Enregistrement de la biométrie mobile
+    description: Permet au client de s'inscrire à l'authentification par empreinte digitale ou reconnaissance faciale sur l'application mobile. L'enregistrement est conditionné à une validation forte initiale par OTP SMS et stocke un gabarit local sans transmission au serveur.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-otp-applicatif
+    name: Génération d'OTP applicatif
+    description: Produit des codes à usage unique TOTP dans l'application mobile pour valider les opérations sensibles sans recourir au SMS. L'OTP applicatif est accepté comme second facteur SCA conformément à la norme DSP2.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-gestion-sessions-actives
+    name: Gestion et révocation des sessions actives
+    description: Affiche au client la liste de ses sessions ouvertes sur tous les appareils (portail web, mobile) avec le détail de l'appareil et de la localisation approchée. Le client peut révoquer toute session à distance en un clic.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-blocage-acces-temporaire
+    name: Blocage temporaire de l'accès en ligne
+    description: Offre au client la possibilité de bloquer immédiatement l'ensemble de ses accès numériques (web et mobile) en cas de doute sur la sécurité de son compte. Le déblocage nécessite une ré-authentification renforcée avec validation du conseiller.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 9 : Hub de souscription en ligne ────────────────────────────────
+  - type: system
+    id: sys-dbel-hub-souscription-ligne
+    name: Hub de souscription en ligne
+    description: Orchestrateur des parcours de souscription de produits bancaires depuis les canaux numériques (épargne, assurance-vie, carte supplémentaire). Centralise la validation d'éligibilité, la signature électronique et la transmission aux systèmes back-office.
+    owner_team: Équipe Souscription Digitale
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-souscription-livret-epargne
+    name: Souscription d'un livret d'épargne en ligne
+    description: Parcours intégralement dématérialisé permettant à un client d'ouvrir un livret d'épargne réglementé ou non depuis le portail web ou l'application mobile. La souscription est validée en moins de vingt-quatre heures après vérification d'éligibilité.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-souscription-carte-supplementaire
+    name: Souscription d'une carte bancaire supplémentaire
+    description: Permet à un client titulaire de commander une carte additionnelle pour un co-titulaire ou un enfant mineur depuis l'espace client. Le formulaire intègre la configuration des plafonds personnalisés dès la demande.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-signature-electronique
+    name: Signature électronique des contrats
+    description: Intègre une solution de signature électronique qualifiée permettant au client de signer tout contrat bancaire depuis le portail web sans impression papier. Chaque signature produit un dossier de preuve archivé pendant la durée légale du contrat.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 10 : Configurateur de virements programmés ──────────────────────
+  - type: system
+    id: sys-dbel-configurateur-virements-programmes
+    name: Configurateur de virements programmés
+    description: Service de planification et d'exécution des virements permanents et à terme initiés depuis les canaux numériques. Gère les récurrences (hebdomadaire, mensuelle, libre), les suspensions temporaires et les révisions de montant.
+    owner_team: Équipe Paiements Digitaux
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-creation-virement-permanent
+    name: Création d'un virement permanent
+    description: Permet au client de configurer un virement récurrent vers un bénéficiaire enregistré avec un montant fixe, une périodicité et une date de première exécution. La mise en place est effective dès le lendemain ouvré.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-modification-virement-programme
+    name: Modification d'un virement programmé existant
+    description: Offre la possibilité de changer le montant, la périodicité ou la date de fin d'un virement permanent sans devoir le supprimer et le recréer. La modification prend effet à partir de la prochaine échéance non encore traitée.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-suspension-virement-programme
+    name: Suspension et reprise d'un virement permanent
+    description: Autorise le client à suspendre temporairement l'exécution d'un virement programmé pour une durée déterminée sans le supprimer. La reprise automatique à la date indiquée est notifiée par courriel.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 11 : Moteur de recherche transactionnel ─────────────────────────
+  - type: system
+    id: sys-dbel-moteur-recherche-transactionnel
+    name: Moteur de recherche transactionnel
+    description: Permet aux clients de rechercher et filtrer leurs opérations bancaires selon des critères multiples (libellé, montant, date, catégorie). Expose une API de recherche full-text indexée quotidiennement sur l'historique des vingt-quatre derniers mois.
+    owner_team: Équipe Expérience Compte
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-recherche-operation-libelle
+    name: Recherche d'opérations par libellé
+    description: Offre une recherche textuelle dans l'historique des opérations d'un compte selon le libellé saisi par le client. Les résultats sont classés par pertinence et présentent un extrait du libellé avec mise en évidence du terme recherché.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-categorisation-depenses
+    name: Catégorisation automatique des dépenses
+    description: Classe automatiquement chaque opération dans une catégorie de dépenses (alimentation, transport, loisirs) à l'aide d'un algorithme de correspondance sur les libellés marchands. Le client peut corriger la catégorie d'une opération pour enrichir le modèle personnel.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-bilan-depenses-mensuel
+    name: Bilan mensuel des dépenses par catégorie
+    description: Présente chaque mois une synthèse visuelle des dépenses du client regroupées par catégorie, avec comparaison au mois précédent et au budget cible s'il a été défini. Le bilan est disponible dès le premier jour du mois suivant.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 12 : Gestionnaire de mandats de prélèvement ─────────────────────
+  - type: system
+    id: sys-dbel-gestionnaire-mandats-prelevement
+    name: Gestionnaire de mandats de prélèvement SEPA
+    description: Référentiel et interface de gestion des mandats SEPA SDD attachés aux comptes des clients particuliers et professionnels. Permet la consultation, la révocation et le signalement de prélèvements non autorisés.
+    owner_team: Équipe Paiements Digitaux
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-consultation-mandats-actifs
+    name: Consultation des mandats SEPA actifs
+    description: Affiche la liste de tous les mandats de prélèvement SEPA en cours associés à un compte, avec le créancier, la référence unique de mandat et la date du dernier prélèvement. La liste est mise à jour à chaque opération SDD reçue.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-opposition-prelevement
+    name: Opposition sur prélèvement non autorisé
+    description: Permet au client de contester un prélèvement SEPA qu'il n'a pas autorisé directement depuis son espace client, sans appel à son conseiller. L'opposition est enregistrée et transmise au service contentieux sous deux heures ouvrées.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 13 : Outil de simulation financière ─────────────────────────────
+  - type: system
+    id: sys-dbel-outil-simulation-financiere
+    name: Outil de simulation financière
+    description: Propose aux clients des simulateurs en ligne pour estimer leur capacité d'emprunt, le coût d'un crédit immobilier ou la projection d'une épargne. Les simulations sont anonymes et ne nécessitent pas d'authentification pour les calculs de base.
+    owner_team: Équipe Conseils Digitaux
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-simulateur-credit-immobilier
+    name: Simulateur de crédit immobilier
+    description: Calcule pour un projet immobilier saisi par l'utilisateur les mensualités estimées, le coût total du crédit et le taux d'endettement résultant. Les résultats intègrent l'assurance emprunteur estimée et peuvent être enregistrés dans l'espace client pour un suivi ultérieur.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-simulateur-epargne-projet
+    name: Simulateur d'épargne par objectif
+    description: Aide le client à planifier son épargne pour atteindre un objectif financier en calculant le versement mensuel nécessaire selon le capital cible, l'horizon et le taux de rendement estimé. Le résultat peut être converti en ouverture de livret d'épargne en quelques clics.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 14 : Service de parrainage digital ───────────────────────────────
+  - type: system
+    id: sys-dbel-service-parrainage-digital
+    name: Service de parrainage digital
+    description: Gère les programmes de parrainage client-à-client de la banque en ligne, depuis la génération du lien personnalisé jusqu'au versement de la prime de parrainage. Intègre la détection des tentatives de fraude au parrainage et le plafonnement des primes.
+    owner_team: Équipe Croissance & Acquisition
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-generation-lien-parrainage
+    name: Génération du lien de parrainage personnalisé
+    description: Crée pour chaque client un lien de parrainage unique et traçable à partager avec ses proches. Le lien encode l'identifiant du parrain et la campagne active, avec une durée de validité configurable par campagne.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-suivi-cooptations
+    name: Suivi des cooptations en cours
+    description: Présente au parrain un tableau de suivi listant les prospects ayant cliqué sur son lien, leur statut de souscription et l'avancement vers le déclenchement de la prime. Les données sont actualisées quotidiennement.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 15 : Plateforme de satisfaction client ──────────────────────────
+  - type: system
+    id: sys-dbel-plateforme-satisfaction-client
+    name: Plateforme de satisfaction client
+    description: Collecte et centralise les avis et notes attribués par les clients après les interactions digitales clés (souscription, virement, appel conseiller). Alimente un tableau de bord NPS et CSAT utilisé par le comité produit mensuel.
+    owner_team: Équipe Expérience Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-enquete-satisfaction-post-acte
+    name: Enquête de satisfaction post-acte
+    description: Déclenche un questionnaire court (trois questions maximum) à l'issue d'un acte clé réalisé sur le portail ou l'application mobile. Le taux de réponse cible est de quinze pourcent ; la sollicitation est limitée à une enquête par client par quinzaine.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-traitement-verbatim-client
+    name: Traitement automatique des verbatims clients
+    description: Analyse les commentaires libres des enquêtes de satisfaction par traitement automatique du langage pour en extraire les thèmes récurrents et les sentiments associés. Un rapport thématique est produit chaque semaine à destination des responsables produit.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 16 : Référentiel des produits et tarifs ─────────────────────────
+  - type: system
+    id: sys-dbel-referentiel-produits-tarifs
+    name: Référentiel des produits et tarifs
+    description: Source de vérité pour l'ensemble des produits bancaires commercialisés en ligne et leurs conditions tarifaires. Expose une API REST consommée par les portails web et mobile pour afficher les fiches produit et calculer les frais applicables en temps réel.
+    owner_team: Équipe Offre & Pricing
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-consultation-fiche-produit
+    name: Consultation de la fiche produit en ligne
+    description: Restitue au client et aux conseillers la description complète, les conditions d'éligibilité et les tarifs en vigueur d'un produit bancaire sélectionné. La fiche est mise à jour automatiquement lors de tout changement tarifaire validé par l'équipe Offre.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-comparateur-offres
+    name: Comparateur d'offres bancaires
+    description: Présente côte à côte jusqu'à trois offres bancaires de même catégorie pour aider le client à choisir celle adaptée à ses besoins. La grille de comparaison met en évidence les critères différenciants selon le profil détecté.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 17 : Gestionnaire d'alertes de sécurité ─────────────────────────
+  - type: system
+    id: sys-dbel-gestionnaire-alertes-securite
+    name: Gestionnaire d'alertes de sécurité client
+    description: Détecte et notifie en temps réel les événements de sécurité sur les comptes et les accès numériques des clients (connexion depuis un nouvel appareil, changement de mot de passe, opération atypique). Fonctionne en tandem avec le moteur de notifications pour le routage des alertes.
+    owner_team: Équipe Sécurité Accès
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-alerte-connexion-nouvel-appareil
+    name: Alerte de connexion depuis un nouvel appareil
+    description: Envoie immédiatement une notification au client lorsque sa session est ouverte depuis un appareil non reconnu. La notification contient le type d'appareil, la localisation approchée et un lien de révocation rapide de la session suspecte.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-alerte-changement-identifiants
+    name: Alerte de changement d'identifiants de connexion
+    description: Notifie le client par courriel et SMS dès que son mot de passe ou son identifiant est modifié, même si la modification est initiée depuis l'espace client authentifié. Cette alerte ne peut pas être désactivée par le client pour des raisons de sécurité.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 18 : Moteur de conformité éditoriale ─────────────────────────────
+  - type: system
+    id: sys-dbel-moteur-conformite-editoriale
+    name: Moteur de conformité éditoriale des contenus web
+    description: Vérifie automatiquement que les contenus marketing publiés sur le portail web respectent les obligations légales (mentions obligatoires, lisibilité des taux, conformité publicitaire). Bloque la mise en ligne de tout contenu non validé.
+    owner_team: Équipe Conformité Digitale
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-validation-mentions-legales
+    name: Validation automatique des mentions légales
+    description: Contrôle la présence et la conformité des mentions obligatoires sur chaque page produit avant publication (TAEG, mentions de risque, numéro d'agrément). Toute anomalie bloque le déploiement et génère une alerte pour l'équipe Conformité.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-workflow-validation-contenu
+    name: Workflow de validation des contenus avant publication
+    description: Soumet tout nouveau contenu éditorial à un circuit de validation impliquant le rédacteur, le responsable conformité et, pour les fiches produit, le responsable pricing. L'historique des versions et des validations est conservé dans un journal d'audit.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 19 : Tableau de bord conseillers ─────────────────────────────────
+  - type: system
+    id: sys-dbel-tableau-de-bord-conseillers
+    name: Tableau de bord conseillers
+    description: Interface interne permettant aux conseillers clientèle de suivre les souscriptions digitales en cours, les messages clients non traités et les alertes de détresse sur les comptes de leur portefeuille. Alimenté par les autres systèmes de la banque en ligne via des flux temps réel.
+    owner_team: Équipe Outils Conseillers
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-file-messages-conseillers
+    name: File de messages clients à traiter
+    description: Présente au conseiller la liste priorisée des messages sécurisés en attente de réponse dans son portefeuille, triés par ancienneté. Un indicateur de délai cible alerte le conseiller si un message n'a pas été traité dans les vingt-quatre heures.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-historique-interactions-client
+    name: Historique unifié des interactions client
+    description: Restitue pour un client donné l'ensemble des interactions multicanales (appels, messages, connexions web et mobile, souscriptions) dans une frise chronologique consultable par le conseiller. Couvre les vingt-quatre derniers mois.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 20 : API Gateway banque en ligne ─────────────────────────────────
+  - type: system
+    id: sys-dbel-api-gateway-banque-en-ligne
+    name: API Gateway banque en ligne
+    description: Passerelle API exposant l'ensemble des services de la banque en ligne aux portails web, à l'application mobile et aux partenaires agréés. Gère l'authentification OAuth2, la limitation de débit, la journalisation et la version des API.
+    owner_team: Équipe Plateforme API
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-rate-limiting-api
+    name: Limitation de débit par client API
+    description: Applique des quotas d'appels par client API et par endpoint pour prévenir les abus et garantir la disponibilité des services. Les limites sont configurables par plan tarifaire et donnent lieu à une réponse HTTP 429 avec header Retry-After.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-versioning-api
+    name: Versionnage et dépréciation des API
+    description: Supporte la coexistence de plusieurs versions majeures d'une même API pendant une période de transition. Une version dépréciée est annoncée aux consommateurs via un header Deprecation et retirée après un délai minimal de six mois.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 21 : Plateforme de support digital ──────────────────────────────
+  - type: system
+    id: sys-dbel-plateforme-support-digital
+    name: Plateforme de support digital self-care
+    description: Ensemble des outils d'aide en ligne mis à disposition des clients pour résoudre leurs problèmes sans intervention humaine — base de connaissances, chatbot, guide interactif. Réduit le volume de contacts entrants vers les conseillers.
+    owner_team: Équipe Self-Care
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-base-connaissance-client
+    name: Base de connaissances client searchable
+    description: Référentiel d'articles d'aide organisés par thème (comptes, paiements, sécurité, souscriptions) et consultables par recherche textuelle depuis le portail et l'application mobile. Les articles les plus consultés sont mis en avant automatiquement selon la saison et les événements produit.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-chatbot-support
+    name: Chatbot de premier niveau de support
+    description: Agent conversationnel disponible vingt-quatre heures sur vingt-quatre pour répondre aux questions fréquentes et guider le client vers la bonne procédure en ligne. En cas d'incapacité à répondre, le chatbot propose une escalade vers un conseiller disponible ou une prise de rendez-vous.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 22 : Gestionnaire de consentements RGPD ─────────────────────────
+  - type: system
+    id: sys-dbel-gestionnaire-consentements-rgpd
+    name: Gestionnaire de consentements RGPD
+    description: Collecte, stocke et expose les consentements RGPD des clients pour toutes les finalités de traitement actives (prospection, partage de données, personnalisation). Garantit la traçabilité des choix clients et leur application dans tous les systèmes consommateurs.
+    owner_team: Équipe DPO & Conformité
+    domains: [banque-en-ligne, referentiel-client]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-collecte-consentement-a-la-souscription
+    name: Collecte du consentement à la souscription
+    description: Présente au client lors de toute souscription en ligne la liste des finalités de traitement de ses données, avec case à cocher distincte pour chaque finalité non obligatoire. Le choix est enregistré avec horodatage et version de la politique de confidentialité applicable.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-retrait-consentement-espace-client
+    name: Retrait du consentement depuis l'espace client
+    description: Permet au client de modifier ou retirer à tout moment ses consentements non obligatoires depuis la rubrique confidentialité de son espace client. La mise à jour est propagée aux systèmes de personnalisation et de prospection dans un délai maximal de vingt-quatre heures.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 23 : Moteur de scoring accessibilité ─────────────────────────────
+  - type: system
+    id: sys-dbel-moteur-scoring-accessibilite
+    name: Moteur de scoring d'accessibilité des pages
+    description: Calcule un score d'accessibilité numérique (0-100) pour chaque page du portail web à partir des résultats du scanner RGAA. Les scores sont historisés et publiés dans un tableau de bord interne visible par toutes les équipes produit.
+    owner_team: Équipe Accessibilité & Inclusion
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-rapport-accessibilite-par-equipe
+    name: Rapport d'accessibilité par équipe produit
+    description: Agrège les scores d'accessibilité des pages appartenant au périmètre de chaque équipe produit et génère un rapport mensuel comparatif. L'objectif cible est un score moyen supérieur à quatre-vingts sur cent pour la fin de l'année.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 24 : Portail investisseur particulier ───────────────────────────
+  - type: system
+    id: sys-dbel-portail-investisseur-particulier
+    name: Portail investisseur particulier
+    description: Interface spécialisée pour les clients disposant d'un compte-titres ou d'une assurance-vie en unités de compte. Affiche les valorisations en quasi-temps réel, les plus-values latentes et les documents fiscaux annuels.
+    owner_team: Équipe Épargne & Investissement
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-consultation-portefeuille-titres
+    name: Consultation du portefeuille titres
+    description: Affiche la composition et la valorisation du portefeuille de l'investisseur avec les cours mis à jour en différé de quinze minutes. La vue synthétique inclut la répartition par classe d'actif et la performance depuis l'entrée en position.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-document-fiscal-investisseur
+    name: Accès aux documents fiscaux investisseur
+    description: Met à disposition dans l'espace documentaire les Imprimés Fiscaux Uniques (IFU) et relevés de gains et pertes générés annuellement pour chaque compte de l'investisseur. Les documents sont disponibles au plus tard le quinze février de l'année fiscale suivante.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Système 25 : Service de détection de l'inactivité numérique ─────────────
+  - type: system
+    id: sys-dbel-detection-inactivite-numerique
+    name: Service de détection de l'inactivité numérique
+    description: Identifie les clients n'ayant pas utilisé les canaux numériques depuis une période configurable et déclenche des campagnes de réactivation ciblées. S'intègre au moteur de notifications et à la plateforme de satisfaction pour mesurer l'efficacité des actions de réengagement.
+    owner_team: Équipe Engagement Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-detection-client-inactif
+    name: Détection et segmentation des clients inactifs
+    description: Classe les clients selon leur niveau d'inactivité numérique (trente jours, quatre-vingt-dix jours, un an) en croisant les données de connexion au portail, à l'application mobile et d'utilisation des notifications. Le segment est recalculé chaque nuit.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-campagne-reactivation-digitale
+    name: Campagne de réactivation digitale
+    description: Orchestre l'envoi de séquences de communication multicanales (courriel, SMS, push) pour inciter les clients inactifs à revenir sur les canaux numériques. Le contenu est personnalisé selon le dernier produit utilisé et le motif probable d'inactivité détecté.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-historique-connexions
+    name: Historique des connexions client
+    description: Présente au client la liste chronologique de ses cinquante dernières connexions avec le type d'appareil, le canal et l'adresse IP approximative. Cette vue permet au client de détecter toute connexion suspecte et de contacter rapidement le support si nécessaire.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-telechargement-rib
+    name: Téléchargement du RIB en ligne
+    description: Permet au client de télécharger instantanément son Relevé d'Identité Bancaire au format PDF pour n'importe lequel de ses comptes depuis le portail web. Le document généré porte la signature électronique de la banque et est immédiatement utilisable comme justificatif.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-declaration-perte-carte-web
+    name: Déclaration de perte ou vol de carte depuis le portail web
+    description: Offre au client un parcours rapide de déclaration de perte ou de vol de sa carte bancaire depuis l'espace client web, sans nécessiter d'appel téléphonique. La mise en opposition est effective en moins de deux minutes après confirmation et une nouvelle carte est commandée automatiquement.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-consultation-echeancier-pret
+    name: Consultation de l'échéancier de prêt
+    description: Affiche le tableau d'amortissement complet d'un prêt souscrit par le client, avec la décomposition capital-intérêts-assurance de chaque mensualité et le capital restant dû. Le document est téléchargeable au format PDF.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dbel-rapport-scoring-accessibilite
+    name: Rapport détaillé de non-conformités RGAA
+    description: Génère pour chaque scan un rapport listé des violations RGAA détectées, avec leur niveau de gravité, l'élément HTML concerné et une suggestion de correction. Le rapport est consultable en ligne et exportable en CSV pour intégration dans les backlogs des équipes.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Business Objects ─────────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-dbel-session-client
+    name: Session client numérique
+    description: Représente une session d'authentification active d'un client sur un canal numérique (portail web ou application mobile). Contient l'identifiant client, le canal, l'horodatage d'ouverture, les facteurs d'authentification utilisés et le jeton d'accès associé.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Sécurité Accès
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-consentement-client
+    name: Consentement RGPD client
+    description: Enregistrement de la décision d'un client concernant une finalité de traitement de ses données personnelles. Inclut la finalité, la valeur du consentement (accordé/refusé), la date, la version de la politique et le canal de collecte.
+    domains: [banque-en-ligne, referentiel-client]
+    steward_team: Équipe DPO & Conformité
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-document-coffre
+    name: Document coffre-fort numérique
+    description: Fichier stocké dans le coffre-fort numérique d'un client, identifié par un UUID unique. Porte les métadonnées de type MIME, taille, date de dépôt et étiquettes attribuées par le client, sans jamais exposer le contenu en clair en dehors de la session propriétaire.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Coffre Numérique
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-preference-notification
+    name: Préférence de notification client
+    description: Configuration personnelle d'un client définissant les types d'événements pour lesquels il souhaite être alerté, le canal privilégié et les créneaux horaires autorisés. Peut être modifiée à tout moment depuis l'espace client.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-mandat-prelevement-sepa
+    name: Mandat de prélèvement SEPA
+    description: Autorisation formelle donnée par un débiteur à un créancier d'initier des prélèvements SEPA sur son compte. Contient la référence unique de mandat (RUM), les coordonnées du créancier, la date de signature et le type de mandat (récurrent ou ponctuel).
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-compte-externe-agrege
+    name: Compte externe agrégé
+    description: Représentation dans le système d'agrégation d'un compte bancaire tenu par un établissement tiers, après consentement du client. Inclut l'IBAN masqué, l'établissement, le solde au dernier rafraîchissement et le statut du consentement.
+    domains: [banque-en-ligne, dsp2-open-banking]
+    steward_team: Équipe Open Banking
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-virement-programme
+    name: Virement programmé
+    description: Instruction de virement planifié définie par le client, avec montant, bénéficiaire, périodicité et dates de début et de fin. Son état peut être actif, suspendu ou expiré selon les actions du client et le calendrier d'exécution.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-simulation-credit
+    name: Simulation de crédit sauvegardée
+    description: Résultat d'une simulation de crédit conservé dans l'espace client, incluant les paramètres saisis (montant, durée, apport) et les indicateurs calculés (mensualité, TAEG, coût total). La simulation peut être convertie en demande de crédit avec préremplissage automatique.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-categorie-depense
+    name: Catégorie de dépense
+    description: Classe de regroupement des opérations bancaires utilisée pour les analyses de dépenses du client. La nomenclature comprend une vingtaine de catégories principales et des sous-catégories ; chaque opération peut être reclassée manuellement par le client.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-enquete-satisfaction
+    name: Enquête de satisfaction
+    description: Instance d'un questionnaire de satisfaction envoyé à un client à l'issue d'un événement clé. Regroupe les réponses aux questions fermées, l'éventuel verbatim libre, le canal de réponse et la note NPS attribuée.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Expérience Client
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-profil-personnalisation
+    name: Profil de personnalisation client
+    description: Ensemble des paramètres d'affichage et de recommandation calculés pour un client — segment marketing, raccourcis favoris, thème visuel, langue préférée et catégories de recommandation activées. Synchronisé entre tous les canaux numériques en moins d'une minute.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Data Client
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-lien-parrainage
+    name: Lien de parrainage
+    description: Jeton unique généré par le service de parrainage pour un client parrain, encodant son identifiant et la campagne active. Tracé depuis le premier clic jusqu'à la validation de la prime, avec détection des usages frauduleux.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-alerte-securite
+    name: Alerte de sécurité
+    description: Événement de sécurité détecté sur le compte ou les accès numériques d'un client, générant une notification immédiate. Chaque alerte est tracée, catégorisée (connexion suspecte, modification sensible, opération atypique) et conservée dans le journal de sécurité.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Sécurité Accès
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-article-aide
+    name: Article d'aide
+    description: Contenu éditorial de la base de connaissances client, décrivant une procédure ou répondant à une question fréquente. Versionné, catégorisé et annoté avec un score de pertinence mis à jour selon les retours clients (vote utile/pas utile).
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-delegation-acces
+    name: Délégation d'accès collaborateur
+    description: Enregistrement d'un accès délégué accordé par un dirigeant à un collaborateur sur le portail pro, précisant le périmètre de droits, la date d'effet et la date d'expiration. Peut être révoquée à tout instant par le titulaire du compte.
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-contenu-editorial
+    name: Contenu éditorial web
+    description: Unité de contenu publiée sur le portail web (page produit, article, landing page) soumise au workflow de validation éditoriale. Tracée avec son statut (brouillon, en validation, publié, archivé) et l'historique des approbations.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Conformité Digitale
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dbel-portefeuille-titres
+    name: Portefeuille titres client
+    description: Vue agrégée des positions en instruments financiers (actions, obligations, OPCVM) détenues par un client dans un compte-titres ou une assurance-vie en unités de compte. Valorisé en quasi-temps réel à partir des flux de cours de marché.
+    domains: [banque-en-ligne]
+    steward_team: Équipe Épargne & Investissement
+    created_from: synthetic
+
+  # ── Projects ─────────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-dbel-refonte-portail-web
+    name: Refonte du portail web particuliers
+    description: Reconstruction complète du portail web sur une nouvelle stack frontend pour améliorer les performances, l'accessibilité et la cohérence graphique avec l'application mobile. Migration vers un design system commun et une architecture micro-frontend.
+    status: done
+    owner_team: Équipe Canal Web
+    domains: [banque-en-ligne]
+    outcomes: Temps de chargement réduit de 40 % ; score RGAA moyen passé de 62 à 83.
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-lancement-agregateur-comptes
+    name: Lancement du service d'agrégation de comptes
+    description: Mise en production du service d'agrégation DSP2 permettant aux clients de visualiser leurs comptes externes. Couvre le développement des connecteurs bancaires, le parcours client de consentement et l'interface de gestion des comptes agrégés.
+    status: done
+    owner_team: Équipe Open Banking
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-deploiement-coffre-fort
+    name: Déploiement du coffre-fort numérique
+    description: Projet de mise en œuvre du service de coffre-fort numérique chiffré pour l'ensemble des clients de la banque en ligne. Inclut l'intégration au portail web et à l'application mobile, ainsi que la migration des documents déjà stockés dans l'ancien archivage client.
+    status: done
+    owner_team: Équipe Coffre Numérique
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-moteur-notifications-v2
+    name: Refonte du moteur de notifications v2
+    description: Remplacement du système de notifications historique par une plateforme centralisée supportant le push mobile, le SMS et l'email avec gestion des préférences client unifiée. L'objectif est de réduire les notifications dupliquées et d'améliorer le taux d'ouverture.
+    status: done
+    owner_team: Équipe Engagement Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-conformite-rgaa-2025
+    name: Mise en conformité RGAA 2025
+    description: Programme pluriannuel de mise en conformité des interfaces numériques de la banque avec le référentiel RGAA niveau AA. Couvre l'audit des parcours existants, la correction des non-conformités prioritaires et la formation des équipes produit.
+    status: ongoing
+    owner_team: Équipe Accessibilité & Inclusion
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-portail-pro-v2
+    name: Portail Espace Pro version 2
+    description: Évolution majeure du portail pro avec ajout de la gestion des délégations d'accès, de l'export comptable et de nouvelles fonctions de gestion de trésorerie pour les TPE. Inclut un redesign UX complet basé sur les retours des clients professionnels.
+    status: ongoing
+    owner_team: Équipe Canal Web Pro
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-signature-electronique-qualifiee
+    name: Intégration de la signature électronique qualifiée
+    description: Déploiement d'une solution de signature électronique qualifiée (eIDAS niveau QES) pour tous les contrats bancaires initiés en ligne. Remplace la signature simple et simplifie les parcours de souscription qui exigeaient auparavant un retour papier.
+    status: done
+    owner_team: Équipe Souscription Digitale
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-chatbot-support-v1
+    name: Déploiement du chatbot de support client
+    description: Mise en production du premier chatbot d'assistance client sur le portail web et l'application mobile. Couvre une base de connaissances initiale de deux cent cinquante questions, l'intégration à la messagerie sécurisée pour l'escalade et un tableau de bord de suivi des conversations.
+    status: done
+    owner_team: Équipe Self-Care
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-api-gateway-unification
+    name: Unification des API sous l'API Gateway banque en ligne
+    description: Migration de l'ensemble des API exposées par les systèmes de la banque en ligne sous une unique passerelle API gérant l'authentification, la limitation de débit et le versionnage. Supprime sept passerelles legacy distinctes.
+    status: done
+    owner_team: Équipe Plateforme API
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-personnaisation-experience
+    name: Personnalisation de l'expérience client
+    description: Développement du moteur de personnalisation et de ses algorithmes de recommandation produit et d'adaptation de l'interface. Le projet inclut la définition du modèle de segmentation, les règles métier de recommandation et le framework de test A/B.
+    status: ongoing
+    owner_team: Équipe Data Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-biometrie-mobile
+    name: Authentification biométrique mobile
+    description: Ajout de l'authentification par empreinte digitale et reconnaissance faciale à l'application mobile. La solution retenue stocke le gabarit localement sur l'appareil et ne transmet aucune donnée biométrique aux serveurs de la banque.
+    status: done
+    owner_team: Équipe Sécurité Accès
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-programme-nps
+    name: Programme d'amélioration du NPS digital
+    description: Initiative transversale visant à améliorer le Net Promoter Score des canaux numériques de douze points en dix-huit mois. S'appuie sur les enquêtes de satisfaction, l'analyse des verbatims et des sprints d'amélioration mensuels ciblés sur les parcours les plus mal notés.
+    status: ongoing
+    owner_team: Équipe Expérience Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-refonte-simulateurs
+    name: Refonte des simulateurs financiers en ligne
+    description: Modernisation des outils de simulation (crédit immobilier, épargne, capacité d'emprunt) avec une interface remaniée, des calculs plus précis et la possibilité de sauvegarder les simulations dans l'espace client. Le projet remplace trois simulateurs autonomes par un composant unifié.
+    status: done
+    owner_team: Équipe Conseils Digitaux
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-gouvernance-consentements
+    name: Gouvernance des consentements RGPD
+    description: Mise en place du gestionnaire centralisé de consentements RGPD et migration des consentements historiques. Le projet couvre la définition de la nomenclature des finalités, l'intégration aux systèmes consommateurs et la formation des équipes à la gestion des droits.
+    status: done
+    owner_team: Équipe DPO & Conformité
+    domains: [banque-en-ligne, referentiel-client]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-programme-parrainage-2024
+    name: Programme de parrainage digital 2024
+    description: Lancement d'un programme de cooptation client-à-client entièrement dématérialisé avec suivi en temps réel des parrainages, versement automatique des primes et mécanisme de détection des abus. Remplace un ancien programme géré manuellement par les conseillers.
+    status: done
+    owner_team: Équipe Croissance & Acquisition
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-reactivation-clients-inactifs
+    name: Réactivation des clients numériques inactifs
+    description: Programme de ciblage et de réactivation des clients n'ayant pas utilisé les canaux numériques depuis plus de quatre-vingt-dix jours. Combine des séquences d'emailing personnalisées, des offres de découverte des nouvelles fonctions et une mesure de l'impact sur la rétention.
+    status: ongoing
+    owner_team: Équipe Engagement Client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-moteur-conformite-editorial
+    name: Moteur de conformité éditoriale automatisée
+    description: Développement et déploiement d'un outil d'analyse automatique des contenus web pour détecter les non-conformités réglementaires avant publication. Couvre la vérification des mentions légales, la lisibilité des taux et les règles publicitaires applicables aux produits bancaires.
+    status: done
+    owner_team: Équipe Conformité Digitale
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-portail-investisseur
+    name: Lancement du portail investisseur particulier
+    description: Création d'un espace dédié aux clients disposant de produits d'épargne financière (compte-titres, assurance-vie UC) avec valorisation en quasi-temps réel et accès aux documents fiscaux. Intègre la connexion aux flux de cours de marché via un fournisseur tiers agréé.
+    status: ongoing
+    owner_team: Équipe Épargne & Investissement
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dbel-tableau-bord-conseillers-v3
+    name: Tableau de bord conseillers v3
+    description: Troisième génération du tableau de bord conseillers, fusionnant les anciens outils de suivi des messages et de consultation du profil client en une interface unifiée temps réel. Intègre les alertes de détresse client et un indicateur de charge de travail par conseiller.
+    status: ongoing
+    owner_team: Équipe Outils Conseillers
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Decisions ────────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-dbel-design-system-commun
+    title: Adoption d'un design system commun web et mobile
+    statement: Un design system unique est adopté pour l'ensemble des interfaces numériques de la banque en ligne. Tout nouveau composant ou toute modification de composant existant doit être intégré au design system avant d'être utilisé dans un produit.
+    rationale: Les interfaces web et mobile avaient divergé visuellement au point de nuire à la cohérence de la marque et d'allonger les délais de développement. Un design system commun réduit la duplication et accélère la mise en conformité accessibilité.
+    date: "2023-06-15"
+    decided_by: Comité Produit Digital
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-stockage-biometrie-local
+    title: Stockage local exclusif du gabarit biométrique
+    statement: Le gabarit biométrique enrôlé par le client (empreinte, reconnaissance faciale) est conservé exclusivement sur l'appareil mobile et n'est jamais transmis aux serveurs de la banque. Toute solution nécessitant une centralisation du gabarit est exclue.
+    rationale: Réduire le risque en cas de compromission des serveurs et respecter le principe de minimisation des données personnelles sensibles imposé par le RGPD. La solution locale est également plus performante (aucun aller-retour réseau).
+    date: "2022-11-30"
+    decided_by: Comité Sécurité & Conformité
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-api-gateway-unique
+    title: Passerelle API unique pour l'ensemble des services banque en ligne
+    statement: Tous les appels entre les canaux numériques et les systèmes back-end de la banque en ligne transitent exclusivement par l'API Gateway centralisée. Toute connexion directe entre un portail et un système back-end est interdite.
+    rationale: Centraliser la gestion de l'authentification, de la limitation de débit et de la journalisation évite de dupliquer ces mécanismes dans chaque système et simplifie l'audit de sécurité.
+    date: "2023-03-01"
+    decided_by: Comité d'Architecture SI
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-consentement-granulaire
+    title: Consentement RGPD granulaire par finalité
+    statement: Chaque finalité de traitement de données personnelles non obligatoire doit donner lieu à un consentement indépendant, avec une case à cocher distincte et un libellé explicite. Le regroupement de finalités dans un consentement unique est interdit.
+    rationale: Les contrôles de la CNIL ont démontré que les consentements groupés ne satisfont pas à l'exigence de libre choix du RGPD. La granularité facilite également la gestion des retraits partiels.
+    date: "2023-09-20"
+    decided_by: Comité DPO
+    still_active: true
+    domains: [banque-en-ligne, referentiel-client]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-session-expiration-30min
+    title: Expiration automatique des sessions web après trente minutes d'inactivité
+    statement: Toute session sur le portail web est automatiquement invalidée après trente minutes d'inactivité consécutive. L'utilisateur est averti cinq minutes avant l'expiration et peut prolonger sa session s'il est encore présent.
+    rationale: Réduire le risque d'accès non autorisé depuis un poste laissé sans surveillance. Le délai de trente minutes représente un compromis entre sécurité et confort d'utilisation validé par les tests utilisateurs.
+    date: "2022-04-12"
+    decided_by: Comité Sécurité Accès
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-otp-applicatif-prefere
+    title: OTP applicatif préféré à l'OTP SMS pour la SCA
+    statement: Pour les clients disposant de l'application mobile avec OTP applicatif activé, ce canal est utilisé en priorité sur l'OTP SMS pour les opérations SCA. Le SMS reste le mécanisme de repli pour les clients sans application ou en cas d'indisponibilité de l'OTP applicatif.
+    rationale: L'OTP SMS est vulnérable aux attaques de type SIM swap. L'OTP TOTP applicatif offre une résistance supérieure et une meilleure expérience utilisateur (pas d'attente de SMS).
+    date: "2023-01-18"
+    decided_by: Comité Sécurité Accès
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-notifications-non-desactivables
+    title: Certaines alertes de sécurité ne sont pas désactivables par le client
+    statement: Les notifications relatives aux changements d'identifiants de connexion, à l'enrôlement d'un nouveau facteur d'authentification et aux connexions depuis un nouvel appareil ne peuvent pas être désactivées par le client dans ses préférences de notification.
+    rationale: Ces alertes constituent le dernier filet de sécurité contre les prises de contrôle de compte. Leur désactivation par un attaquant ayant pris la main sur la session aurait des conséquences irréversibles pour le client.
+    date: "2022-07-05"
+    decided_by: Comité Sécurité Accès
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-audit-trail-coffre-fort
+    title: Traçabilité des opérations sur le coffre-fort
+    statement: Toute opération sur le coffre-fort numérique (dépôt, suppression, partage, consultation) est journalisée avec l'identité du client, l'horodatage et le hash du document concerné. Ce journal est conservé pendant dix ans et ne peut être modifié ni supprimé par le client.
+    rationale: Le coffre-fort peut contenir des pièces à valeur probante (contrats, actes). La traçabilité complète des opérations est nécessaire pour répondre aux exigences légales en cas de litige.
+    date: "2023-10-02"
+    decided_by: Comité Juridique
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-chatbot-escalade-24h
+    title: Escalade humaine obligatoire en cas d'échec du chatbot
+    statement: Lorsque le chatbot ne peut pas résoudre la demande du client après deux tentatives, il doit proposer systématiquement une mise en relation avec un conseiller humain ou une prise de rendez-vous. Le client ne peut pas être renvoyé indéfiniment vers le chatbot sur le même sujet.
+    rationale: Éviter la frustration des clients bloqués dans des boucles conversationnelles et préserver la qualité de service perçue du canal digital.
+    date: "2024-02-14"
+    decided_by: Comité Expérience Client
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-mentions-legales-bloquantes
+    title: Non-conformité des mentions légales bloquante au déploiement
+    statement: Toute page produit ou contenu publicitaire ne satisfaisant pas aux contrôles automatiques des mentions légales obligatoires est bloquée en déploiement jusqu'à correction et validation manuelle de l'équipe Conformité.
+    rationale: Les manquements aux obligations d'information précontractuelle exposent la banque à des sanctions de l'ACPR. Un blocage automatique est plus fiable qu'un contrôle a posteriori.
+    date: "2024-04-30"
+    decided_by: Comité Conformité Digitale
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-refresh-consentement-agregation-90j
+    title: Renouvellement obligatoire du consentement d'agrégation tous les 90 jours
+    statement: Le consentement accordé par un client pour l'agrégation d'un compte externe expire automatiquement après quatre-vingt-dix jours, conformément à la réglementation DSP2. Le client doit le renouveler explicitement ; en l'absence de renouvellement, la synchronisation est suspendue.
+    rationale: Conformité avec l'article 36 de la directive DSP2 délégué par le RTS sur l'authentification forte. Le renouvellement garantit que le client maintient un consentement éclairé et actif.
+    date: "2022-12-01"
+    decided_by: Comité DSP2
+    still_active: true
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-versioning-api-6mois
+    title: Préavis minimal de six mois avant retrait d'une version API
+    statement: Toute version d'API publiée doit être maintenue pendant au minimum six mois après l'annonce de sa dépréciation. Ce délai est porté à douze mois pour les API exposées à des partenaires externes.
+    rationale: Les consommateurs d'API (équipes internes et partenaires) ont besoin de temps suffisant pour migrer sans rupture de service. Un délai trop court génère des incidents en production.
+    date: "2023-05-10"
+    decided_by: Comité d'Architecture SI
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-nps-cible-mensuel
+    title: Suivi mensuel du NPS digital en comité produit
+    statement: Le Net Promoter Score des canaux numériques est présenté chaque mois en comité produit avec une décomposition par parcours et par segment client. Tout parcours dont le NPS est inférieur à zéro fait l'objet d'un plan d'action dans les trente jours.
+    rationale: Institutionnaliser le pilotage par la satisfaction client au niveau du comité produit pour prioriser les améliorations UX de façon objective et régulière.
+    date: "2024-01-10"
+    decided_by: Directeur Digital
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-portail-pro-delegation-4-yeux
+    title: Validation à quatre yeux pour les virements délégués sur le portail pro
+    statement: Tout virement initié par un collaborateur ayant un accès délégué sur le portail professionnel dont le montant dépasse dix mille euros doit être validé par le titulaire du compte avant exécution. Cette règle ne peut pas être désactivée par la configuration de délégation.
+    rationale: Maintenir le contrôle du dirigeant sur les opérations significatives tout en permettant la délégation des tâches courantes de faible montant à ses collaborateurs.
+    date: "2024-06-01"
+    decided_by: Comité des Risques Opérationnels
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-simulateurs-non-contractuels
+    title: Les résultats des simulateurs financiers sont non contractuels
+    statement: Les simulations produites par les outils en ligne sont des estimations non contractuelles affichées à titre indicatif. Une mention explicite de non-contractualité doit figurer sur chaque écran de résultat, avec un renvoi vers les conditions définitives applicables au produit souscrit.
+    rationale: Éviter tout engagement implicite de la banque sur les paramètres simulés, notamment les taux, qui peuvent évoluer entre la simulation et la souscription effective.
+    date: "2023-07-15"
+    decided_by: Direction Juridique
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-prime-parrainage-plafonnee
+    title: Plafonnement des primes de parrainage par client et par an
+    statement: Un même client parrain ne peut bénéficier de plus de dix primes de parrainage par année civile, quel que soit le programme actif. Ce plafond est appliqué automatiquement par le service de parrainage avant tout déclenchement de prime.
+    rationale: Prévenir les abus de type ferme de parrainages tout en maintenant l'attractivité du programme pour les clients recommandant de bonne foi leur entourage.
+    date: "2024-03-20"
+    decided_by: Comité Croissance & Risques
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-donnees-personalisation-optout
+    title: Personnalisation basée sur les données d'usage soumise à opt-out
+    statement: La personnalisation de l'interface et des recommandations produit basée sur l'analyse des données d'usage du client est active par défaut mais peut être désactivée à tout moment depuis les préférences de confidentialité. Seule la personnalisation nécessaire à la sécurité reste obligatoire.
+    rationale: Offrir une expérience personnalisée par défaut tout en respectant les droits des clients opposés à l'analyse de leurs comportements numériques.
+    date: "2023-11-05"
+    decided_by: Comité DPO
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-historique-operations-24mois
+    title: Historique de consultation des opérations limité à 24 mois
+    statement: Le moteur de recherche transactionnel indexe et rend accessibles en ligne les opérations des vingt-quatre derniers mois. Les opérations plus anciennes sont archivées et accessibles uniquement sur demande au conseiller.
+    rationale: Équilibrer les besoins de consultation des clients avec les contraintes de performance de l'index de recherche et les coûts de stockage. La grande majorité des besoins de consultation porte sur les opérations récentes.
+    date: "2023-04-03"
+    decided_by: Comité Produit Digital
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-single-sign-on-portails
+    title: Authentification unique entre portail web et portail pro
+    statement: Un client disposant à la fois d'un compte particulier et d'un compte professionnel peut basculer entre les deux espaces sans ressaisir ses identifiants, via un mécanisme de single sign-on interne. Les habilitations de chaque espace restent strictement séparées.
+    rationale: Simplifier l'expérience des clients multi-statuts et réduire les abandons de session dus aux écrans de connexion répétitifs.
+    date: "2024-09-10"
+    decided_by: Comité Produit Digital
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-scan-rgaa-chaque-deploiement
+    title: Scan RGAA déclenché à chaque déploiement en recette
+    statement: L'outil de scan d'accessibilité est intégré au pipeline de déploiement en environnement de recette et s'exécute automatiquement sur l'ensemble des pages modifiées. Un rapport d'anomalies est envoyé à l'équipe responsable de la page concernée.
+    rationale: Détecter les régressions d'accessibilité au plus tôt dans le cycle de livraison, avant qu'elles n'atteignent la production et ne nécessitent une correction d'urgence plus coûteuse.
+    date: "2024-11-20"
+    decided_by: Comité Accessibilité
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-alertes-securite-log-centralise
+    title: Journal de sécurité centralisé et immuable pour toutes les alertes
+    statement: Chaque alerte de sécurité émise par le gestionnaire d'alertes est écrite dans un journal centralisé immuable (append-only). Ce journal alimente les investigations en cas d'incident et est transmis mensuellement au responsable de la sécurité des systèmes d'information.
+    rationale: Disposer d'une trace inviolable des événements de sécurité facilite la détection des attaques sophistiquées et la réponse aux exigences réglementaires de traçabilité.
+    date: "2023-08-14"
+    decided_by: RSSI
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dbel-ifu-disponible-15-fevrier
+    title: Mise à disposition des IFU au plus tard le 15 février
+    statement: Les Imprimés Fiscaux Uniques des clients investisseurs doivent être disponibles dans l'espace documentaire du portail au plus tard le quinze février de l'année suivant l'exercice fiscal concerné. Tout retard doit être signalé au directeur de l'offre Épargne.
+    rationale: Permettre aux clients de respecter les délais fiscaux de déclaration de revenus financiers. Un retard expose la banque à des réclamations clients et à un risque réputationnel.
+    date: "2023-12-01"
+    decided_by: Direction Épargne & Investissement
+    still_active: true
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Constraints ──────────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-dbel-rgaa-aa-obligatoire
+    title: Conformité RGAA niveau AA obligatoire pour les interfaces publiques
+    statement: Toutes les pages du portail web et de l'application mobile accessibles aux clients doivent atteindre le niveau de conformité AA du Référentiel Général d'Amélioration de l'Accessibilité. Cette obligation découle de la loi pour une République Numérique.
+    source: Loi pour une République Numérique (2016)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-sca-dsp2-operations-sensibles
+    title: SCA obligatoire pour les opérations sensibles DSP2
+    statement: Toute opération considérée comme sensible au sens de la DSP2 (accès au compte après inactivité, initiation de paiement, modification de données de sécurité) doit être précédée d'une authentification forte à deux facteurs. Aucune dérogation n'est possible sans exemption réglementaire explicite.
+    source: Directive DSP2 / RTS EBA sur l'authentification forte
+    severity: high
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-chiffrement-repos-coffre
+    title: Chiffrement AES-256 au repos pour le coffre-fort
+    statement: Tous les documents stockés dans le coffre-fort numérique doivent être chiffrés au repos avec AES-256 minimum. La clé de chiffrement est propre à chaque client et gérée par un service de gestion de clés certifié HSM.
+    source: Politique de sécurité des données de la banque (v4.2)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-conservation-messages-10ans
+    title: Conservation des messages sécurisés pendant dix ans
+    statement: Les messages échangés dans la messagerie sécurisée entre les clients et leurs conseillers doivent être archivés pendant dix ans à compter de la date d'envoi. L'archivage est horodaté et non modifiable.
+    source: Code monétaire et financier — archivage des communications clients
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-taux-affichage-taeg
+    title: Affichage obligatoire du TAEG sur toutes les fiches crédit
+    statement: Toute fiche produit crédit publiée sur le portail web doit afficher le Taux Annuel Effectif Global selon la formule et les conditions de lisibilité définies par le Code de la consommation. L'omission ou la présentation non conforme du TAEG est un motif de blocage de publication.
+    source: Code de la consommation — Articles L. 312-1 et suivants
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-limitation-sollicitation-enquetes
+    title: Une seule enquête de satisfaction par client par quinzaine
+    statement: Un même client ne peut pas recevoir plus d'une enquête de satisfaction toutes les deux semaines, tous parcours et canaux confondus. Le gestionnaire de déclenchement des enquêtes maintient un compteur par client et bloque toute sollicitation excédentaire.
+    source: Charte de sollicitation client (interne)
+    severity: low
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-disponibilite-portail-99-5
+    title: Disponibilité du portail web de 99,5 % par mois
+    statement: Le portail web particuliers doit afficher une disponibilité mensuelle d'au moins quatre-vingt-dix-neuf virgule cinq pourcent, mesurée par les sondes de supervision externalisées. Tout dépassement des seuils de dégradation fait l'objet d'un incident P1.
+    source: Engagement de niveau de service (SLA interne)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-temps-reponse-api-200ms
+    title: Temps de réponse API en dessous de 200 ms au P95
+    statement: Les endpoints de l'API Gateway doivent répondre en moins de deux cents millisecondes au quatre-vingt-quinzième percentile en conditions de charge nominale. Les endpoints dépassant ce seuil font l'objet d'un plan de performance avant toute mise en production.
+    source: Standard de performance API (interne)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-validite-consentement-agregation
+    title: Validité du consentement d'agrégation limitée à 90 jours
+    statement: Conformément au RTS DSP2, le consentement accordé pour l'agrégation d'un compte externe expire automatiquement après quatre-vingt-dix jours. Passé ce délai, la synchronisation est suspendue et le client est invité à renouveler son consentement.
+    source: RTS EBA sur l'authentification forte (Art. 36)
+    severity: high
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-isolation-donnees-coffre
+    title: Isolation stricte des données du coffre entre clients
+    statement: L'architecture du coffre-fort numérique doit garantir qu'aucun utilisateur, y compris un agent de support, ne peut accéder au contenu des documents d'un autre client. L'accès est conditionné à la possession de la clé dérivée du mot de passe client.
+    source: Politique RSSI – données personnelles sensibles
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-portee-delegation-pro
+    title: Délégation d'accès pro limitée aux collaborateurs déclarés
+    statement: Seuls les collaborateurs figurant dans le répertoire employés de l'entreprise cliente peuvent bénéficier d'une délégation d'accès sur le portail pro. La délégation vers un tiers externe à l'entreprise est techniquement bloquée.
+    source: Politique de gestion des accès (PGA v3)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-non-contractualite-simulateurs
+    title: Mention de non-contractualité obligatoire sur les simulateurs
+    statement: Chaque écran présentant le résultat d'une simulation financière doit afficher en caractères lisibles la mention indiquant que le résultat est une estimation non contractuelle. Cette mention ne peut pas être affichée uniquement dans les conditions générales.
+    source: Décision de la Direction Juridique (2023-07-15)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-alertes-securite-non-desactivables
+    title: Alertes de sécurité critiques non désactivables
+    statement: Les alertes relatives aux changements d'identifiants, à l'enrôlement biométrique et aux connexions depuis un nouvel appareil ne peuvent être ni désactivées ni filtrées par le client dans ses préférences. Ces alertes sont systématiquement envoyées sur le canal de contact principal certifié.
+    source: Décision Comité Sécurité Accès (2022-07-05)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-taille-max-document-coffre
+    title: Taille maximale d'un document coffre-fort limitée à 10 Mo
+    statement: Chaque fichier déposé dans le coffre-fort numérique ne peut pas dépasser dix mégaoctets. Le quota total par client est fixé à cinq cents mégaoctets. Tout dépassement de quota bloque le dépôt et déclenche une notification au client.
+    source: Politique de capacité coffre-fort (v1.1)
+    severity: low
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-historique-transactions-24mois
+    title: Historique de transactions en ligne limité aux 24 derniers mois
+    statement: Le moteur de recherche transactionnel ne donne accès qu'aux opérations des vingt-quatre derniers mois. Les opérations antérieures sont accessibles uniquement via une demande formelle traitée dans les cinq jours ouvrés.
+    source: Décision Comité Produit Digital (2023-04-03)
+    severity: low
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-politique-cookies-conforme
+    title: Politique de cookies conforme aux recommandations CNIL
+    statement: Le portail web doit proposer une bannière de gestion des cookies permettant au visiteur d'accepter, de refuser ou de paramétrer finement les cookies non essentiels. Le refus doit être aussi simple que l'acceptation ; aucun cookie analytique ou publicitaire n'est posé avant consentement.
+    source: Recommandations CNIL sur les cookies (2020)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-plafond-primes-parrainage
+    title: Plafond de dix primes de parrainage par an et par client
+    statement: Le système de parrainage applique automatiquement un plafond de dix primes par année civile et par client parrain. Au-delà de ce seuil, les nouvelles cooptations sont enregistrées mais la prime n'est pas versée. Le client est notifié de l'atteinte du plafond.
+    source: Décision Comité Croissance & Risques (2024-03-20)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-version-os-minimale-mobile
+    title: Support des deux dernières versions majeures des OS mobiles
+    statement: L'application mobile est garantie fonctionnelle sur les deux dernières versions majeures d'iOS et d'Android disponibles au moment du déploiement. Les versions antérieures sont supportées en best-effort sans engagement de correction de bug spécifique.
+    source: Politique de support des plateformes mobiles (v2.0)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-transfert-donnees-agregation-hors-ue
+    title: Pas de transfert de données d'agrégation hors UE
+    statement: Les données des comptes externes agrégés ne peuvent pas transiter ou être stockées sur des serveurs situés hors de l'Union Européenne. Cette contrainte s'applique également aux sous-traitants du service d'agrégation.
+    source: RGPD — Chapitre V (transferts vers pays tiers)
+    severity: high
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-perimetre-pci-dss-web
+    title: Portail web hors périmètre PCI DSS direct
+    statement: Le portail web particuliers ne doit pas stocker, traiter ni transmettre directement des données de porteur de carte. Toute fonctionnalité impliquant des données PAN doit déléguer le traitement à un composant certifié PCI DSS via tokenisation.
+    source: Standard PCI DSS v4.0
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-sla-notifications-5min
+    title: Délai maximum de cinq minutes pour les notifications de sécurité
+    statement: Les alertes de sécurité (connexion nouvel appareil, changement d'identifiants, opération atypique) doivent être envoyées au client dans un délai maximal de cinq minutes après détection de l'événement. Un dépassement systémique de ce délai constitue un incident de niveau 2.
+    source: Engagement de niveau de service notifications (SLA-NOTIF-001)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-conformite-eidas-signature
+    title: Signature électronique qualifiée conforme eIDAS niveau QES
+    statement: Les contrats bancaires signés électroniquement depuis le portail web doivent utiliser une solution de signature qualifiée (QES) conforme au règlement eIDAS. L'usage d'une signature simple ou avancée est limité aux documents non contractuels.
+    source: Règlement eIDAS (n° 910/2014)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-duree-session-mobile-7jours
+    title: Durée maximale d'une session mobile persistent à 7 jours
+    statement: La session persistante de l'application mobile (mémorisation de l'authentification) expire automatiquement après sept jours sans connexion active. À l'issue de cette période, le client doit se ré-authentifier avec son mot de passe principal.
+    source: Politique de sécurité des accès mobiles (v2.3)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-anonymisation-verbatims
+    title: Anonymisation des verbatims avant analyse automatique
+    statement: Les commentaires libres des enquêtes de satisfaction doivent être anonymisés (suppression des noms, numéros de compte, IBAN) avant d'être traités par les outils d'analyse automatique du langage. L'anonymisation est appliquée en temps réel à la soumission du formulaire.
+    source: Recommandation DPO (2024-02-28)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-disponibilite-coffre-99
+    title: Disponibilité du coffre-fort numérique de 99 % par mois
+    statement: Le service de coffre-fort numérique doit être disponible au moins quatre-vingt-dix-neuf pourcent du temps chaque mois. Les opérations de maintenance planifiée doivent être programmées entre vingt-deux heures et six heures et annoncées aux clients vingt-quatre heures à l'avance.
+    source: SLA Coffre-fort (CFN-SLA-001)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-audit-delegation-pro
+    title: Traçabilité complète des actions des délégués sur le portail pro
+    statement: Toute action réalisée par un collaborateur via un accès délégué sur le portail pro (consultation, virement, export) est journalisée avec l'identité du délégué, du titulaire du compte et l'horodatage. Ce journal est consultable par le titulaire depuis l'espace de gestion des délégations.
+    source: Politique de gestion des accès (PGA v3)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-score-accessibilite-cible-80
+    title: Score d'accessibilité moyen supérieur à 80/100 par fin d'année
+    statement: Chaque équipe produit doit maintenir un score d'accessibilité moyen (tel que calculé par le moteur de scoring RGAA) supérieur à quatre-vingts sur cent sur l'ensemble des pages de son périmètre, mesuré à fin d'année civile.
+    source: Programme de conformité RGAA 2025 (décision CODIR)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-partage-lien-coffre-72h
+    title: Expiration automatique des liens de partage du coffre-fort sous 72 heures
+    statement: Tout lien de partage de document coffre-fort expire automatiquement soixante-douze heures après sa génération ou à la première consultation, selon ce qui arrive en premier. Il n'est pas possible de générer un lien de partage permanent.
+    source: Politique de sécurité du coffre-fort numérique (v1.1)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-no-donnees-perso-chatbot-logs
+    title: Pas de données personnelles non anonymisées dans les logs du chatbot
+    statement: Les journaux de conversations du chatbot de support ne doivent pas contenir de données personnelles identifiantes (nom, IBAN, numéro de compte) en clair. Ces données doivent être masquées ou remplacées par des jetons avant écriture dans les logs.
+    source: Recommandation DPO (2024-05-10)
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-ifu-transmission-drfip
+    title: Transmission des IFU à la DRFiP dans les délais légaux
+    statement: Les Imprimés Fiscaux Uniques des clients investisseurs doivent être transmis à la Direction Régionale des Finances Publiques selon les modalités et délais définis par l'administration fiscale. Tout retard ou anomalie de transmission doit être signalé au responsable fiscal.
+    source: Code général des impôts — Article 242 ter
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-refresh-cours-marche-15min
+    title: Valorisation des portefeuilles titres en différé de 15 minutes maximum
+    statement: Les cours utilisés pour la valorisation des portefeuilles titres sur le portail investisseur ne peuvent pas être décalés de plus de quinze minutes par rapport aux cours de marché disponibles. Tout écart supérieur doit déclencher une alerte de supervision.
+    source: Règlement MIFID II — obligations d'information
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-rib-signature-electronique
+    title: RIB téléchargeable portant une signature électronique valide
+    statement: Tout Relevé d'Identité Bancaire généré à la demande sur le portail web doit porter la signature électronique de la banque attestant de l'authenticité du document. La validité de la signature doit être vérifiable par le destinataire via un service public de vérification.
+    source: Recommandation CCSF sur les documents bancaires dématérialisés
+    severity: medium
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dbel-blocage-acces-apres-5-echecs
+    title: Blocage du compte numérique après 5 échecs d'authentification
+    statement: Le compte numérique d'un client est temporairement bloqué pour une durée de trente minutes après cinq tentatives d'authentification incorrectes consécutives. Un déblocage anticipé nécessite une vérification d'identité via un canal alternatif.
+    source: Politique de sécurité des accès (v5.1)
+    severity: high
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  # ── Risks ─────────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-dbel-prise-de-controle-compte
+    title: Prise de contrôle de compte client (Account Takeover)
+    statement: Un attaquant disposant des identifiants d'un client (phishing, credential stuffing) peut prendre le contrôle de son espace numérique et initier des opérations frauduleuses avant que l'alerte de sécurité ne soit détectée par le client.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Authentification forte obligatoire pour les opérations sensibles
+      - Alertes de sécurité non désactivables sur les actions critiques
+      - Détection des connexions depuis des IP ou appareils inconnus
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-indisponibilite-fournisseur-aggregation
+    title: Indisponibilité prolongée d'un fournisseur d'API d'agrégation tiers
+    statement: Si un établissement bancaire tiers dont les comptes sont agrégés subit une indisponibilité de son API, les données de ses comptes ne se mettent plus à jour, ce qui peut induire en erreur les clients sur leur situation financière réelle.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Affichage explicite de la date du dernier rafraîchissement réussi
+      - Alerte client lors de toute indisponibilité dépassant vingt-quatre heures
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-derive-modele-categorisation
+    title: Dérive du modèle de catégorisation des dépenses
+    statement: La qualité de la catégorisation automatique peut se dégrader au fil du temps en raison de l'évolution des libellés marchands, entraînant une augmentation du taux d'erreur de catégorisation et une perte de confiance des clients dans les outils d'analyse.
+    likelihood: medium
+    impact: low
+    mitigations:
+      - Ré-entraînement trimestriel du modèle sur les corrections manuelles des clients
+      - Suivi mensuel du taux d'erreur de catégorisation
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-fraude-parrainage
+    title: Fraude au programme de parrainage par création de faux filleuls
+    statement: Des clients malveillants peuvent créer de faux comptes ou utiliser des identités proches pour déclencher des primes de parrainage sans apport réel de nouveaux clients. Ce risque est amplifié par la dématérialisation complète du parcours de parrainage.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Délai de carence avant versement de la prime
+      - Détection des comptes liés par IP, appareil ou iban identiques
+      - Plafonnement des primes à dix par an et par client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-regression-accessibilite
+    title: Régression d'accessibilité lors de déploiements fréquents
+    statement: La cadence élevée de déploiements sur le portail web augmente le risque d'introduction de régressions d'accessibilité non détectées avant la mise en production, dégradant l'expérience des clients en situation de handicap.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Scan RGAA automatique déclenché à chaque déploiement en recette
+      - Tests manuels mensuels avec utilisateurs non-voyants
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-non-renouvellement-consentement-agregation
+    title: Suspension massive des agrégations à l'expiration des consentements
+    statement: L'expiration simultanée des consentements DSP2 de nombreux clients (vague d'enrôlement initiale) peut générer un pic de contacts clients et une désactivation massive du service d'agrégation si le mécanisme de relance préventive est insuffisant.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Notification de renouvellement envoyée quatorze jours avant expiration
+      - Échelonnement des dates d'expiration pour lisser les vagues
+    domains: [banque-en-ligne, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-perte-cle-chiffrement-coffre
+    title: Perte ou corruption de la clé de chiffrement d'un coffre client
+    statement: Toute perte ou corruption de la clé de chiffrement associée au coffre d'un client rendrait ses documents définitivement inaccessibles, sans possibilité de récupération du contenu chiffré.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Sauvegarde chiffrée des clés dans un HSM redondant géographiquement
+      - Tests annuels de restauration des clés en environnement isolé
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-consentement-rgpd-non-propage
+    title: Non-propagation des retraits de consentement RGPD aux systèmes consommateurs
+    statement: Un retrait de consentement enregistré dans le gestionnaire centralisé peut ne pas être propagé à temps à tous les systèmes consommateurs (personnalisation, prospection), entraînant un traitement illicite de données personnelles.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Délai maximal de propagation de vingt-quatre heures avec monitoring
+      - Alertes automatiques en cas d'échec de propagation vers un système
+    domains: [banque-en-ligne, referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-performances-portail-charge
+    title: Dégradation des performances du portail web en pic de charge
+    statement: Lors d'événements exceptionnels (panne prolongée, annonce fiscale) générant un afflux simultané de connexions, les temps de réponse du portail web peuvent dépasser les seuils SLA et entraîner des erreurs d'affichage ou des déconnexions forcées.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Tests de charge trimestriels simulant trois fois le trafic habituel
+      - Autoscaling horizontal configuré sur les composants critiques
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-sim-swap-otp-sms
+    title: Contournement de la SCA par attaque SIM swap sur l'OTP SMS
+    statement: Une attaque SIM swap réussie contre un client permet à l'attaquant d'intercepter les OTP SMS et de valider des opérations SCA sans le consentement du client. Ce risque est particulièrement élevé pour les clients n'utilisant pas l'OTP applicatif.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Promotion active de l'OTP applicatif comme mécanisme préféré
+      - Détection des changements d'IMSI et alerte proactive
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-retard-ifu-investisseurs
+    title: Retard de mise à disposition des IFU investisseurs
+    statement: Un incident sur le système de génération des IFU peut retarder leur publication dans l'espace documentaire du portail investisseur au-delà du quinze février, exposant la banque à des réclamations de clients en difficulté pour leur déclaration fiscale.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Tests de génération en environnement de pré-production dès janvier
+      - Plan de communication client prévu en cas de retard avéré
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-obsolescence-articles-chatbot
+    title: Obsolescence des articles de la base de connaissances du chatbot
+    statement: L'évolution fréquente des produits et des procédures bancaires peut rendre obsolètes les articles de la base de connaissances utilisée par le chatbot, entraînant des réponses incorrectes ou dépassées aux questions clients.
+    likelihood: high
+    impact: medium
+    mitigations:
+      - Revue trimestrielle de l'ensemble des articles par les équipes métier
+      - Détection automatique des articles non mis à jour depuis six mois
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-injection-contenu-non-conforme
+    title: Publication accidentelle de contenu non conforme aux obligations légales
+    statement: Une défaillance du moteur de conformité éditoriale ou une erreur de configuration du workflow de validation pourrait laisser passer en production un contenu ne respectant pas les mentions légales obligatoires, exposant la banque à une sanction de l'ACPR.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Double validation pour les fiches produit (conformité + juridique)
+      - Audit mensuel d'un échantillon de pages publiées
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-fragmentation-preferences-notifications
+    title: Fragmentation et incohérence des préférences de notification multi-canaux
+    statement: Si les préférences de notification ne sont pas synchronisées correctement entre le portail web et l'application mobile, un client peut recevoir des doublons de notifications ou ne pas recevoir certaines alertes auxquelles il a souscrit.
+    likelihood: medium
+    impact: low
+    mitigations:
+      - Référentiel centralisé des préférences avec propagation synchrone
+      - Tests automatisés couvrant les scénarios de modification multi-appareils
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-donnees-personnalisation-biais
+    title: Biais dans les recommandations produit de personnalisation
+    statement: Le modèle de recommandation peut développer des biais systématiques favorisant certains produits à marges plus élevées indépendamment des besoins réels des clients, exposant la banque à des accusations de pratiques commerciales déloyales.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Audit semestriel du modèle par le comité de déontologie
+      - Règle de diversité minimale dans les recommandations par client
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-quota-stockage-coffre-depasse
+    title: Dépassement massif des quotas de stockage du coffre-fort
+    statement: Une communication incitant les clients à utiliser le coffre-fort pour des documents volumineux (vidéos, archives) pourrait entraîner une saturation rapide de la capacité de stockage et une dégradation du service pour l'ensemble des utilisateurs.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Types de fichiers acceptés limités aux formats documentaires
+      - Alerte client à quatre-vingts pourcent du quota consommé
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dbel-score-nps-portail-pro
+    title: NPS insuffisant sur le portail pro faute d'investissements dédiés
+    statement: Le portail pro bénéficie de moins d'investissements de redesign que le portail particuliers, ce qui peut entraîner une stagnation ou une détérioration du NPS des clients professionnels et un risque d'attrition vers des concurrents néo-bancaires.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Suivi NPS portail pro distinct dans le tableau de bord mensuel
+      - Budget dédié au roadmap portail pro dans le programme NPS
+    domains: [banque-en-ligne]
+    created_from: synthetic
+
+edges:
+
+  # PART_OF — every feature -> its parent system
+  - {source_id: feat-dbel-tableau-de-bord-web, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-telechargement-releves, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-messagerie-securisee, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-modification-donnees-contact, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-ajout-compte-tiers, target_id: sys-dbel-agregateur-comptes-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-synchronisation-comptes-tiers, target_id: sys-dbel-agregateur-comptes-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-revocation-consentement-agregation, target_id: sys-dbel-agregateur-comptes-externes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-depot-document-coffre, target_id: sys-dbel-coffre-fort-numerique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-partage-document-coffre, target_id: sys-dbel-coffre-fort-numerique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-suppression-document-coffre, target_id: sys-dbel-coffre-fort-numerique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-notification-operation-carte, target_id: sys-dbel-moteur-notifications, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-alerte-seuil-solde, target_id: sys-dbel-moteur-notifications, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-notification-echeance-pret, target_id: sys-dbel-moteur-notifications, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-gestion-preferences-notifications, target_id: sys-dbel-moteur-notifications, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-recommandation-produit, target_id: sys-dbel-moteur-personnalisation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-personnalisation-menu, target_id: sys-dbel-moteur-personnalisation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-mode-sombre, target_id: sys-dbel-moteur-personnalisation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-scan-accessibilite-automatique, target_id: sys-dbel-plateforme-accessibilite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-composants-accessibles-bibliotheque, target_id: sys-dbel-plateforme-accessibilite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-delegation-acces-pro, target_id: sys-dbel-portail-espace-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-gestion-remises-cheques, target_id: sys-dbel-portail-espace-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-export-comptable-pro, target_id: sys-dbel-portail-espace-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-enregistrement-biometrie, target_id: sys-dbel-service-authentification-forte, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-otp-applicatif, target_id: sys-dbel-service-authentification-forte, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-gestion-sessions-actives, target_id: sys-dbel-service-authentification-forte, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-blocage-acces-temporaire, target_id: sys-dbel-service-authentification-forte, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-souscription-livret-epargne, target_id: sys-dbel-hub-souscription-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-souscription-carte-supplementaire, target_id: sys-dbel-hub-souscription-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-signature-electronique, target_id: sys-dbel-hub-souscription-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-creation-virement-permanent, target_id: sys-dbel-configurateur-virements-programmes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-modification-virement-programme, target_id: sys-dbel-configurateur-virements-programmes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-suspension-virement-programme, target_id: sys-dbel-configurateur-virements-programmes, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-recherche-operation-libelle, target_id: sys-dbel-moteur-recherche-transactionnel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-categorisation-depenses, target_id: sys-dbel-moteur-recherche-transactionnel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-bilan-depenses-mensuel, target_id: sys-dbel-moteur-recherche-transactionnel, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-mandats-actifs, target_id: sys-dbel-gestionnaire-mandats-prelevement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-opposition-prelevement, target_id: sys-dbel-gestionnaire-mandats-prelevement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-simulateur-credit-immobilier, target_id: sys-dbel-outil-simulation-financiere, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-simulateur-epargne-projet, target_id: sys-dbel-outil-simulation-financiere, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-generation-lien-parrainage, target_id: sys-dbel-service-parrainage-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-suivi-cooptations, target_id: sys-dbel-service-parrainage-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-enquete-satisfaction-post-acte, target_id: sys-dbel-plateforme-satisfaction-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-traitement-verbatim-client, target_id: sys-dbel-plateforme-satisfaction-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-fiche-produit, target_id: sys-dbel-referentiel-produits-tarifs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-comparateur-offres, target_id: sys-dbel-referentiel-produits-tarifs, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-alerte-connexion-nouvel-appareil, target_id: sys-dbel-gestionnaire-alertes-securite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-alerte-changement-identifiants, target_id: sys-dbel-gestionnaire-alertes-securite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-validation-mentions-legales, target_id: sys-dbel-moteur-conformite-editoriale, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-workflow-validation-contenu, target_id: sys-dbel-moteur-conformite-editoriale, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-file-messages-conseillers, target_id: sys-dbel-tableau-de-bord-conseillers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-historique-interactions-client, target_id: sys-dbel-tableau-de-bord-conseillers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-rate-limiting-api, target_id: sys-dbel-api-gateway-banque-en-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-versioning-api, target_id: sys-dbel-api-gateway-banque-en-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-base-connaissance-client, target_id: sys-dbel-plateforme-support-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-chatbot-support, target_id: sys-dbel-plateforme-support-digital, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-collecte-consentement-a-la-souscription, target_id: sys-dbel-gestionnaire-consentements-rgpd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-retrait-consentement-espace-client, target_id: sys-dbel-gestionnaire-consentements-rgpd, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-rapport-accessibilite-par-equipe, target_id: sys-dbel-moteur-scoring-accessibilite, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-portefeuille-titres, target_id: sys-dbel-portail-investisseur-particulier, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-document-fiscal-investisseur, target_id: sys-dbel-portail-investisseur-particulier, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-detection-client-inactif, target_id: sys-dbel-detection-inactivite-numerique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-campagne-reactivation-digitale, target_id: sys-dbel-detection-inactivite-numerique, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-historique-connexions, target_id: sys-dbel-service-authentification-forte, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-telechargement-rib, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-declaration-perte-carte-web, target_id: sys-dbel-portail-web-particuliers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-echeancier-pret, target_id: sys-dbel-hub-souscription-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dbel-rapport-scoring-accessibilite, target_id: sys-dbel-moteur-scoring-accessibilite, type: PART_OF, created_from: synthetic}
+
+  # OPERATES_ON — features/systems -> business_objects (20-40 edges)
+  - {source_id: feat-dbel-gestion-sessions-actives, target_id: obj-dbel-session-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-blocage-acces-temporaire, target_id: obj-dbel-session-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dbel-service-authentification-forte, target_id: obj-dbel-session-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-collecte-consentement-a-la-souscription, target_id: obj-dbel-consentement-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-retrait-consentement-espace-client, target_id: obj-dbel-consentement-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dbel-gestionnaire-consentements-rgpd, target_id: obj-dbel-consentement-client, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-depot-document-coffre, target_id: obj-dbel-document-coffre, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-partage-document-coffre, target_id: obj-dbel-document-coffre, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-suppression-document-coffre, target_id: obj-dbel-document-coffre, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-gestion-preferences-notifications, target_id: obj-dbel-preference-notification, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dbel-moteur-notifications, target_id: obj-dbel-preference-notification, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-mandats-actifs, target_id: obj-dbel-mandat-prelevement-sepa, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-opposition-prelevement, target_id: obj-dbel-mandat-prelevement-sepa, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-ajout-compte-tiers, target_id: obj-dbel-compte-externe-agrege, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-synchronisation-comptes-tiers, target_id: obj-dbel-compte-externe-agrege, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-revocation-consentement-agregation, target_id: obj-dbel-compte-externe-agrege, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-creation-virement-permanent, target_id: obj-dbel-virement-programme, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-modification-virement-programme, target_id: obj-dbel-virement-programme, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-suspension-virement-programme, target_id: obj-dbel-virement-programme, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-simulateur-credit-immobilier, target_id: obj-dbel-simulation-credit, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-categorisation-depenses, target_id: obj-dbel-categorie-depense, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-bilan-depenses-mensuel, target_id: obj-dbel-categorie-depense, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-enquete-satisfaction-post-acte, target_id: obj-dbel-enquete-satisfaction, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-traitement-verbatim-client, target_id: obj-dbel-enquete-satisfaction, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-recommandation-produit, target_id: obj-dbel-profil-personnalisation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-personnalisation-menu, target_id: obj-dbel-profil-personnalisation, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-generation-lien-parrainage, target_id: obj-dbel-lien-parrainage, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-suivi-cooptations, target_id: obj-dbel-lien-parrainage, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-alerte-connexion-nouvel-appareil, target_id: obj-dbel-alerte-securite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-alerte-changement-identifiants, target_id: obj-dbel-alerte-securite, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-base-connaissance-client, target_id: obj-dbel-article-aide, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-chatbot-support, target_id: obj-dbel-article-aide, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-delegation-acces-pro, target_id: obj-dbel-delegation-acces, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-workflow-validation-contenu, target_id: obj-dbel-contenu-editorial, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-validation-mentions-legales, target_id: obj-dbel-contenu-editorial, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-consultation-portefeuille-titres, target_id: obj-dbel-portefeuille-titres, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dbel-document-fiscal-investisseur, target_id: obj-dbel-portefeuille-titres, type: OPERATES_ON, created_from: synthetic}
+
+  # DEPENDS_ON — system->system, feature->feature, feature->system (10-20 edges)
+  - {source_id: sys-dbel-portail-web-particuliers, target_id: sys-dbel-api-gateway-banque-en-ligne, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-agregateur-comptes-externes, target_id: sys-dbel-api-gateway-banque-en-ligne, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-moteur-notifications, target_id: sys-dbel-gestionnaire-alertes-securite, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-moteur-personnalisation, target_id: sys-dbel-gestionnaire-consentements-rgpd, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-detection-inactivite-numerique, target_id: sys-dbel-moteur-notifications, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-tableau-de-bord-conseillers, target_id: sys-dbel-plateforme-satisfaction-client, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-hub-souscription-ligne, target_id: sys-dbel-service-authentification-forte, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dbel-portail-investisseur-particulier, target_id: sys-dbel-api-gateway-banque-en-ligne, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-campagne-reactivation-digitale, target_id: feat-dbel-detection-client-inactif, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-bilan-depenses-mensuel, target_id: feat-dbel-categorisation-depenses, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-rapport-accessibilite-par-equipe, target_id: feat-dbel-scan-accessibilite-automatique, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-simulateur-epargne-projet, target_id: sys-dbel-referentiel-produits-tarifs, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-souscription-livret-epargne, target_id: feat-dbel-signature-electronique, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-ajout-compte-tiers, target_id: sys-dbel-service-authentification-forte, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-comparateur-offres, target_id: feat-dbel-consultation-fiche-produit, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dbel-chatbot-support, target_id: feat-dbel-messagerie-securisee, type: DEPENDS_ON, created_from: synthetic}
+
+  # CONSTRAINS — constraint|decision -> system|feature|business_object|project (15-30 edges)
+  - {source_id: con-dbel-rgaa-aa-obligatoire, target_id: sys-dbel-portail-web-particuliers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-rgaa-aa-obligatoire, target_id: proj-dbel-conformite-rgaa-2025, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-sca-dsp2-operations-sensibles, target_id: sys-dbel-service-authentification-forte, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-sca-dsp2-operations-sensibles, target_id: feat-dbel-ajout-compte-tiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-chiffrement-repos-coffre, target_id: sys-dbel-coffre-fort-numerique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-chiffrement-repos-coffre, target_id: obj-dbel-document-coffre, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-conservation-messages-10ans, target_id: feat-dbel-messagerie-securisee, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-taux-affichage-taeg, target_id: feat-dbel-validation-mentions-legales, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-taux-affichage-taeg, target_id: obj-dbel-contenu-editorial, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-disponibilite-portail-99-5, target_id: sys-dbel-portail-web-particuliers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-temps-reponse-api-200ms, target_id: sys-dbel-api-gateway-banque-en-ligne, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-validite-consentement-agregation, target_id: feat-dbel-ajout-compte-tiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-validite-consentement-agregation, target_id: obj-dbel-compte-externe-agrege, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-isolation-donnees-coffre, target_id: sys-dbel-coffre-fort-numerique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-portee-delegation-pro, target_id: feat-dbel-delegation-acces-pro, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-non-contractualite-simulateurs, target_id: sys-dbel-outil-simulation-financiere, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-alertes-securite-non-desactivables, target_id: sys-dbel-gestionnaire-alertes-securite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-politique-cookies-conforme, target_id: sys-dbel-portail-web-particuliers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-plafond-primes-parrainage, target_id: sys-dbel-service-parrainage-digital, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-conformite-eidas-signature, target_id: feat-dbel-signature-electronique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dbel-sla-notifications-5min, target_id: sys-dbel-moteur-notifications, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-design-system-commun, target_id: sys-dbel-portail-web-particuliers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-stockage-biometrie-local, target_id: feat-dbel-enregistrement-biometrie, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-api-gateway-unique, target_id: sys-dbel-api-gateway-banque-en-ligne, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-consentement-granulaire, target_id: feat-dbel-collecte-consentement-a-la-souscription, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-session-expiration-30min, target_id: obj-dbel-session-client, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-otp-applicatif-prefere, target_id: sys-dbel-service-authentification-forte, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-refresh-consentement-agregation-90j, target_id: sys-dbel-agregateur-comptes-externes, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-prime-parrainage-plafonnee, target_id: obj-dbel-lien-parrainage, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dbel-scan-rgaa-chaque-deploiement, target_id: sys-dbel-moteur-scoring-accessibilite, type: CONSTRAINS, created_from: synthetic}

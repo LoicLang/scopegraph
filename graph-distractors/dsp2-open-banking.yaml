@@ -1,0 +1,3122 @@
+nodes:
+
+  # ── SYSTEM 1 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-portail-tpp
+    name: Portail d'accès TPP
+    description: >-
+      Plateforme d'enregistrement et d'habilitation des prestataires de services
+      de paiement tiers (TPP). Gère le cycle de vie des certificats eIDAS et
+      l'attribution des rôles AISP, PISP et CBPII conformément à la DSP2.
+    owner_team: Équipe Conformité Paiements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-enreg-tpp
+    name: Enregistrement des TPP
+    description: >-
+      Permet à un prestataire tiers de soumettre sa demande d'accès en fournissant
+      son certificat eIDAS qualifié et son numéro d'agrément ACPR. Le dossier est
+      instruit automatiquement puis soumis à validation manuelle pour les cas
+      complexes.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-revocation-tpp
+    name: Révocation des accès TPP
+    description: >-
+      Suspend ou révoque immédiatement l'accès d'un TPP en cas d'expiration de
+      certificat, de retrait d'agrément ou de signalement de comportement abusif.
+      L'opération est journalisée et notifiée en temps réel au système de passerelle.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-tableau-bord-tpp
+    name: Tableau de bord TPP
+    description: >-
+      Offre aux TPP enregistrés une vue consolidée de leurs statistiques d'appels,
+      de leur quota restant et des incidents en cours. Les données sont rafraîchies
+      toutes les cinq minutes depuis le bus d'événements interne.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 2 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-gateway-api
+    name: Passerelle API DSP2
+    description: >-
+      Point d'entrée unique pour tous les appels entrants des TPP. Assure le
+      routage, la limitation de débit, la vérification des signatures OAuth2 et
+      la journalisation de chaque requête à des fins d'audit réglementaire.
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-throttling-tpp
+    name: Limitation de débit par TPP
+    description: >-
+      Applique des quotas d'appels différenciés selon le type de TPP et son niveau
+      de service contractuel. Le dépassement entraîne un rejet HTTP 429 avec un
+      en-tête Retry-After calculé dynamiquement.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-signature-oauth
+    name: Vérification signature OAuth2
+    description: >-
+      Valide le jeton d'accès JWT présenté par le TPP en vérifiant la signature,
+      la portée et la durée de vie. Les jetons expirés ou mal formés sont rejetés
+      avec un code d'erreur normalisé Berlin Group.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-audit-log-gateway
+    name: Journalisation d'audit gateway
+    description: >-
+      Enregistre l'intégralité des requêtes entrantes et sortantes dans un entrepôt
+      immuable. Chaque entrée contient l'identifiant TPP, le timestamp, le code de
+      retour et la taille de la réponse, afin de reconstituer tout incident.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 3 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-orchestrateur-sca
+    name: Orchestrateur SCA
+    description: >-
+      Composant central chargé de sélectionner et d'enchaîner les facteurs
+      d'authentification forte pour les parcours initiés par des TPP ou par la
+      banque elle-même. Gère les exemptions réglementaires et les escalades en
+      cas d'échec.
+    owner_team: Équipe Sécurité des Accès
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-choix-facteur-sca
+    name: Sélection du facteur SCA
+    description: >-
+      Détermine dynamiquement la combinaison de facteurs à présenter à l'utilisateur
+      en fonction du niveau de risque de la transaction, du canal et des préférences
+      enregistrées. La décision est tracée pour permettre la preuve de conformité DSP2.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-exemption-sca
+    name: Gestion des exemptions SCA
+    description: >-
+      Applique les exemptions prévues par les RTS DSP2 : transactions de faible
+      montant, bénéficiaires de confiance, analyse de risque transactionnel. Le
+      taux d'exemption est suivi en temps réel pour rester sous le seuil de fraude
+      autorisé par la BCE.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-fallback-sca
+    name: Mécanisme de secours SCA
+    description: >-
+      Active une procédure d'authentification alternative lorsque le facteur
+      principal est indisponible. Le recours au SMS OTP comme facteur de secours
+      est limité aux situations de panne avérée, avec alerte automatique au RSSI.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 4 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-consentement
+    name: Moteur de consentement client
+    description: >-
+      Enregistre, gère et révoque les consentements accordés par les clients aux
+      TPP pour accéder à leurs données ou initier des paiements. Conforme aux
+      exigences de portabilité et de révocabilité de la DSP2 et du RGPD.
+    owner_team: Équipe Données Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-creation-consentement
+    name: Création de consentement
+    description: >-
+      Enregistre l'accord explicite du client après présentation d'un écran de
+      confirmation normalisé listant les données partagées et la durée d'accès.
+      Le consentement est horodaté et lié à l'identifiant de session SCA ayant
+      permis de l'obtenir.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-revocation-consentement
+    name: Révocation de consentement
+    description: >-
+      Permet au client de retirer à tout moment son consentement via l'application
+      bancaire ou le portail web. La révocation est propagée en moins de trente
+      secondes à la passerelle API afin d'empêcher tout appel ultérieur du TPP concerné.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-expiration-consentement
+    name: Expiration automatique des consentements
+    description: >-
+      Contrôle quotidiennement les consentements actifs et révoque ceux dont la
+      durée maximale de quatre-vingt-dix jours est atteinte. Un email de rappel
+      est envoyé au client sept jours avant l'expiration pour lui proposer un
+      renouvellement.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 5 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-aisp-agregateur
+    name: Agrégateur de comptes AISP
+    description: >-
+      Service d'information sur les comptes exposant les soldes, les transactions
+      et les métadonnées de comptes détenus dans d'autres établissements. Repose
+      sur la passerelle API pour les appels sortants vers les banques tierces.
+    owner_team: Équipe Agrégation Financière
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-agregation-soldes
+    name: Agrégation des soldes multi-banques
+    description: >-
+      Collecte les soldes courants et disponibles sur l'ensemble des comptes liés
+      par le client, toutes banques confondues. Les données sont consolidées et
+      normalisées dans un modèle commun avant exposition au front.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-historique-transactions
+    name: Historique des transactions agrégé
+    description: >-
+      Récupère jusqu'à quatre-vingt-dix jours de transactions pour chaque compte
+      agrégé. Les catégories marchandes sont enrichies par un moteur de classification
+      automatique pour faciliter le suivi budgétaire du client.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-synchronisation-comptes-tiers
+    name: Synchronisation des comptes tiers
+    description: >-
+      Déclenche la mise à jour des soldes et transactions des comptes externes
+      selon une fréquence configurable par le client. Le résultat de chaque
+      synchronisation est publié sur le bus d'événements pour notifier les
+      composants consommateurs.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 6 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-pisp-initiateur
+    name: Initiateur de paiement PISP
+    description: >-
+      Permet aux TPP agréés PISP de déclencher des virements au nom du client
+      après authentification forte. S'intègre au système de paiement interne pour
+      la validation de provision et l'exécution.
+    owner_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-init-virement-pisp
+    name: Initiation de virement via PISP
+    description: >-
+      Prend en charge la requête de paiement soumise par un TPP PISP, vérifie la
+      provision disponible et déclenche l'ordre après confirmation SCA du titulaire.
+      La réponse inclut un identifiant de transaction unique opposable.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-statut-paiement-pisp
+    name: Consultation du statut de paiement PISP
+    description: >-
+      Expose le statut d'avancement d'un ordre initié par un TPP selon les états
+      normalisés Berlin Group : RCVD, PDNG, ACCP, ACSC, RJCT. Les transitions sont
+      poussées en webhook dès qu'elles se produisent.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-annulation-virement-pisp
+    name: Annulation de virement PISP
+    description: >-
+      Permet l'annulation d'un ordre PISP tant qu'il n'a pas atteint l'état ACSC.
+      La demande d'annulation peut être soumise par le TPP initiateur ou par le
+      client via le portail. L'annulation acceptée est notifiée en webhook.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 7 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-annuaire-eidas
+    name: Annuaire eIDAS
+    description: >-
+      Composant de vérification et de mise en cache des certificats eIDAS qualifiés
+      émis par les TSP européens. Consulté par la passerelle et le portail TPP pour
+      authentifier les identités numériques des prestataires.
+    owner_team: Équipe PKI et Identités
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-validation-cert-eidas
+    name: Validation de certificat eIDAS
+    description: >-
+      Vérifie la chaîne de confiance, la non-révocation OCSP et la conformité du
+      profil du certificat aux exigences eIDAS QWAC et QSealC. Les résultats sont
+      mis en cache trente minutes pour limiter la charge sur les TSP externes.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-rotation-cert-eidas
+    name: Rotation des certificats eIDAS
+    description: >-
+      Détecte les certificats approchant de leur date d'expiration et notifie
+      automatiquement le TPP concerné quatre-vingt-dix et trente jours avant
+      l'échéance. En cas de non-renouvellement, la révocation est déclenchée.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 8 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-reporting-rts
+    name: Moteur de reporting RTS
+    description: >-
+      Produit les rapports trimestriels exigés par les autorités compétentes :
+      taux de disponibilité de l'interface dédiée, délais de réponse médians,
+      incidents et taux d'exemption SCA. Les données sont transmises via la
+      plateforme de reporting de l'ACPR.
+    owner_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-collecte-metriques-api
+    name: Collecte des métriques API
+    description: >-
+      Agrège en temps réel les métriques de performance de la passerelle : taux de
+      disponibilité, latences p50/p95/p99, codes de retour HTTP et volumes par
+      endpoint. Les données alimentent à la fois le tableau de bord interne et les
+      rapports réglementaires.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-generation-rapport-acpr
+    name: Génération du rapport ACPR
+    description: >-
+      Formate et soumet le rapport de disponibilité trimestriel à la plateforme
+      ONEGATE de l'ACPR selon le schéma XSD officiel. Un contrôle de cohérence
+      interne est exécuté avant chaque soumission pour détecter les anomalies.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 9 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-sandbox-tpp
+    name: Sandbox TPP
+    description: >-
+      Environnement de test isolé mis à disposition des TPP souhaitant développer
+      et valider leur intégration avant certification. Simule l'intégralité des
+      endpoints de production avec des données synthétiques conformes Berlin Group.
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-simulation-erreurs-sandbox
+    name: Simulation d'erreurs en sandbox
+    description: >-
+      Permet aux TPP de reproduire les cas d'erreur courants (SCA échouée, provision
+      insuffisante, TPP révoqué) via un en-tête de contrôle spécifique. Facilite la
+      couverture des scénarios négatifs dès la phase de développement.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-jeux-donnees-sandbox
+    name: Jeux de données sandbox
+    description: >-
+      Fournit des comptes fictifs pré-paramétrés couvrant les principaux profils
+      clients : compte vide, compte multi-devises, plafond atteint, bénéficiaire
+      en attente de carence. Les jeux de données sont réinitialisés chaque nuit.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 10 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-detecteur-fraude-openbanking
+    name: Détecteur de fraude Open Banking
+    description: >-
+      Analyse en ligne les patterns d'appels TPP pour identifier les comportements
+      abusifs : scraping massif, réutilisation de consentements révoqués, initiation
+      de paiements hors profil. Alimente le portail TPP pour suspension préventive.
+    owner_team: Équipe Lutte contre la Fraude
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-scoring-comportemental-tpp
+    name: Scoring comportemental TPP
+    description: >-
+      Calcule un score de risque continu pour chaque TPP actif à partir de la
+      fréquence d'appels, du taux d'erreur et des écarts par rapport au profil
+      historique. Un score dépassant le seuil critique déclenche une alerte vers
+      l'équipe de surveillance.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-blocage-tpp-suspect
+    name: Blocage automatique d'un TPP suspect
+    description: >-
+      Suspend automatiquement les accès d'un TPP dont le score dépasse le niveau
+      critique, en attendant une revue humaine sous quatre heures. La suspension
+      est réversible et traçable, avec notification immédiate au TPP concerné.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 11 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-referentiel-comptes-ouverts
+    name: Référentiel des comptes ouverts
+    description: >-
+      Maintient la liste des comptes clients éligibles à l'open banking, avec leurs
+      attributs de partageabilité (devise, type, restrictions). Synchronisé quotidiennement
+      depuis le core banking et consulté par l'agrégateur et l'initiateur de paiement.
+    owner_team: Équipe Données Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-eligibilite-compte
+    name: Vérification d'éligibilité d'un compte
+    description: >-
+      Détermine si un compte donné peut être exposé aux TPP en croisant le type de
+      compte, le statut du titulaire et les éventuelles restrictions judiciaires ou
+      commerciales. La réponse est binaire et motivée pour faciliter le débogage.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-mise-a-jour-eligibilite
+    name: Mise à jour des règles d'éligibilité
+    description: >-
+      Permet à l'équipe conformité de modifier les critères d'éligibilité sans
+      déploiement applicatif via un référentiel de règles versionnées. Chaque
+      modification fait l'objet d'une validation en environnement de recette avant
+      activation en production.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 12 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-notificateur-evenements
+    name: Notificateur d'événements DSP2
+    description: >-
+      Diffuse les événements métier significatifs (nouveau consentement, révocation,
+      paiement exécuté) en push vers les TPP abonnés via webhooks sécurisés. Garantit
+      la livraison au moins une fois avec mécanisme de reprise exponentielle.
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-abonnement-webhook
+    name: Gestion des abonnements webhook
+    description: >-
+      Permet aux TPP de s'inscrire à des catégories d'événements et de renseigner
+      leur URL de réception. Chaque abonnement est validé par un ping de confirmation
+      avant activation et peut être suspendu par le TPP ou révoqué par la banque.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-reprise-webhook
+    name: Reprise sur échec de webhook
+    description: >-
+      Rejoue automatiquement les notifications non acquittées selon une stratégie
+      de back-off exponentiel jusqu'à vingt-quatre heures après l'événement initial.
+      Les événements non livrés après ce délai sont archivés et signalés au TPP.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 13 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-gestionnaire-jetons
+    name: Gestionnaire de jetons d'accès
+    description: >-
+      Émet, renouvelle et révoque les jetons OAuth2 pour les TPP et les sessions
+      utilisateurs. Gère les flux authorization_code et client_credentials avec
+      des durées de vie différenciées selon le type de grant.
+    owner_team: Équipe Sécurité des Accès
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-emission-jeton-acces
+    name: Émission de jeton d'accès
+    description: >-
+      Génère un jeton JWT signé après validation du code d'autorisation et du
+      certificat eIDAS du demandeur. La durée de vie est paramétrée selon la
+      portée demandée et ne peut excéder quatre-vingt-dix minutes.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-refresh-jeton
+    name: Renouvellement de jeton via refresh token
+    description: >-
+      Permet à un TPP de renouveler un jeton expiré sans redemander le consentement
+      client, dans la limite de la durée de validité du consentement associé.
+      Le refresh token original est invalidé à chaque utilisation.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-revocation-jeton-actif
+    name: Révocation d'un jeton actif
+    description: >-
+      Permet à un client ou à un opérateur de révoquer immédiatement un jeton
+      d'accès ou refresh token actif, par exemple lors d'un signalement de
+      compromission de compte. La révocation est propagée en temps réel à la
+      passerelle via le cache partagé.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 14 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-portail-client-ob
+    name: Portail client Open Banking
+    description: >-
+      Interface web dédiée permettant aux clients de gérer leurs consentements
+      actifs, de visualiser les accès accordés aux TPP et de consulter l'historique
+      des opérations initiées par des tiers. Accessible depuis l'espace client
+      principal de la banque.
+    owner_team: Équipe Banque Numérique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-liste-consentements-actifs
+    name: Visualisation des consentements actifs
+    description: >-
+      Affiche pour chaque consentement en cours le nom du TPP, les types de données
+      partagées, la date d'octroi et la date d'expiration. La présentation est
+      conçue pour être compréhensible par un client non expert.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-historique-acces-tpp
+    name: Historique des accès TPP
+    description: >-
+      Retrace les trente derniers jours d'accès effectués par chaque TPP autorisé :
+      date, heure, type d'opération et compte consulté ou débité. L'historique est
+      exportable au format CSV pour les clients souhaitant le conserver.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-notification-expiration-consentement-client
+    name: Notification client avant expiration de consentement
+    description: >-
+      Envoie un rappel au client sept jours avant l'expiration d'un consentement
+      actif, lui proposant un lien direct vers le parcours de renouvellement.
+      La notification est envoyée par email et par push si le client a activé
+      les notifications de l'application bancaire.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 15 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-verificateur-provision
+    name: Vérificateur de provision CBPII
+    description: >-
+      Répond aux requêtes de confirmation de disponibilité de fonds émises par les
+      TPP agréés CBPII. La réponse est binaire (OUI/NON) et ne révèle pas le solde
+      exact, conformément au cadre réglementaire.
+    owner_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-confirmation-provision
+    name: Confirmation de disponibilité des fonds
+    description: >-
+      Évalue en temps réel si le montant demandé par le CBPII est disponible sur
+      le compte indiqué, en tenant compte du solde disponible et des opérations en
+      attente. La réponse est fournie en moins de deux secondes.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-journalisation-cbpii
+    name: Journalisation des requêtes CBPII
+    description: >-
+      Enregistre chaque demande de confirmation de provision avec l'identifiant
+      du CBPII, le montant interrogé et le résultat renvoyé. Les entrées sont
+      horodatées et conservées pour permettre la réconciliation en cas de litige.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 16 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-bus-evenements-ob
+    name: Bus d'événements Open Banking
+    description: >-
+      Infrastructure de messagerie asynchrone reliant les composants DSP2 entre
+      eux. Garantit la cohérence des états entre le moteur de consentement, la
+      passerelle, le notificateur et le détecteur de fraude via des topics Kafka
+      dédiés.
+    owner_team: Équipe Socle Technique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-publication-evenement-ob
+    name: Publication d'événement métier
+    description: >-
+      Permet à tout composant producteur de publier un événement typé et versionné
+      sur le topic approprié. La sérialisation utilise Avro avec registre de schémas
+      central pour garantir la compatibilité ascendante.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-rejoue-evenements
+    name: Rejeu d'événements sur demande
+    description: >-
+      Permet à un consommateur autorisé de rejouer une plage d'événements passés
+      pour reconstruire un état ou investiguer un incident. La rétention est fixée
+      à trente jours avec possibilité d'archivage longue durée pour les audits.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-supervision-lag-consommateurs
+    name: Supervision du lag des consommateurs
+    description: >-
+      Surveille le retard de consommation de chaque abonné aux topics Kafka DSP2.
+      Une alerte est émise si le lag dépasse le seuil configuré, indiquant un
+      consommateur en difficulté pouvant entraîner des incohérences d'état.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 17 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-outil-conformite-rts
+    name: Outil de suivi conformité RTS
+    description: >-
+      Application interne permettant à l'équipe conformité de piloter l'état des
+      exigences RTS DSP2 : couverture des interfaces dédiées, statut des tests
+      d'acceptation et suivi des dérogations accordées par l'ACPR.
+    owner_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-suivi-exigences-rts
+    name: Suivi des exigences RTS
+    description: >-
+      Cartographie chaque exigence des RTS sur un ou plusieurs composants du
+      système d'information et indique le statut de conformité (conforme, en cours,
+      non conforme). Les écarts détectés génèrent des tickets de remédiation
+      automatiques.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-gestion-derogations
+    name: Gestion des dérogations réglementaires
+    description: >-
+      Permet de documenter, soumettre et suivre les demandes de dérogation auprès
+      de l'ACPR lorsqu'une exigence ne peut être satisfaite dans les délais. Les
+      dérogations accordées sont intégrées dans le tableau de bord de conformité.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-tableau-bord-conformite
+    name: Tableau de bord de conformité RTS
+    description: >-
+      Présente une vue synthétique du niveau de conformité DSP2 par domaine :
+      authentification forte, interfaces dédiées, reporting et gestion des
+      consentements. Les indicateurs sont mis à jour quotidiennement depuis les
+      données collectées par les différents composants.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 18 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-moteur-limites-taux
+    name: Moteur de limites tarifaires
+    description: >-
+      Calcule et applique les limites financières associées aux opérations open
+      banking : plafonds de paiements PISP, frais d'accès différenciés et
+      notifications de dépassement en quasi-temps réel.
+    owner_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-controle-plafond-pisp
+    name: Contrôle de plafond PISP
+    description: >-
+      Vérifie avant chaque initiation de paiement que le montant n'excède pas le
+      plafond journalier configuré pour le TPP et le client. Le refus est motivé
+      par un code d'erreur normalisé indiquant le plafond résiduel.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-notification-depassement
+    name: Notification de dépassement de plafond
+    description: >-
+      Envoie une alerte push et un email au client lorsque ses paiements initiés
+      par TPP atteignent quatre-vingts pour cent du plafond journalier. La
+      notification inclut le récapitulatif des opérations du jour.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-reset-plafond-journalier
+    name: Réinitialisation du compteur journalier PISP
+    description: >-
+      Remet à zéro les compteurs d'utilisation des plafonds PISP à minuit pour
+      chaque client. Le processus est déclenché par un job planifié et sa durée
+      d'exécution est supervisée pour détecter les dérives de performance.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 19 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-socle-chiffrement-ob
+    name: Socle de chiffrement Open Banking
+    description: >-
+      Fournit les primitives cryptographiques utilisées par les composants DSP2 :
+      chiffrement des données sensibles au repos, signature des événements et
+      gestion du cycle de vie des clés via un HSM mutualisé.
+    owner_team: Équipe PKI et Identités
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-chiffrement-consentement
+    name: Chiffrement des données de consentement
+    description: >-
+      Applique un chiffrement de niveau AES-256 aux enregistrements de consentement
+      avant persistance. La clé de chiffrement est stockée dans le HSM et renouvelée
+      annuellement selon la politique de rotation en vigueur.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-signature-evenements-ob
+    name: Signature des événements Open Banking
+    description: >-
+      Appose une signature cryptographique sur chaque événement publié sur le bus
+      avant transmission au notificateur. Le destinataire peut vérifier l'intégrité
+      de l'événement en consultant la clé publique publiée dans le catalogue API.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 20 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-catalogue-api
+    name: Catalogue des APIs Open Banking
+    description: >-
+      Référentiel des spécifications techniques des APIs DSP2 exposées : endpoints,
+      modèles de données, codes d'erreur et versions supportées. Sert de source de
+      vérité pour les TPP, les équipes internes et l'outil de conformité RTS.
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-publication-spec-openapi
+    name: Publication des spécifications OpenAPI
+    description: >-
+      Génère et publie automatiquement les fichiers OpenAPI 3.0 à chaque release,
+      en les versionnant selon semver. Les spécifications sont disponibles via le
+      portail développeur interne et dans la sandbox TPP.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-depreciation-version-api
+    name: Gestion de la dépréciation d'API
+    description: >-
+      Orchestre le cycle de fin de vie des versions d'API : annonce de dépréciation,
+      période de transition de six mois et coupure planifiée. Les TPP utilisant une
+      version dépréciée reçoivent un en-tête Warning dès la décision de dépréciation.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-recherche-spec-api
+    name: Recherche dans le catalogue API
+    description: >-
+      Propose un moteur de recherche full-text sur les descriptions d'endpoints,
+      les codes d'erreur et les champs de modèles. Permet aux équipes de développement
+      et aux TPP de retrouver rapidement le endpoint répondant à leur besoin.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 21 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-supervision-disponibilite
+    name: Supervision de disponibilité des interfaces
+    description: >-
+      Sonde en continu les interfaces dédiées et les interfaces de secours pour
+      mesurer leur disponibilité selon les critères RTS. Alerte l'équipe de garde
+      en cas de dégradation et alimente le tableau de bord de reporting réglementaire.
+    owner_team: Équipe Exploitation DSP2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-sonde-disponibilite
+    name: Sondage de disponibilité toutes les minutes
+    description: >-
+      Exécute des requêtes synthétiques vers chaque endpoint critique toutes les
+      soixante secondes depuis trois points de présence distincts. Une indisponibilité
+      est déclarée si deux sondes sur trois échouent consécutivement.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-alerte-degradation
+    name: Alerte en cas de dégradation de disponibilité
+    description: >-
+      Déclenche une alerte PagerDuty et crée un incident dans l'outil ITSM interne
+      dès qu'un seuil de disponibilité réglementaire est franchi. Le ticket est
+      escaladé automatiquement si la situation n'est pas résolue en trente minutes.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-historique-disponibilite
+    name: Historique de disponibilité des interfaces
+    description: >-
+      Conserve l'historique des mesures de disponibilité sur douze mois glissants
+      pour chaque endpoint DSP2. Les données sont utilisées pour calculer les
+      indicateurs trimestriels du rapport ACPR et pour détecter les tendances
+      de dégradation progressive.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 22 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-reclamations-ob
+    name: Gestion des réclamations Open Banking
+    description: >-
+      Centralise les réclamations liées aux accès TPP : opérations non reconnues,
+      consentements non sollicités, refus d'accès injustifiés. Chaque dossier est
+      traité dans les délais imposés par la réglementation bancaire.
+    owner_team: Équipe Relation Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-saisie-reclamation-ob
+    name: Saisie de réclamation Open Banking
+    description: >-
+      Permet au conseiller ou au client d'ouvrir un dossier de réclamation lié à
+      une opération open banking avec rattachement automatique aux traces d'accès
+      TPP correspondantes. Le dossier est qualifié selon une taxonomie réglementaire.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-restitution-fonds-ob
+    name: Restitution de fonds suite à fraude PISP
+    description: >-
+      Orchestre le processus de remboursement lorsqu'une opération PISP est
+      reconnue comme frauduleuse après investigation. Le délai de restitution est
+      suivi pour garantir le respect des obligations légales envers le client.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-reporting-reclamations-ob
+    name: Reporting mensuel des réclamations Open Banking
+    description: >-
+      Produit chaque mois un tableau de bord des réclamations reçues classées par
+      type d'opération TPP et par motif. Les indicateurs alimentent le comité
+      qualité et sont utilisés pour identifier les causes récurrentes d'insatisfaction.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 23 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-connecteur-cbso
+    name: Connecteur CBSO interbancaire
+    description: >-
+      Passerelle technique permettant d'envoyer des requêtes AISP/PISP vers des
+      banques tierces conformes DSP2 via le protocole Berlin Group. Gère la
+      négociation de version et les retries en cas d'indisponibilité partielle.
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-negociation-version-berlin
+    name: Négociation de version Berlin Group
+    description: >-
+      Sélectionne automatiquement la version du protocole Berlin Group commune avec
+      la banque cible lors de l'établissement de la session. Supporte les versions
+      1.3 à 2.0 et journalise la version négociée pour chaque appel.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-retry-banque-tierce
+    name: Reprise sur erreur vers banque tierce
+    description: >-
+      Applique une politique de retry configurable (délai, nombre de tentatives)
+      pour les appels vers les banques tierces retournant des erreurs 5xx ou des
+      timeouts réseau. Les tentatives sont journalisées et agrégées dans les
+      tableaux de bord de disponibilité.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-mapping-codes-erreur
+    name: Mapping des codes d'erreur Berlin Group
+    description: >-
+      Traduit les codes d'erreur propriétaires renvoyés par les banques tierces
+      en codes normalisés Berlin Group avant de les exposer au TPP appelant. Le
+      référentiel de correspondance est maintenu par l'équipe d'intégration et
+      mis à jour lors de chaque onboarding d'un nouveau partenaire.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 24 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-administration-ob
+    name: Console d'administration Open Banking
+    description: >-
+      Interface réservée aux opérateurs internes pour superviser et piloter le
+      dispositif open banking : gestion des quotas, activation/désactivation de
+      TPP, consultation des logs agrégés et paramétrage des plafonds.
+    owner_team: Équipe Exploitation DSP2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-gestion-quotas-admin
+    name: Gestion des quotas d'appels
+    description: >-
+      Permet aux opérateurs de modifier en temps réel les quotas d'appels attribués
+      à chaque TPP sans redémarrage de la passerelle. Les modifications sont
+      auditées et nécessitent une double validation pour les baisses supérieures
+      à cinquante pour cent.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-consultation-logs-admin
+    name: Consultation des logs agrégés
+    description: >-
+      Expose une interface de recherche facettée sur les logs de la passerelle et
+      du moteur SCA pour les besoins d'investigation. Les résultats sont paginés
+      et exportables, avec contrôle des accès basé sur les rôles.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-parametrage-exemptions-admin
+    name: Paramétrage des exemptions SCA
+    description: >-
+      Permet aux administrateurs d'activer ou désactiver les catégories d'exemption
+      SCA applicables (TRA, faible montant, bénéficiaire de confiance) et d'en
+      ajuster les seuils. Toute modification est enregistrée dans le journal d'audit
+      avec l'identité de l'opérateur.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── SYSTEM 25 + features ──────────────────────────────────────────────────
+  - type: system
+    id: sys-ddsp-archiveur-legal-ob
+    name: Archiveur légal Open Banking
+    description: >-
+      Conserve pendant dix ans les preuves d'authentification forte, les journaux
+      de consentement et les traces d'opérations PISP à des fins de contentieux et
+      d'audit réglementaire. Les archives sont chiffrées et stockées sur support
+      immuable.
+    owner_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-archivage-preuve-sca
+    name: Archivage des preuves SCA
+    description: >-
+      Capture et horodate les éléments de preuve de chaque authentification forte :
+      type de facteur utilisé, résultat, hash de la transaction authentifiée et
+      identifiant de session. Ces données sont scellées cryptographiquement avant
+      archivage.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-restitution-archives
+    name: Restitution des archives sur demande légale
+    description: >-
+      Permet la récupération ciblée des preuves archivées dans le cadre d'une
+      procédure judiciaire ou d'un contrôle de l'ACPR. L'accès est restreint à
+      des rôles habilités et chaque restitution est elle-même archivée.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-ddsp-test-integrite-archives
+    name: Test d'intégrité des archives
+    description: >-
+      Exécute mensuellement un contrôle par hachage sur un échantillon statistique
+      des archives stockées pour détecter toute corruption silencieuse. Les
+      anomalies détectées déclenchent une alerte immédiate vers l'équipe
+      conformité et l'équipe d'exploitation.
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── BUSINESS OBJECTS ────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-ddsp-consentement-tpp
+    name: Consentement TPP
+    description: >-
+      Accord formel d'un client autorisant un TPP à accéder à ses données ou à
+      initier des paiements en son nom. Porte la durée, la portée et l'identifiant
+      de la session SCA ayant permis son obtention.
+    steward_team: Équipe Données Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-certificat-eidas
+    name: Certificat eIDAS
+    description: >-
+      Certificat qualifié émis par un prestataire de services de confiance européen,
+      attestant de l'identité et du rôle réglementaire d'un TPP. Distingue les
+      types QWAC (authentification) et QSealC (signature).
+    steward_team: Équipe PKI et Identités
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-jeton-oauth
+    name: Jeton OAuth2
+    description: >-
+      Credential temporaire permettant à un TPP d'accéder aux APIs DSP2 au nom
+      d'un client ou en son propre nom. Encodé en JWT et signé par le gestionnaire
+      de jetons interne.
+    steward_team: Équipe Sécurité des Accès
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-ordre-paiement-pisp
+    name: Ordre de paiement PISP
+    description: >-
+      Instruction de virement émise par un TPP PISP pour le compte d'un client.
+      Contient le montant, l'IBAN bénéficiaire, la référence unique et l'identifiant
+      du consentement ayant autorisé l'opération.
+    steward_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-profil-tpp
+    name: Profil TPP
+    description: >-
+      Fiche d'identité d'un prestataire tiers enregistré : numéro d'agrément,
+      rôles DSP2, certificats actifs, quotas d'appels et statut de suspension.
+      Sert de référence à l'ensemble des composants du dispositif open banking.
+    steward_team: Équipe Conformité Paiements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-compte-agregable
+    name: Compte agrégable
+    description: >-
+      Compte bancaire d'un client déclaré éligible au partage via l'open banking.
+      L'objet porte les attributs de partageabilité et l'historique des accès
+      AISP reçus au cours des quatre-vingt-dix derniers jours.
+    steward_team: Équipe Données Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-session-sca
+    name: Session SCA
+    description: >-
+      Représentation d'une procédure d'authentification forte en cours ou terminée.
+      Enregistre les facteurs présentés, les résultats intermédiaires et le verdict
+      final, et constitue la preuve attachée au consentement ou à l'ordre de paiement.
+    steward_team: Équipe Sécurité des Accès
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-rapport-disponibilite
+    name: Rapport de disponibilité RTS
+    description: >-
+      Document trimestriel transmis à l'ACPR récapitulant les taux de disponibilité,
+      les incidents et les délais de réponse de chaque interface DSP2. Produit
+      par le moteur de reporting et archivé pendant cinq ans.
+    steward_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-evenement-ob
+    name: Événement Open Banking
+    description: >-
+      Message asynchrone décrivant un fait métier survenu dans le dispositif DSP2 :
+      création de consentement, paiement exécuté, TPP suspendu. Chaque événement
+      est typé, versionné et signé avant publication sur le bus.
+    steward_team: Équipe Socle Technique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-reclamation-ob
+    name: Dossier de réclamation Open Banking
+    description: >-
+      Dossier ouvert suite à un litige lié à une opération initiée par un TPP ou
+      à un accès non reconnu. Contient la qualification réglementaire, les pièces
+      justificatives et le statut de traitement.
+    steward_team: Équipe Relation Client
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-plafond-pisp
+    name: Plafond de paiement PISP
+    description: >-
+      Limite financière journalière configurable par couple client-TPP pour les
+      paiements initiés via PISP. Le dépassement entraîne un rejet immédiat de
+      l'ordre et une notification au client.
+    steward_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-webhook-tpp
+    name: Webhook TPP
+    description: >-
+      Abonnement d'un TPP à une catégorie d'événements Open Banking avec l'URL
+      de réception configurée. L'objet porte l'état de l'abonnement, les statistiques
+      de livraison et la clé de signature utilisée pour sécuriser les appels.
+    steward_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-score-risque-tpp
+    name: Score de risque TPP
+    description: >-
+      Indicateur calculé en continu par le détecteur de fraude représentant le
+      niveau de risque comportemental d'un TPP actif. Sert de déclencheur pour
+      la suspension automatique et alimente les rapports de surveillance.
+    steward_team: Équipe Lutte contre la Fraude
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-cle-hsm
+    name: Clé cryptographique HSM
+    description: >-
+      Clé symétrique ou asymétrique stockée dans le module de sécurité matériel
+      mutualisé. Chaque clé est associée à un usage précis (chiffrement, signature),
+      à une date d'expiration et à une liste de composants autorisés à l'utiliser.
+    steward_team: Équipe PKI et Identités
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-spec-api-ouverte
+    name: Spécification API Open Banking
+    description: >-
+      Fichier OpenAPI 3.0 décrivant un endpoint DSP2 exposé, incluant les schémas
+      de requête et de réponse, les codes d'erreur et les prérequis d'authentification.
+      Versionné et publié dans le catalogue API.
+    steward_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-archive-preuve
+    name: Archive de preuve légale
+    description: >-
+      Enregistrement immuable d'une preuve SCA ou d'une trace de consentement
+      conservé à des fins de contentieux. Chiffré, scellé cryptographiquement
+      et horodaté par une autorité de confiance.
+    steward_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-ddsp-limite-taux-service
+    name: Limite de taux de service
+    description: >-
+      Paramètre de quota d'appels attribué à un TPP pour une période glissante.
+      Géré par le moteur de limites tarifaires et consulté en temps réel par la
+      passerelle pour décider d'accepter ou rejeter chaque requête entrante.
+    steward_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── PROJECTS ─────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-ddsp-mise-conformite-rts
+    name: Mise en conformité RTS DSP2
+    description: >-
+      Programme de mise en œuvre des exigences techniques réglementaires de la
+      DSP2, couvrant l'interface dédiée, l'authentification forte et le mécanisme
+      de secours. Livré en coordination avec les équipes métier et IT sous pilotage
+      de la conformité.
+    status: done
+    owner_team: Équipe Conformité Paiements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-portail-tpp-v2
+    name: Portail TPP v2
+    description: >-
+      Refonte complète du portail d'enregistrement des TPP avec un nouveau parcours
+      d'on-boarding, la gestion en libre-service des certificats et un tableau de
+      bord de supervision amélioré. Migration transparente des TPP existants prévue
+      sur six semaines.
+    status: ongoing
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-berlin-group-v2
+    name: Migration Berlin Group v2.0
+    description: >-
+      Passage de la version 1.3 à la version 2.0 du standard Berlin Group sur
+      l'ensemble des interfaces DSP2. Implique la mise à jour des spécifications,
+      du connecteur interbancaire et de la sandbox TPP.
+    status: ongoing
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-sandbox-self-service
+    name: Sandbox en libre-service
+    description: >-
+      Ouverture de la sandbox à l'ensemble des TPP enregistrés sans intervention
+      humaine préalable. Intègre la génération automatique de jeux de données
+      personnalisés et une documentation interactive type Swagger UI.
+    status: done
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-detection-fraude-ob
+    name: Détection de fraude Open Banking
+    description: >-
+      Développement et déploiement du détecteur comportemental de fraude ciblant
+      les TPP. Inclut la collecte des signaux bruts, la modélisation du scoring
+      et l'intégration avec le portail TPP pour les suspensions automatiques.
+    status: done
+    owner_team: Équipe Lutte contre la Fraude
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-archivage-legal-ob
+    name: Archivage légal des preuves DSP2
+    description: >-
+      Mise en place du système d'archivage immuable des preuves SCA et des journaux
+      de consentement sur support WORM. Couvre également les procédures de restitution
+      sur demande légale et les tests d'intégrité périodiques.
+    status: done
+    owner_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-webhook-push
+    name: Notifications push par webhook
+    description: >-
+      Mise en place du notificateur d'événements DSP2 avec gestion des abonnements
+      en libre-service pour les TPP. Remplace le mécanisme de polling précédent
+      et réduit la charge sur la passerelle API d'environ quarante pour cent.
+    status: done
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-portail-client-ob
+    name: Portail client de gestion des consentements
+    description: >-
+      Développement de l'interface permettant aux clients de visualiser et révoquer
+      leurs consentements open banking depuis l'espace personnel. Validé avec des
+      tests utilisateurs sur trois segments de clientèle.
+    status: done
+    owner_team: Équipe Banque Numérique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-reporting-acpr-auto
+    name: Automatisation du reporting ACPR
+    description: >-
+      Industrialisation de la production et de la soumission des rapports
+      trimestriels de disponibilité à l'ACPR, en remplacement des exports manuels
+      antérieurs. Réduit le délai de production de dix jours à moins de vingt-quatre
+      heures.
+    status: done
+    owner_team: Équipe Conformité Réglementaire
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-cbpii-provision
+    name: Service CBPII de confirmation de provision
+    description: >-
+      Implémentation de l'endpoint de confirmation de disponibilité de fonds pour
+      les TPP agréés CBPII. Couvre l'intégration au core banking temps réel et
+      les tests de charge pour valider les engagements de SLA.
+    status: done
+    owner_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-migration-hsm
+    name: Migration vers nouveau HSM
+    description: >-
+      Remplacement du module de sécurité matériel arrivé en fin de support par
+      un modèle certifié FIPS 140-3. La migration est réalisée sans interruption
+      de service par bascule progressive des clés actives.
+    status: ongoing
+    owner_team: Équipe PKI et Identités
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-consent-renew-ux
+    name: Amélioration UX du renouvellement de consentement
+    description: >-
+      Refonte du parcours de renouvellement des consentements expirant sous
+      quatre-vingt-dix jours, basée sur les retours de 1 200 clients pilotes.
+      Intègre un résumé simplifié des données partagées et une option de
+      renouvellement en un clic.
+    status: ongoing
+    owner_team: Équipe Banque Numérique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-plafonds-pisp-dynamiques
+    name: Plafonds PISP dynamiques
+    description: >-
+      Introduction d'une gestion dynamique des plafonds de paiements PISP tenant
+      compte du comportement de dépenses du client et de son niveau d'exposition
+      au risque. Remplace les plafonds statiques configurés lors de l'ouverture
+      de compte.
+    status: ongoing
+    owner_team: Équipe Paiements Ouverts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-supervision-tpp-realtime
+    name: Supervision temps réel des TPP
+    description: >-
+      Déploiement de tableaux de bord opérationnels temps réel permettant à l'équipe
+      d'exploitation de suivre en continu l'activité des TPP actifs, détecter les
+      anomalies et intervenir avant impact client.
+    status: done
+    owner_team: Équipe Exploitation DSP2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-api-versioning-strategy
+    name: Stratégie de versioning des APIs DSP2
+    description: >-
+      Définition et publication de la politique de versioning des APIs open banking
+      avec les règles de compatibilité, les délais de dépréciation et le processus
+      de communication aux TPP. Approuvée par le comité d'architecture.
+    status: done
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-resilience-gateway
+    name: Résilience de la passerelle API
+    description: >-
+      Renforcement de la tolérance aux pannes de la passerelle API DSP2 par
+      introduction du pattern circuit-breaker, redondance géographique active-active
+      et tests de chaos engineering trimestriels.
+    status: ongoing
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-onboarding-tpp-accelere
+    name: On-boarding TPP accéléré
+    description: >-
+      Réduction du délai d'activation des nouveaux TPP de dix jours ouvrés à
+      quarante-huit heures grâce à l'automatisation des vérifications documentaires
+      et à l'intégration directe avec le registre ACPR.
+    status: ongoing
+    owner_team: Équipe Conformité Paiements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-test-penetration-ob
+    name: Test de pénétration Open Banking
+    description: >-
+      Exercice annuel de test d'intrusion ciblant les interfaces DSP2, coordonné
+      avec un prestataire externe spécialisé en sécurité des APIs de paiement.
+      Les résultats sont traités dans un plan de remédiation priorisé.
+    status: done
+    owner_team: Équipe Sécurité des Accès
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-ddsp-catalogue-api-public
+    name: Catalogue API public
+    description: >-
+      Publication d'un portail de documentation destiné aux TPP externe avec
+      spécifications interactives, guides d'intégration et changelog automatisé.
+      Indexé par les agrégateurs de catalogues APIs du secteur bancaire.
+    status: ongoing
+    owner_team: Équipe Intégration Ouverte
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── DECISIONS ────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-ddsp-standard-berlin-group
+    title: Adoption du standard Berlin Group
+    statement: >-
+      L'ensemble des interfaces DSP2 exposées aux TPP sera conforme au standard
+      Berlin Group NextGenPSD2. Aucune API propriétaire ne peut être substituée
+      à ce standard sans dérogation formelle du comité d'architecture.
+    rationale: >-
+      Le choix du standard Berlin Group garantit l'interopérabilité avec les TPP
+      européens et simplifie les tests de certification réglementaire. Il évite la
+      fragmentation qui résulterait d'implémentations propriétaires divergentes.
+    date: "2022-03-10"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-oauth2-pkce
+    title: OAuth2 avec PKCE obligatoire
+    statement: >-
+      Le flux d'autorisation OAuth2 utilisé pour les TPP doit systématiquement
+      intégrer l'extension PKCE. Les flux implicites et password sont interdits
+      sur toutes les interfaces DSP2.
+    rationale: >-
+      PKCE protège contre les attaques d'interception de code d'autorisation,
+      particulièrement critiques dans les environnements mobiles où les deep-links
+      peuvent être détournés. L'interdiction des flux implicites suit les
+      recommandations BCP OAuth2 de l'IETF.
+    date: "2022-09-01"
+    decided_by: Comité de sécurité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-consentement-90j
+    title: Durée maximale de consentement à 90 jours
+    statement: >-
+      La durée de validité maximale d'un consentement AISP est fixée à quatre-vingt-dix
+      jours calendaires, conformément aux exigences RTS. Le renouvellement requiert
+      une nouvelle authentification forte du client.
+    rationale: >-
+      Aligner la durée maximale sur le minimum réglementaire réduit la surface
+      d'exposition en cas de compromission d'un consentement et clarifie les
+      obligations de notification aux clients.
+    date: "2022-11-15"
+    decided_by: Comité conformité DSP2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-sandbox-obligatoire
+    title: Sandbox obligatoire avant certification
+    statement: >-
+      Tout TPP souhaitant accéder à la production doit au préalable valider une
+      batterie de tests de conformité dans la sandbox. L'attestation de réussite
+      est archivée et rattachée au profil TPP.
+    rationale: >-
+      L'obligation de sandbox réduit le nombre d'incidents en production liés à
+      des intégrations mal testées et diminue la charge de support de premier niveau.
+    date: "2023-02-01"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-eidas-qwac-seulement
+    title: Certificats eIDAS QWAC obligatoires pour TLS
+    statement: >-
+      Seuls les certificats eIDAS QWAC sont acceptés pour l'établissement des
+      sessions mTLS avec la passerelle API. Les certificats non qualifiés ou les
+      certificats d'infrastructure standard ne sont pas autorisés.
+    rationale: >-
+      L'exigence de QWAC pour TLS garantit l'identité légalement opposable du
+      TPP à chaque appel et simplifie la procédure de révocation en cas d'incident
+      de sécurité.
+    date: "2022-03-10"
+    decided_by: Comité de sécurité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-webhook-hmac-sha256
+    title: Sécurisation des webhooks par HMAC-SHA256
+    statement: >-
+      Toutes les notifications push envoyées aux TPP via webhook doivent être
+      signées avec HMAC-SHA256 en utilisant une clé secrète partagée propre à
+      chaque abonnement. Les TPP doivent vérifier cette signature avant de traiter
+      l'événement.
+    rationale: >-
+      La signature HMAC garantit l'authenticité et l'intégrité des notifications,
+      empêchant les attaques par injection d'événements forgés vers les TPP.
+    date: "2023-06-15"
+    decided_by: Comité de sécurité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-archivage-10-ans
+    title: Rétention des preuves SCA pendant 10 ans
+    statement: >-
+      Les preuves d'authentification forte et les journaux de consentement sont
+      conservés pendant dix ans sur support immuable, durée alignée sur le délai
+      de prescription en matière de contestation de paiement.
+    rationale: >-
+      Les délais de prescription bancaire et les contraintes de contentieux exigent
+      une rétention longue des preuves d'authentification. Un archivage insuffisant
+      exposerait l'établissement à des risques juridiques majeurs.
+    date: "2023-01-20"
+    decided_by: Direction juridique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-rate-limit-par-tpp
+    title: Quotas d'appels différenciés par TPP
+    statement: >-
+      Les quotas d'appels à la passerelle API sont définis par couple TPP/endpoint
+      selon le niveau de service contractuel, et non par un plafond global unique.
+      Les modifications de quota nécessitent une double validation.
+    rationale: >-
+      Une approche globale avantagerait les gros TPP au détriment des TPP plus
+      petits et rendrait difficile la maîtrise de la charge. Les quotas différenciés
+      permettent une gestion équitable et garantissent la disponibilité pour tous.
+    date: "2022-07-05"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-pas-de-bypass-sca
+    title: Interdiction des bypass SCA non documentés
+    statement: >-
+      Aucun parcours d'authentification forte ne peut comporter de mécanisme de
+      contournement non documenté. Toute exemption doit s'appuyer sur les cas
+      prévus par les RTS DSP2 et être tracée dans l'orchestrateur SCA.
+    rationale: >-
+      Les bypass non documentés sont une source majeure de non-conformité lors des
+      audits et créent des risques de sécurité difficiles à circonscrire. La traçabilité
+      systématique est la seule approche défendable devant les régulateurs.
+    date: "2023-03-08"
+    decided_by: Comité conformité DSP2
+    domains: [dsp2-open-banking]
+    still_active: true
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-chaos-testing-trimestriel
+    title: Tests de chaos trimestriels sur la passerelle
+    statement: >-
+      Des tests de chaos engineering sont menés chaque trimestre sur la passerelle
+      API DSP2 et ses dépendances. Les résultats sont documentés et les régressions
+      de résilience bloquantes pour les prochaines mises en production.
+    rationale: >-
+      Les tests de résilience en conditions réelles permettent de valider les
+      mécanismes de bascule et d'identifier les points de défaillance unique avant
+      qu'ils n'impactent des TPP en production.
+    date: "2024-01-15"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-jeton-acces-90min
+    title: Durée de vie des jetons d'accès limitée à 90 minutes
+    statement: >-
+      Les jetons d'accès OAuth2 émis pour les TPP ont une durée de vie maximale de
+      quatre-vingt-dix minutes. Les refresh tokens sont valides pour la durée du
+      consentement associé sans pouvoir excéder quatre-vingt-dix jours.
+    rationale: >-
+      Limiter la durée de vie des jetons réduit la fenêtre d'exploitation en cas
+      de fuite et aligne la politique sur les meilleures pratiques OAuth2 pour les
+      APIs financières.
+    date: "2022-09-01"
+    decided_by: Comité de sécurité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-double-validation-suspension
+    title: Double validation pour suspensions de quotas importantes
+    statement: >-
+      Toute baisse de quota d'appels supérieure à cinquante pour cent ou toute
+      suspension de TPP doit être validée par deux opérateurs distincts avant prise
+      d'effet. Les modifications urgentes peuvent être réalisées par un seul
+      opérateur sous astreinte mais doivent être contresignées sous quatre heures.
+    rationale: >-
+      La double validation prévient les erreurs opérationnelles ayant un impact
+      majeur sur les TPP et introduit un contrôle de ségrégation des tâches exigé
+      par les audits internes.
+    date: "2023-04-12"
+    decided_by: Comité des risques opérationnels
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-schema-avro-obligatoire
+    title: Sérialisation Avro avec registre de schémas obligatoire
+    statement: >-
+      Les événements publiés sur le bus d'événements Open Banking doivent être
+      sérialisés en Avro avec référence au registre de schémas central. La
+      publication en JSON libre est interdite sur les topics de production.
+    rationale: >-
+      Avro avec registre de schémas garantit la compatibilité ascendante et
+      descendante entre producteurs et consommateurs, réduisant le risque de
+      rupture silencieuse lors des évolutions de modèle.
+    date: "2023-08-20"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-interface-de-secours
+    title: Interface de secours obligatoire pour toutes les banques
+    statement: >-
+      En complément de l'interface dédiée DSP2, une interface de secours basée
+      sur l'interface client avec overlay doit être maintenue opérationnelle en
+      permanence. Elle est activable en moins de quinze minutes en cas d'indisponibilité
+      de l'interface dédiée.
+    rationale: >-
+      Les RTS DSP2 exigent une interface de secours pour les établissements ayant
+      obtenu une exemption. Son absence ou son indisponibilité peut entraîner une
+      injonction de l'ACPR et une remise en cause de l'exemption.
+    date: "2022-04-18"
+    decided_by: Comité conformité DSP2
+    still_active: true
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-pisp-confirmation-solde
+    title: Vérification de provision avant initiation PISP
+    statement: >-
+      Le service d'initiation de paiement PISP doit vérifier la disponibilité
+      effective de la provision sur le compte source avant de transmettre l'ordre
+      au système de paiement. Un ordre dont la provision est insuffisante ne peut
+      pas être soumis.
+    rationale: >-
+      La vérification préalable réduit le taux de rejet en aval, améliore
+      l'expérience du TPP et du client final, et évite la génération de frais
+      de rejet imputés au compte.
+    date: "2023-01-10"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-purge-consentements-expires
+    title: Purge des consentements expirés après 12 mois
+    statement: >-
+      Les consentements expirés ou révoqués sont conservés douze mois après leur
+      fin de validité à des fins de traçabilité, puis purgés automatiquement.
+      Les archives légales associées suivent le cycle de rétention de dix ans.
+    rationale: >-
+      La purge des consentements obsolètes réduit la taille de la base de données
+      et limite le risque d'accès non autorisé à des données historiques de consentement,
+      conformément aux principes de minimisation du RGPD.
+    date: "2023-07-01"
+    decided_by: Délégué à la Protection des Données
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-identifiant-transaction-pisp
+    title: Identifiant unique de transaction PISP
+    statement: >-
+      Chaque ordre initié via PISP reçoit un identifiant unique généré par le système
+      bancaire, distinct de l'identifiant attribué par le TPP. Cet identifiant est
+      renvoyé dans la réponse et utilisé pour toutes les opérations de suivi ultérieures.
+    rationale: >-
+      L'utilisation exclusive d'un identifiant bancaire évite les collisions entre
+      identifiants issus de TPP différents et constitue la référence unique opposable
+      en cas de litige.
+    date: "2022-11-30"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-notification-revocation-tpp
+    title: Notification immédiate en cas de révocation TPP
+    statement: >-
+      La révocation d'un accès TPP doit être notifiée au TPP concerné par webhook
+      et email dans un délai de cinq minutes. Le portail TPP doit également refléter
+      le nouveau statut en temps réel.
+    rationale: >-
+      Une notification rapide permet au TPP de gérer l'impact côté client et d'éviter
+      de soumettre des requêtes vouées à l'échec, réduisant la charge inutile sur
+      la passerelle.
+    date: "2023-05-22"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-sla-disponibilite-9999
+    title: SLA de disponibilité de l'interface dédiée à 99,99 %
+    statement: >-
+      L'interface dédiée DSP2 doit atteindre un taux de disponibilité mensuel d'au
+      moins quatre-vingt-dix-neuf virgule quatre-vingt-dix-neuf pour cent, mesuré
+      depuis les sondes de supervision. Tout écart déclenche une analyse des causes
+      racines sous quarante-huit heures.
+    rationale: >-
+      Un taux de disponibilité insuffisant expose l'établissement à des sanctions
+      réglementaires et dégrade la relation avec les TPP partenaires. L'objectif
+      de 99,99 % est aligné sur les engagements pris lors de l'obtention de
+      l'exemption d'interface de secours.
+    date: "2022-06-01"
+    decided_by: Comité des risques opérationnels
+    still_active: true
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-mfa-admin-console
+    title: MFA obligatoire pour la console d'administration
+    statement: >-
+      L'accès à la console d'administration Open Banking requiert une authentification
+      multi-facteurs quel que soit le réseau d'accès. Les sessions administrateur
+      expirent après trente minutes d'inactivité.
+    rationale: >-
+      La console d'administration permet de modifier des paramètres critiques comme
+      les quotas et les suspensions de TPP. Une authentification renforcée est
+      indispensable pour limiter le risque d'accès non autorisé.
+    date: "2023-02-28"
+    decided_by: Comité de sécurité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-cbpii-reponse-binaire
+    title: Réponse binaire pour la confirmation de provision CBPII
+    statement: >-
+      L'endpoint de confirmation de disponibilité des fonds ne retourne qu'une
+      réponse OUI ou NON sans aucune information sur le solde réel ou la marge
+      disponible. Toute exposition de montant précis est interdite.
+    rationale: >-
+      Le cadre réglementaire CBPII interdit explicitement la divulgation du solde
+      exact. Une réponse binaire protège la confidentialité des données financières
+      du client tout en répondant au besoin légitime du TPP.
+    date: "2022-03-10"
+    decided_by: Comité conformité DSP2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── CONSTRAINTS ──────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-ddsp-rts-dsp2
+    title: Conformité aux RTS DSP2
+    statement: >-
+      L'ensemble des interfaces DSP2 doit satisfaire les exigences du Règlement
+      délégué (UE) 2018/389 sur l'authentification forte et la communication sécurisée.
+      Tout écart identifié doit faire l'objet d'un plan de remédiation approuvé
+      dans les trente jours.
+    source: Règlement délégué (UE) 2018/389
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-disponibilite-interface-dediee
+    title: Disponibilité de l'interface dédiée DSP2
+    statement: >-
+      L'interface dédiée aux TPP doit présenter un taux de disponibilité mensuel
+      supérieur ou égal à quatre-vingt-dix-neuf virgule quatre-vingt-dix-neuf pour
+      cent. En deçà de ce seuil, la banque doit activer l'interface de secours et
+      notifier l'ACPR.
+    source: RTS DSP2 Article 33
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-sca-obligatoire-paiement
+    title: SCA obligatoire pour tout paiement PISP
+    statement: >-
+      Tout ordre de paiement initié via un TPP PISP doit être précédé d'une
+      authentification forte du client titulaire du compte. Aucune exemption
+      basée sur la confiance accordée au TPP ne peut être appliquée.
+    source: RTS DSP2 Article 4
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-eidas-mtls
+    title: mTLS avec certificat eIDAS pour toute connexion TPP
+    statement: >-
+      Chaque connexion établie par un TPP vers la passerelle DSP2 doit utiliser le
+      protocole TLS mutuel avec présentation d'un certificat eIDAS QWAC valide côté
+      client. Les connexions sans certificat ou avec un certificat non qualifié sont
+      rejetées sans négociation.
+    source: RTS DSP2 Article 34
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-latence-reponse-api
+    title: Latence de réponse API inférieure à 2 secondes
+    statement: >-
+      Chaque endpoint de l'interface dédiée DSP2 doit répondre en moins de deux
+      secondes au percentile 95 sous charge nominale. Le dépassement de ce seuil
+      sur une période de dix minutes déclenche une alerte opérationnelle.
+    source: RTS DSP2 Article 33 — exigences de performance
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-retention-journaux-5ans
+    title: Rétention des journaux d'accès pendant 5 ans
+    statement: >-
+      Les journaux d'accès aux APIs DSP2 doivent être conservés pendant au moins
+      cinq ans. Ils doivent être intègres, horodatés et accessible sur demande
+      dans le cadre d'un audit réglementaire ou d'une investigation judiciaire.
+    source: DSP2 Article 69 — obligations de conservation
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-rgpd-minimisation-aisp
+    title: Minimisation des données RGPD pour l'AISP
+    statement: >-
+      Les données de transaction transmises aux TPP AISP ne peuvent pas excéder
+      ce qui est nécessaire au service fourni. L'enrichissement des données
+      (catégorisation, scoring) ne peut être effectué qu'avec consentement explicite
+      distinct pour ce traitement.
+    source: RGPD Article 5(1)(c)
+    severity: high
+    domains: [dsp2-open-banking, referentiel-client]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-revocation-immediate-cert
+    title: Révocation de certificat en moins de 30 minutes
+    statement: >-
+      Lors de la détection d'un certificat eIDAS compromis ou d'un TPP dont
+      l'agrément est retiré, la révocation de l'accès dans la passerelle doit
+      intervenir dans les trente minutes suivant la décision. Le délai est mesuré
+      et tracé.
+    source: Politique de sécurité interne — gestion des incidents PKI
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-pas-scraping-client
+    title: Interdiction du screen-scraping client
+    statement: >-
+      L'accès aux données de compte par les TPP doit exclusivement passer par les
+      interfaces dédiées DSP2. Le recours au screen-scraping des interfaces client
+      est interdit, même en cas d'indisponibilité de l'interface dédiée déclarée
+      par la banque.
+    source: DSP2 Article 98(3)
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-exemption-taux-fraude-0-01
+    title: Taux de fraude PISP sous 0,01 % pour conserver l'exemption TRA
+    statement: >-
+      Pour bénéficier de l'exemption d'analyse de risque transactionnel (TRA),
+      le taux de fraude sur les paiements PISP doit rester inférieur à zéro virgule
+      zéro un pour cent sur une fenêtre glissante de quatre-vingt-dix jours.
+    source: RTS DSP2 Article 18
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-fips-140-3-hsm
+    title: HSM certifié FIPS 140-3 pour les clés cryptographiques
+    statement: >-
+      Toutes les clés cryptographiques utilisées dans le cadre DSP2 (signature
+      d'événements, chiffrement de consentements) doivent être générées et stockées
+      dans un module HSM certifié au niveau FIPS 140-3 ou équivalent Common Criteria.
+    source: Politique de sécurité cryptographique interne
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-berlin-group-seul
+    title: Exclusivité du standard Berlin Group pour les APIs TPP
+    statement: >-
+      Aucune interface propriétaire ne peut être exposée aux TPP externes pour
+      les cas d'usage couverts par le standard Berlin Group. Les extensions
+      propriétaires éventuelles ne peuvent qu'enrichir, sans remplacer, les
+      endpoints normalisés.
+    source: Décision d'architecture DA-DSP2-001
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-audit-annuel-penetration
+    title: Test de pénétration annuel des interfaces DSP2
+    statement: >-
+      Les interfaces DSP2 exposées aux TPP doivent faire l'objet d'un test de
+      pénétration annuel réalisé par un prestataire externe indépendant. Les
+      findings critiques doivent être corrigés avant la mise en production suivante.
+    source: Politique de sécurité des APIs — chapitre 6
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-consentement-lie-sca
+    title: Tout consentement doit être lié à une session SCA
+    statement: >-
+      Aucun consentement ne peut être enregistré dans le moteur de consentement
+      sans référence valide à une session SCA réussie. L'orphanité de consentement
+      est détectée lors des contrôles d'intégrité quotidiens.
+    source: RTS DSP2 Article 10
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-notification-incident-4h
+    title: Notification des incidents majeurs DSP2 à l'ACPR sous 4 heures
+    statement: >-
+      Tout incident affectant la disponibilité ou la sécurité des interfaces DSP2
+      pendant plus de trente minutes consécutives doit être notifié à l'ACPR dans
+      les quatre heures. La notification doit inclure l'impact estimé et les
+      mesures de remédiation engagées.
+    source: DSP2 Article 96 — notification des incidents
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-tls-1-3-minimum
+    title: TLS 1.3 minimum pour toutes les connexions DSP2
+    statement: >-
+      Les négociations TLS vers les interfaces DSP2 doivent utiliser la version 1.3
+      ou supérieure. Les connexions TLS 1.2 sont acceptées uniquement pour
+      compatibilité legacy jusqu'au 31 décembre 2025, date à laquelle elles seront
+      coupées.
+    source: Politique de chiffrement interne v3.1
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-non-discrimination-tpp
+    title: Non-discrimination des TPP dans les performances API
+    statement: >-
+      La passerelle API ne peut pas traiter différemment les requêtes d'un TPP
+      concurrent sur la base de son identité commerciale. Les politiques de quota
+      doivent être basées sur des critères techniques objectifs uniquement.
+    source: DSP2 Article 31 — accès aux systèmes de paiement
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-rapport-trimestriel-obligatoire
+    title: Rapport de disponibilité trimestriel obligatoire
+    statement: >-
+      Un rapport de disponibilité des interfaces DSP2 doit être transmis à l'ACPR
+      dans les quinze jours calendaires suivant la fin de chaque trimestre. L'absence
+      de soumission ou la soumission tardive constitue un manquement réglementaire.
+    source: RTS DSP2 Article 33(6)
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-sandbox-toujours-disponible
+    title: Sandbox disponible en permanence pour les TPP
+    statement: >-
+      La sandbox TPP doit être accessible vingt-quatre heures sur vingt-quatre,
+      sept jours sur sept, avec un taux de disponibilité minimum de quatre-vingt-dix-neuf
+      pour cent. Les maintenances planifiées sont notifiées avec sept jours d'avance.
+    source: Accord-cadre TPP — annexe technique
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-journalisation-immuable
+    title: Journalisation immuable des événements DSP2
+    statement: >-
+      Les journaux de la passerelle API, du moteur de consentement et de l'orchestrateur
+      SCA doivent être écrits dans un entrepôt immuable dès leur production. Aucune
+      modification ou suppression n'est autorisée pendant la période de rétention.
+    source: Politique d'audit interne — exigences DSP2
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-consentement-affiche-client
+    title: Affichage du consentement en langage clair avant signature
+    statement: >-
+      L'écran de confirmation de consentement présenté au client doit décrire en
+      langage non technique les données partagées, l'identité du TPP et la durée
+      d'accès. Un client ne peut pas consentir sans avoir vu cet écran.
+    source: RTS DSP2 Article 9 — interface client
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-rotation-cles-annuelle
+    title: Rotation annuelle des clés cryptographiques
+    statement: >-
+      L'ensemble des clés cryptographiques utilisées dans le dispositif DSP2 doivent
+      être renouvelées au moins une fois par an. Le calendrier de rotation est géré
+      par l'équipe PKI et ne peut être différé sans autorisation de la RSSI.
+    source: Politique de gestion des clés — section 4.2
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-test-interface-secours-mensuel
+    title: Test mensuel de l'interface de secours DSP2
+    statement: >-
+      L'interface de secours DSP2 doit faire l'objet d'un test de fonctionnement
+      mensuel simulant son activation complète. Les résultats sont consignés et
+      une défaillance déclenche une remédiation sous quarante-huit heures.
+    source: RTS DSP2 Article 33(5) — interface de secours
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-zero-stockage-cvv
+    title: Interdiction de stocker les données sensibles de carte via PISP
+    statement: >-
+      Les flux PISP ne peuvent en aucun cas transiter par des composants stockant
+      des données de carte (PAN, CVV, date d'expiration). Toute conception impliquant
+      un tel stockage doit être rejetée lors de la revue d'architecture.
+    source: PCI DSS v4.0 — Requirement 3 (appliqué au périmètre PISP)
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-documentation-api-a-jour
+    title: Documentation API à jour avant chaque release
+    statement: >-
+      La mise en production d'une nouvelle version d'API DSP2 ne peut pas précéder
+      la publication de sa documentation dans le catalogue. Les spécifications
+      OpenAPI correspondantes doivent être disponibles dans la sandbox au moins
+      sept jours avant la mise en production.
+    source: Politique de gestion des APIs internes
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-acces-admin-reseau-interne
+    title: Console d'administration accessible uniquement depuis le réseau interne
+    statement: >-
+      L'accès à la console d'administration Open Banking est restreint aux adresses
+      IP du réseau d'administration interne. Aucune exposition sur Internet ou sur
+      le réseau de production partagé n'est autorisée.
+    source: Politique de sécurité réseau — règle 12
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-suivi-taux-exemption
+    title: Suivi mensuel du taux d'exemption SCA
+    statement: >-
+      L'équipe conformité doit produire chaque mois un tableau de bord du taux
+      d'exemption SCA par type d'opération. Un taux approchant les seuils réglementaires
+      déclenche un plan de vigilance renforcée.
+    source: RTS DSP2 Article 18 — seuils d'exemption TRA
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-webhook-retry-max-24h
+    title: Délai maximum de retry webhook limité à 24 heures
+    statement: >-
+      Les tentatives de livraison d'un webhook échoué ne peuvent pas s'étendre
+      au-delà de vingt-quatre heures après l'émission de l'événement. Les événements
+      non livrés dans ce délai sont archivés et signalés au TPP destinataire.
+    source: Accord-cadre TPP — SLA de notification
+    severity: low
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-identite-tpp-non-falsifiable
+    title: Identité TPP non falsifiable dans les journaux
+    statement: >-
+      L'identifiant de TPP enregistré dans les journaux d'audit doit être extrait
+      directement du certificat eIDAS présenté lors de la connexion, sans possibilité
+      pour le TPP de le modifier via un paramètre de requête.
+    source: Politique d'audit interne — exigences DSP2
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-annulation-pisp-avant-acsc
+    title: Annulation PISP uniquement avant l'état ACSC
+    statement: >-
+      Une demande d'annulation d'un ordre PISP ne peut être acceptée que si l'ordre
+      est dans un état antérieur à ACSC. Toute tentative d'annulation d'un ordre
+      déjà exécuté doit être rejetée avec un code d'erreur explicite.
+    source: Standard Berlin Group NextGenPSD2 — section gestion des ordres
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-chiffrement-transit-interne
+    title: Chiffrement des données DSP2 en transit sur le réseau interne
+    statement: >-
+      Les communications entre les composants DSP2 sur le réseau interne doivent
+      également être chiffrées via TLS mutuel. L'usage de canaux non chiffrés pour
+      des données de consentement, de session SCA ou de jeton est interdit.
+    source: Politique de sécurité réseau — section communications internes sensibles
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-test-unitaire-couverture
+    title: Couverture de tests automatisés des composants DSP2
+    statement: >-
+      Chaque composant DSP2 critique (passerelle, orchestrateur SCA, moteur de
+      consentement) doit maintenir une couverture de tests automatisés d'au moins
+      quatre-vingts pour cent avant toute mise en production. Les dérogations
+      nécessitent l'accord du responsable qualité.
+    source: Politique qualité logicielle interne — section APIs réglementées
+    severity: medium
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-ddsp-alertes-fraude-temps-reel
+    title: Alertes de fraude DSP2 traitées en moins de 5 minutes
+    statement: >-
+      Les alertes générées par le détecteur de fraude Open Banking doivent être
+      traitées par l'équipe de surveillance dans un délai maximum de cinq minutes.
+      Le non-traitement automatique dans ce délai déclenche une escalade vers
+      l'astreinte de niveau 2.
+    source: Procédure de gestion des fraudes — section TPP
+    severity: high
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-ddsp-annulation-pisp-initiateur
+    title: Annulation PISP ouverte au TPP initiateur uniquement
+    statement: >-
+      Le droit d'annulation d'un ordre PISP est réservé au TPP qui a initié
+      l'ordre et au client titulaire du compte, à l'exclusion de tout autre
+      prestataire. Un TPP ne peut pas annuler les ordres d'un autre TPP même
+      s'ils portent sur le même compte.
+    rationale: >-
+      Restreindre l'annulation à l'initiateur garantit l'intégrité des flux
+      de paiement et évite les annulations concurrentes qui pourraient survenir
+      si plusieurs TPP avaient accès aux ordres d'un même compte.
+    date: "2023-09-05"
+    decided_by: Comité d'architecture
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  # ── RISKS ─────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-ddsp-indispo-interface-dediee
+    title: Indisponibilité prolongée de l'interface dédiée
+    statement: >-
+      Une panne de la passerelle API supérieure à trente minutes entraînerait
+      l'obligation d'activer l'interface de secours et de notifier l'ACPR. Un incident
+      non maîtrisé pourrait menacer l'exemption d'interface de secours obtenue
+      par l'établissement.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Architecture active-active en déploiement sur deux zones géographiques
+      - Tests de chaos trimestriels validant les mécanismes de bascule automatique
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-fuite-jetons-oauth
+    title: Fuite de jetons OAuth2 TPP
+    statement: >-
+      Une fuite de jetons d'accès OAuth2 permettrait à un acteur malveillant
+      d'accéder aux données de compte des clients concernés pendant la durée de
+      vie des jetons. L'impact est amplifié si la fuite touche des refresh tokens
+      longue durée.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Durée de vie limitée à quatre-vingt-dix minutes pour les access tokens
+      - Révocation immédiate sur signalement via l'API de révocation OAuth2
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-tpp-abusif
+    title: TPP adoptant un comportement abusif
+    statement: >-
+      Un TPP mal configuré ou malveillant pourrait soumettre un volume d'appels
+      anormalement élevé, dégradant la disponibilité de l'interface pour les autres
+      TPP. Le risque est aggravé si le comportement n'est pas détecté rapidement.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Scoring comportemental en temps réel avec suspension automatique
+      - Quotas différenciés empêchant un TPP de monopoliser les ressources
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-expiration-cert-non-detectee
+    title: Expiration de certificat eIDAS non détectée à temps
+    statement: >-
+      Si le processus de surveillance des dates d'expiration des certificats eIDAS
+      échoue, un TPP actif pourrait voir ses connexions rejetées sans préavis,
+      entraînant une rupture de service non planifiée pour ses clients.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Alertes automatiques à quatre-vingt-dix et trente jours avant expiration
+      - Vérification hebdomadaire par l'équipe PKI de la liste des certificats actifs
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-fraude-pisp-remboursement
+    title: Fraude via initiation de paiement PISP
+    statement: >-
+      Un TPP compromis ou un vecteur d'hameçonnage permettant de déclencher une
+      authentification SCA frauduleuse pourrait conduire à des virements non autorisés
+      initiés via PISP. La responsabilité de l'établissement et les coûts de
+      remboursement constituent un risque financier significatif.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Scoring comportemental des TPP pour détecter les initiations anormales
+      - Processus de remboursement rapide encadré réglementairement
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-non-conformite-rapport-acpr
+    title: Non-soumission dans les délais du rapport ACPR
+    statement: >-
+      Un dysfonctionnement du moteur de reporting ou une indisponibilité des données
+      sources pourrait empêcher la soumission du rapport de disponibilité dans les
+      quinze jours réglementaires. Un retard répété expose l'établissement à une
+      mise en demeure.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Contrôles de disponibilité des données sources déclenchés dix jours avant
+        la date limite
+      - Procédure de soumission manuelle de secours documentée et testée annuellement
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-consentement-orphelin
+    title: Consentement actif sans session SCA valide associée
+    statement: >-
+      Un consentement orphelin, créé sans référence SCA valide en raison d'une
+      anomalie applicative, permettrait des accès TPP non traçables vers leur
+      autorisation d'origine. Ce type de donnée est difficile à détecter
+      a posteriori.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Contrôle d'intégrité quotidien détectant et neutralisant les consentements orphelins
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-rupture-standard-berlin
+    title: Rupture de compatibilité avec une mise à jour Berlin Group
+    statement: >-
+      Une nouvelle version du standard Berlin Group imposant des changements non
+      rétrocompatibles pourrait nécessiter des adaptations urgentes des interfaces
+      DSP2 pour éviter de bloquer les TPP ayant migré vers la nouvelle version.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Veille active sur les groupes de travail Berlin Group avec participation
+        aux consultations publiques
+      - Environnement de test dédié aux nouvelles versions du standard
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-cle-hsm-compromise
+    title: Compromission d'une clé cryptographique HSM
+    statement: >-
+      La compromission d'une clé HSM utilisée pour la signature des événements ou
+      le chiffrement des consentements nécessiterait une rotation d'urgence et
+      une investigation sur l'étendue de l'exposition. Sans procédure rodée, le
+      délai de réaction peut être trop long.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Procédure de rotation d'urgence testée semestriellement
+      - Surveillance des accès HSM avec alerte immédiate sur toute anomalie
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-surcharge-agregation
+    title: Surcharge du service d'agrégation AISP
+    statement: >-
+      Une montée en charge imprévue du nombre de TPP AISP actifs ou une campagne
+      de synchronisation massive pourrait saturer le service d'agrégation, dégradant
+      les temps de réponse pour l'ensemble des clients utilisant l'open banking.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Architecture de mise à l'échelle automatique avec seuils de déclenchement
+        définis et testés
+      - Quotas par TPP empêchant un acteur individuel de saturer les ressources partagées
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-webhook-non-livre
+    title: Événements webhook non livrés sur plusieurs heures
+    statement: >-
+      Une panne du notificateur ou une indisponibilité prolongée de l'URL du TPP
+      pourrait entraîner l'accumulation d'événements non livrés et leur archivage
+      après vingt-quatre heures, privant le TPP de notifications critiques comme
+      les révocations de consentement.
+    likelihood: medium
+    impact: low
+    mitigations:
+      - API de consultation des événements manqués disponible pour les TPP
+      - Alerte déclenchée lorsque la file d'attente d'un TPP dépasse mille événements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-rgpd-transfert-donnees
+    title: Transfert de données hors UE via un TPP
+    statement: >-
+      Un TPP établi dans un pays tiers à l'UE pourrait transférer des données
+      de compte obtenues via l'API AISP vers des serveurs hors de l'Espace
+      économique européen, en violation potentielle du RGPD si les garanties
+      appropriées n'ont pas été vérifiées.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Vérification du siège social et des conditions générales lors de l'enregistrement
+        du TPP
+      - Clause contractuelle obligatoire dans les accords TPP sur la localisation
+        des données
+    domains: [dsp2-open-banking, referentiel-client]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-taux-exemption-depasse
+    title: Dépassement du seuil de fraude pour l'exemption TRA
+    statement: >-
+      Si le taux de fraude sur les paiements PISP dépasse le seuil réglementaire
+      de zéro virgule zéro un pour cent sur la fenêtre de quatre-vingt-dix jours,
+      l'exemption TRA doit être suspendue et la SCA rendue obligatoire pour toutes
+      les transactions concernées, dégradant l'expérience client.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Tableau de bord de suivi du taux en temps réel avec alertes à 80 % du seuil
+      - Protocole de bascule vers SCA systématique activable en moins de deux heures
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-sandbox-derive-production
+    title: Dérive de la sandbox par rapport à la production
+    statement: >-
+      Si la sandbox n'est pas synchronisée avec les dernières évolutions de
+      l'interface de production, les TPP valident leur intégration dans un
+      environnement qui ne reflète plus le comportement réel, entraînant des
+      incidents lors de la mise en production.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Déploiement simultané des spécifications en sandbox et en production
+        lors de chaque release
+      - Rapport de dérive hebdomadaire comparant les schémas OpenAPI des deux
+        environnements
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-violation-non-discrimination
+    title: Violation du principe de non-discrimination des TPP
+    statement: >-
+      Un paramétrage incorrect du système de quotas ou un traitement prioritaire
+      involontaire de certains TPP pourrait être qualifié de pratique discriminatoire
+      par l'ACPR, exposant l'établissement à une sanction administrative.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Revue trimestrielle des statistiques de performance par TPP pour détecter
+        des asymétries injustifiées
+      - Audit annuel des règles de quota par l'équipe conformité
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-perte-donnees-archivage
+    title: Perte de données dans l'archiveur légal
+    statement: >-
+      Une corruption ou une perte partielle des archives de preuves SCA ou de
+      consentement rendrait impossible la production de preuves en cas de contentieux
+      et exposerait l'établissement à une présomption de responsabilité.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Tests d'intégrité mensuels par hachage sur un échantillon statistique des
+        archives
+      - Réplication géographique sur deux datacenters distincts
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-ddsp-incident-sca-fallback-abuse
+    title: Utilisation abusive du mécanisme de secours SCA
+    statement: >-
+      Si le mécanisme de secours SCA basé sur SMS OTP est trop facilement accessible,
+      des acteurs malveillants pourraient l'exploiter comme vecteur de contournement
+      de l'authentification forte principale, exposant les clients à des prises de
+      contrôle de compte.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Activation du secours SMS uniquement sur détection d'une panne avérée du
+        facteur principal, vérifiée automatiquement
+      - Alerte RSSI immédiate lors de chaque activation du mécanisme de secours
+    domains: [dsp2-open-banking]
+    created_from: synthetic
+
+edges:
+  # ── PART_OF (one per feature → its parent system) ────────────────────────
+  - type: PART_OF
+    source_id: feat-ddsp-enreg-tpp
+    target_id: sys-ddsp-portail-tpp
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-revocation-tpp
+    target_id: sys-ddsp-portail-tpp
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-tableau-bord-tpp
+    target_id: sys-ddsp-portail-tpp
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-throttling-tpp
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-signature-oauth
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-audit-log-gateway
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-choix-facteur-sca
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-exemption-sca
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-fallback-sca
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-creation-consentement
+    target_id: sys-ddsp-consentement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-revocation-consentement
+    target_id: sys-ddsp-consentement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-expiration-consentement
+    target_id: sys-ddsp-consentement
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-agregation-soldes
+    target_id: sys-ddsp-aisp-agregateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-historique-transactions
+    target_id: sys-ddsp-aisp-agregateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-init-virement-pisp
+    target_id: sys-ddsp-pisp-initiateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-statut-paiement-pisp
+    target_id: sys-ddsp-pisp-initiateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-validation-cert-eidas
+    target_id: sys-ddsp-annuaire-eidas
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-rotation-cert-eidas
+    target_id: sys-ddsp-annuaire-eidas
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-collecte-metriques-api
+    target_id: sys-ddsp-reporting-rts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-generation-rapport-acpr
+    target_id: sys-ddsp-reporting-rts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-simulation-erreurs-sandbox
+    target_id: sys-ddsp-sandbox-tpp
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-jeux-donnees-sandbox
+    target_id: sys-ddsp-sandbox-tpp
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-scoring-comportemental-tpp
+    target_id: sys-ddsp-detecteur-fraude-openbanking
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-blocage-tpp-suspect
+    target_id: sys-ddsp-detecteur-fraude-openbanking
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-eligibilite-compte
+    target_id: sys-ddsp-referentiel-comptes-ouverts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-mise-a-jour-eligibilite
+    target_id: sys-ddsp-referentiel-comptes-ouverts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-abonnement-webhook
+    target_id: sys-ddsp-notificateur-evenements
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-reprise-webhook
+    target_id: sys-ddsp-notificateur-evenements
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-emission-jeton-acces
+    target_id: sys-ddsp-gestionnaire-jetons
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-refresh-jeton
+    target_id: sys-ddsp-gestionnaire-jetons
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-liste-consentements-actifs
+    target_id: sys-ddsp-portail-client-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-historique-acces-tpp
+    target_id: sys-ddsp-portail-client-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-confirmation-provision
+    target_id: sys-ddsp-verificateur-provision
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-publication-evenement-ob
+    target_id: sys-ddsp-bus-evenements-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-rejoue-evenements
+    target_id: sys-ddsp-bus-evenements-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-suivi-exigences-rts
+    target_id: sys-ddsp-outil-conformite-rts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-gestion-derogations
+    target_id: sys-ddsp-outil-conformite-rts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-controle-plafond-pisp
+    target_id: sys-ddsp-moteur-limites-taux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-notification-depassement
+    target_id: sys-ddsp-moteur-limites-taux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-chiffrement-consentement
+    target_id: sys-ddsp-socle-chiffrement-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-publication-spec-openapi
+    target_id: sys-ddsp-catalogue-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-depreciation-version-api
+    target_id: sys-ddsp-catalogue-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-sonde-disponibilite
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-alerte-degradation
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-saisie-reclamation-ob
+    target_id: sys-ddsp-reclamations-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-restitution-fonds-ob
+    target_id: sys-ddsp-reclamations-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-negociation-version-berlin
+    target_id: sys-ddsp-connecteur-cbso
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-retry-banque-tierce
+    target_id: sys-ddsp-connecteur-cbso
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-gestion-quotas-admin
+    target_id: sys-ddsp-administration-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-consultation-logs-admin
+    target_id: sys-ddsp-administration-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-archivage-preuve-sca
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-restitution-archives
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-test-integrite-archives
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-journalisation-cbpii
+    target_id: sys-ddsp-verificateur-provision
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-supervision-lag-consommateurs
+    target_id: sys-ddsp-bus-evenements-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-tableau-bord-conformite
+    target_id: sys-ddsp-outil-conformite-rts
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-reset-plafond-journalier
+    target_id: sys-ddsp-moteur-limites-taux
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-signature-evenements-ob
+    target_id: sys-ddsp-socle-chiffrement-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-recherche-spec-api
+    target_id: sys-ddsp-catalogue-api
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-historique-disponibilite
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-reporting-reclamations-ob
+    target_id: sys-ddsp-reclamations-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-mapping-codes-erreur
+    target_id: sys-ddsp-connecteur-cbso
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-parametrage-exemptions-admin
+    target_id: sys-ddsp-administration-ob
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-synchronisation-comptes-tiers
+    target_id: sys-ddsp-aisp-agregateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-annulation-virement-pisp
+    target_id: sys-ddsp-pisp-initiateur
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-revocation-jeton-actif
+    target_id: sys-ddsp-gestionnaire-jetons
+    created_from: synthetic
+  - type: PART_OF
+    source_id: feat-ddsp-notification-expiration-consentement-client
+    target_id: sys-ddsp-portail-client-ob
+    created_from: synthetic
+
+  # ── OPERATES_ON (feature|system → business_object) ───────────────────────
+  - type: OPERATES_ON
+    source_id: feat-ddsp-enreg-tpp
+    target_id: obj-ddsp-profil-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-revocation-tpp
+    target_id: obj-ddsp-profil-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-tableau-bord-tpp
+    target_id: obj-ddsp-profil-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-signature-oauth
+    target_id: obj-ddsp-jeton-oauth
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-audit-log-gateway
+    target_id: obj-ddsp-evenement-ob
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-choix-facteur-sca
+    target_id: obj-ddsp-session-sca
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-exemption-sca
+    target_id: obj-ddsp-session-sca
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-creation-consentement
+    target_id: obj-ddsp-consentement-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-revocation-consentement
+    target_id: obj-ddsp-consentement-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-expiration-consentement
+    target_id: obj-ddsp-consentement-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-agregation-soldes
+    target_id: obj-ddsp-compte-agregable
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-historique-transactions
+    target_id: obj-ddsp-compte-agregable
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-init-virement-pisp
+    target_id: obj-ddsp-ordre-paiement-pisp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-statut-paiement-pisp
+    target_id: obj-ddsp-ordre-paiement-pisp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-validation-cert-eidas
+    target_id: obj-ddsp-certificat-eidas
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-rotation-cert-eidas
+    target_id: obj-ddsp-certificat-eidas
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-generation-rapport-acpr
+    target_id: obj-ddsp-rapport-disponibilite
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-scoring-comportemental-tpp
+    target_id: obj-ddsp-score-risque-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-blocage-tpp-suspect
+    target_id: obj-ddsp-score-risque-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-emission-jeton-acces
+    target_id: obj-ddsp-jeton-oauth
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-refresh-jeton
+    target_id: obj-ddsp-jeton-oauth
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-confirmation-provision
+    target_id: obj-ddsp-plafond-pisp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-abonnement-webhook
+    target_id: obj-ddsp-webhook-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-reprise-webhook
+    target_id: obj-ddsp-webhook-tpp
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-publication-evenement-ob
+    target_id: obj-ddsp-evenement-ob
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-chiffrement-consentement
+    target_id: obj-ddsp-cle-hsm
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-publication-spec-openapi
+    target_id: obj-ddsp-spec-api-ouverte
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-saisie-reclamation-ob
+    target_id: obj-ddsp-reclamation-ob
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-restitution-fonds-ob
+    target_id: obj-ddsp-reclamation-ob
+    created_from: synthetic
+  - type: OPERATES_ON
+    source_id: feat-ddsp-archivage-preuve-sca
+    target_id: obj-ddsp-archive-preuve
+    created_from: synthetic
+
+  # ── DEPENDS_ON (system→system, feature→feature, feature→system) ──────────
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-gateway-api
+    target_id: sys-ddsp-gestionnaire-jetons
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-gateway-api
+    target_id: sys-ddsp-annuaire-eidas
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-pisp-initiateur
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-consentement
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-aisp-agregateur
+    target_id: sys-ddsp-referentiel-comptes-ouverts
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-notificateur-evenements
+    target_id: sys-ddsp-bus-evenements-ob
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-detecteur-fraude-openbanking
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-reporting-rts
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: sys-ddsp-archiveur-legal-ob
+    target_id: sys-ddsp-socle-chiffrement-ob
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-ddsp-init-virement-pisp
+    target_id: feat-ddsp-choix-facteur-sca
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-ddsp-creation-consentement
+    target_id: feat-ddsp-choix-facteur-sca
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-ddsp-blocage-tpp-suspect
+    target_id: feat-ddsp-scoring-comportemental-tpp
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-ddsp-generation-rapport-acpr
+    target_id: feat-ddsp-collecte-metriques-api
+    created_from: synthetic
+  - type: DEPENDS_ON
+    source_id: feat-ddsp-alerte-degradation
+    target_id: feat-ddsp-sonde-disponibilite
+    created_from: synthetic
+
+  # ── CONSTRAINS (constraint|decision → system|feature|business_object|project)
+  - type: CONSTRAINS
+    source_id: con-ddsp-rts-dsp2
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-rts-dsp2
+    target_id: sys-ddsp-orchestrateur-sca
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-disponibilite-interface-dediee
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-sca-obligatoire-paiement
+    target_id: feat-ddsp-init-virement-pisp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-eidas-mtls
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-latence-reponse-api
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-retention-journaux-5ans
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-rgpd-minimisation-aisp
+    target_id: feat-ddsp-historique-transactions
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-revocation-immediate-cert
+    target_id: sys-ddsp-annuaire-eidas
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-pas-scraping-client
+    target_id: sys-ddsp-aisp-agregateur
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-exemption-taux-fraude-0-01
+    target_id: feat-ddsp-exemption-sca
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-fips-140-3-hsm
+    target_id: sys-ddsp-socle-chiffrement-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-berlin-group-seul
+    target_id: sys-ddsp-catalogue-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-audit-annuel-penetration
+    target_id: proj-ddsp-test-penetration-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-consentement-lie-sca
+    target_id: feat-ddsp-creation-consentement
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-notification-incident-4h
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-tls-1-3-minimum
+    target_id: sys-ddsp-gateway-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-non-discrimination-tpp
+    target_id: feat-ddsp-throttling-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-rapport-trimestriel-obligatoire
+    target_id: proj-ddsp-reporting-acpr-auto
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-sandbox-toujours-disponible
+    target_id: sys-ddsp-sandbox-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-journalisation-immuable
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-consentement-affiche-client
+    target_id: feat-ddsp-creation-consentement
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-rotation-cles-annuelle
+    target_id: sys-ddsp-socle-chiffrement-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-test-interface-secours-mensuel
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-zero-stockage-cvv
+    target_id: sys-ddsp-pisp-initiateur
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-documentation-api-a-jour
+    target_id: feat-ddsp-publication-spec-openapi
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-acces-admin-reseau-interne
+    target_id: sys-ddsp-administration-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-suivi-taux-exemption
+    target_id: feat-ddsp-exemption-sca
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-webhook-retry-max-24h
+    target_id: feat-ddsp-reprise-webhook
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: con-ddsp-identite-tpp-non-falsifiable
+    target_id: feat-ddsp-audit-log-gateway
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-standard-berlin-group
+    target_id: sys-ddsp-catalogue-api
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-oauth2-pkce
+    target_id: feat-ddsp-emission-jeton-acces
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-consentement-90j
+    target_id: feat-ddsp-expiration-consentement
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-sandbox-obligatoire
+    target_id: sys-ddsp-sandbox-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-eidas-qwac-seulement
+    target_id: feat-ddsp-validation-cert-eidas
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-webhook-hmac-sha256
+    target_id: feat-ddsp-abonnement-webhook
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-archivage-10-ans
+    target_id: sys-ddsp-archiveur-legal-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-rate-limit-par-tpp
+    target_id: feat-ddsp-throttling-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-pas-de-bypass-sca
+    target_id: feat-ddsp-fallback-sca
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-chaos-testing-trimestriel
+    target_id: proj-ddsp-resilience-gateway
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-jeton-acces-90min
+    target_id: feat-ddsp-emission-jeton-acces
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-double-validation-suspension
+    target_id: feat-ddsp-gestion-quotas-admin
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-schema-avro-obligatoire
+    target_id: feat-ddsp-publication-evenement-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-interface-de-secours
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-pisp-confirmation-solde
+    target_id: feat-ddsp-init-virement-pisp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-purge-consentements-expires
+    target_id: obj-ddsp-consentement-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-identifiant-transaction-pisp
+    target_id: obj-ddsp-ordre-paiement-pisp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-notification-revocation-tpp
+    target_id: feat-ddsp-revocation-tpp
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-sla-disponibilite-9999
+    target_id: sys-ddsp-supervision-disponibilite
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-mfa-admin-console
+    target_id: sys-ddsp-administration-ob
+    created_from: synthetic
+  - type: CONSTRAINS
+    source_id: dec-ddsp-cbpii-reponse-binaire
+    target_id: feat-ddsp-confirmation-provision
+    created_from: synthetic
+

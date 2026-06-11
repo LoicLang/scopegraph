@@ -1,0 +1,2639 @@
+nodes:
+
+  # ── SYSTÈME 1 : Plateforme de recouvrement amiable ──────────────────────────
+  - type: system
+    id: sys-dcre-plateforme-recouvrement
+    name: Plateforme de recouvrement amiable RECOUV+
+    description: >-
+      Orchestre les campagnes de relance des créances en souffrance avant tout passage
+      en contentieux. Gère les plans d'apurement, les promesses de paiement et les
+      contacts multicanaux (courrier, e-mail, SMS, appel sortant).
+    owner_team: Équipe Recouvrement
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-relance-multicanal
+    name: Relance multicanal des créances
+    description: >-
+      Détermine automatiquement le canal de contact optimal selon le profil de débiteur
+      et l'ancienneté de l'impayé, puis déclenche l'envoi via les prestataires d'édition
+      ou de messagerie.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-plan-apurement
+    name: Gestion des plans d'apurement
+    description: >-
+      Permet à un conseiller recouvrement de proposer, négocier et enregistrer un
+      échelonnement de la dette impayée. Contrôle la cohérence des montants et génère
+      l'accord écrit signable en ligne.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-suivi-promesse
+    name: Suivi des promesses de paiement
+    description: >-
+      Enregistre les engagements verbaux ou écrits du débiteur et surveille leur
+      respect aux échéances convenues. Déclenche une alerte conseiller en cas de
+      non-réalisation dans les 48 heures suivant la date promise.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-scoring-recouvrement
+    name: Scoring de récupérabilité
+    description: >-
+      Calcule un score de probabilité de recouvrement à 90 jours pour chaque créance
+      en souffrance, permettant de prioriser l'effort humain sur les dossiers à
+      meilleur potentiel de récupération.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-passage-contentieux
+    name: Passage en contentieux
+    description: >-
+      Transmet automatiquement le dossier à la cellule juridique lorsque les seuils
+      d'ancienneté ou de montant sont atteints et qu'aucun plan d'apurement n'est en
+      cours. Génère le dossier contentieux réglementaire.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 2 : Moteur de rachat de crédit ──────────────────────────────────
+  - type: system
+    id: sys-dcre-moteur-rachat
+    name: Moteur de rachat de crédit RACHATPRO
+    description: >-
+      Calcule les propositions de regroupement ou de rachat de crédits existants,
+      en intégrant les offres concurrentes, le taux de sortie et les frais de remboursement
+      anticipé. Produit une offre comparative personnalisée.
+    owner_team: Équipe Crédit Restructuration
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-simulation-rachat
+    name: Simulation de regroupement de crédits
+    description: >-
+      Agrège les encours de prêts multiples d'un client et projette un scénario de
+      rachat unique avec mensualité réduite, durée allongée et coût total comparé.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-indemnite-remboursement
+    name: Calcul d'indemnités de remboursement anticipé
+    description: >-
+      Applique le barème réglementaire des indemnités de remboursement anticipé (IRA)
+      selon le type de crédit et la date de souscription, conformément à la directive
+      européenne sur le crédit hypothécaire.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 3 : Gestionnaire d'assurance emprunteur ─────────────────────────
+  - type: system
+    id: sys-dcre-gestionnaire-assurance
+    name: Gestionnaire d'assurance emprunteur ASSUREMP
+    description: >-
+      Gère le cycle de vie des contrats d'assurance adossés aux crédits immobiliers
+      et à la consommation : souscription, délégation d'assurance, questionnaire médical,
+      gestion des sinistres et résiliation.
+    owner_team: Équipe Assurance Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-souscription-assurance
+    name: Souscription assurance emprunteur
+    description: >-
+      Guide l'emprunteur dans la déclaration de son état de santé via un questionnaire
+      médical simplifié ou étendu. Transmet le dossier à l'assureur partenaire pour
+      décision d'acceptation ou de tarification majorée.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-delegation-assurance
+    name: Traitement de la délégation d'assurance
+    description: >-
+      Instruit les demandes de substitution d'assurance par une compagnie externe,
+      vérifie l'équivalence des garanties selon la grille de référence réglementaire
+      et édite l'accord ou le refus motivé dans les délais légaux.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-gestion-sinistre
+    name: Gestion des sinistres emprunteur
+    description: >-
+      Reçoit et instruit les déclarations de sinistre (décès, invalidité, perte d'emploi).
+      Coordonne les pièces justificatives, informe le service comptable des prises en
+      charge et suit l'état de règlement avec l'assureur.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 4 : Système de garanties crédit ─────────────────────────────────
+  - type: system
+    id: sys-dcre-garanties-credit
+    name: Système de gestion des garanties GARANTCRED
+    description: >-
+      Centralise les sûretés attachées aux crédits : hypothèques, cautions, nantissements
+      et garanties d'organismes de cautionnement mutuel. Gère l'inscription, la main-
+      levée et la valorisation périodique des actifs en garantie.
+    owner_team: Équipe Garanties et Sûretés
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-inscription-hypotheque
+    name: Inscription et mainlevée d'hypothèque
+    description: >-
+      Prépare les actes d'inscription hypothécaire en lien avec le notaire, suit
+      l'enregistrement auprès du Service de Publicité Foncière et déclenche la
+      procédure de mainlevée à l'extinction du prêt.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-caution-organisme
+    name: Gestion des cautions d'organisme mutuel
+    description: >-
+      Interface avec les organismes de cautionnement mutuel (OCM) pour la demande
+      et l'acceptation de caution sur les prêts immobiliers. Enregistre la garantie
+      dans le dossier et gère les appels en garantie en cas de défaut.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-valorisation-garantie
+    name: Valorisation périodique des sûretés
+    description: >-
+      Recalcule annuellement le ratio loan-to-value en interrogeant un index de prix
+      immobiliers ou en intégrant l'expertise transmise par le client. Signale les
+      sous-collatéralisations au gestionnaire de risque.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 5 : Plateforme surendettement ───────────────────────────────────
+  - type: system
+    id: sys-dcre-plateforme-surendettement
+    name: Plateforme de traitement du surendettement SURDETT
+    description: >-
+      Gère les dossiers de clients ayant déposé un dossier de surendettement auprès
+      de la Banque de France. Coordonne la suspension des exigibilités, le traitement
+      des créances dans le cadre des plans conventionnels et des rétablissements
+      personnels.
+    owner_team: Équipe Surendettement et Médiation
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-suspension-exigibilite
+    name: Suspension des exigibilités
+    description: >-
+      À réception de la décision de recevabilité de la Banque de France, bloque
+      automatiquement les prélèvements et relances sur les créances concernées,
+      conformément à l'article L711-2 du Code de la consommation.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-plan-conventionnel
+    name: Suivi des plans conventionnels de remboursement
+    description: >-
+      Enregistre les termes du plan validé par la commission et suit le respect des
+      échéances de remboursement réaménagées. Déclenche une alerte en cas d'incident
+      de paiement sur le plan en cours d'exécution.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-retablissement-personnel
+    name: Traitement du rétablissement personnel
+    description: >-
+      Instruite la procédure de rétablissement personnel sans liquidation judiciaire
+      ou avec liquidation judiciaire simplifiée. Génère les états de créances et
+      coordonne les effacements comptables à la clôture de la procédure.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 6 : Portail crédit immobilier ───────────────────────────────────
+  - type: system
+    id: sys-dcre-portail-immo
+    name: Portail de demande de crédit immobilier IMMOPORT
+    description: >-
+      Front-end dédié à l'instruction des dossiers de prêt immobilier : collecte des
+      pièces, simulation du financement, validation de la capacité d'emprunt et
+      transmission à l'équipe d'analystes crédit pour décision.
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-simulation-immo
+    name: Simulation de financement immobilier
+    description: >-
+      Calcule la capacité d'emprunt, le taux d'endettement prévisionnel et le coût
+      total du crédit en intégrant le taux d'intérêt du moment, les frais de notaire
+      et l'assurance emprunteur obligatoire.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-collecte-pieces
+    name: Collecte et vérification des pièces justificatives
+    description: >-
+      Pilote le dépôt numérique des justificatifs (bulletins de salaire, avis
+      d'imposition, compromis de vente) et applique des contrôles de complétude
+      avant toute instruction par l'analyste.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-analyse-capacite
+    name: Analyse de la capacité d'emprunt
+    description: >-
+      Évalue le dossier selon les normes HCSF (taux d'effort maximal, durée maximale)
+      et génère un avis préliminaire automatisé transmis à l'analyste pour validation
+      finale.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-offre-pret-immobilier
+    name: Édition de l'offre de prêt immobilier
+    description: >-
+      Génère l'offre de prêt réglementée (mention Secci, délai de réflexion de 10
+      jours) et la transmet au client par voie dématérialisée. Archive l'exemplaire
+      signé dans le dossier crédit.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 7 : Registre des incidents de paiement crédit ───────────────────
+  - type: system
+    id: sys-dcre-registre-incidents
+    name: Registre interne des incidents de paiement INCITRACK
+    description: >-
+      Consigne tous les incidents de paiement sur crédits : impayés, passages en
+      perte, provisions et reprises. Alimente les déclarations réglementaires à la
+      Banque de France (FICP) et les reportings internes de risque.
+    owner_team: Équipe Risque Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-declaration-ficp
+    name: Déclaration FICP
+    description: >-
+      Transmet automatiquement les inscriptions et levées d'incidents caractérisés
+      au Fichier national des Incidents de remboursement des Crédits aux Particuliers,
+      dans le respect des délais réglementaires et du format CFONB.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-suivi-impaye
+    name: Suivi des impayés et provisions
+    description: >-
+      Classe les créances selon la grille de dépréciation IFRS 9 (stages 1, 2, 3)
+      et calcule les provisions comptables correspondantes à chaque arrêté trimestriel.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-passage-perte
+    name: Constatation des passages en perte
+    description: >-
+      Initie le workflow de perte comptable sur décision du comité risque, génère
+      l'écriture de dépréciation définitive et ferme le dossier recouvrement associé.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 8 : Référentiel des taux crédit ─────────────────────────────────
+  - type: system
+    id: sys-dcre-referentiel-taux
+    name: Référentiel des taux et barèmes TAUXREF
+    description: >-
+      Centralise les grilles tarifaires de crédit (TAEG, taux nominal, frais de
+      dossier) et les paramètres réglementaires (taux d'usure, taux de l'usure
+      mensuel BCEAO). Distribue ces données aux systèmes d'origination et de simulation.
+    owner_team: Équipe Tarification Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-publication-bareme
+    name: Publication et versionning des barèmes
+    description: >-
+      Gère le cycle de vie des grilles tarifaires : saisie, validation, date d'effet
+      et archivage des versions antérieures. Toute modification est tracée avec son
+      auteur et le contexte de décision.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-controle-usure
+    name: Contrôle du taux d'usure
+    description: >-
+      Vérifie en temps réel que tout TAEG proposé reste inférieur au taux d'usure
+      publié par la Banque de France. Bloque l'édition de l'offre et alerte le
+      service tarification si le seuil est dépassé.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-diffusion-taux
+    name: Diffusion des taux aux systèmes consommateurs
+    description: >-
+      Expose une API REST versionnée permettant aux portails et moteurs de simulation
+      d'interroger les barèmes en vigueur. Les données sont mises en cache avec
+      invalidation sur événement de publication.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 9 : Moteur d'aide à la décision crédit ──────────────────────────
+  - type: system
+    id: sys-dcre-moteur-decision
+    name: Moteur d'aide à la décision crédit DECIDCRED
+    description: >-
+      Agrège les signaux de risque (bureau de crédit externe, historique interne,
+      scoring comportemental) et produit une recommandation d'octroi avec niveau
+      de confiance. Opère en mode batch pour les campagnes et en temps réel pour
+      les demandes en ligne.
+    owner_team: Équipe Data Science Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-interrogation-bureau
+    name: Interrogation du bureau de crédit
+    description: >-
+      Appelle l'API du bureau de crédit externe (CREDITCHECK) lors de toute nouvelle
+      demande. Intègre le score FICO-équivalent et la liste des incidents déclarés
+      dans le dossier de décision automatisé.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-scoring-comportemental
+    name: Scoring comportemental interne
+    description: >-
+      Exploite l'historique de compte courant, les comportements d'épargne et la
+      régularité des remboursements existants pour enrichir le score d'octroi avec
+      une dimension relationnelle.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-recommandation-octroi
+    name: Recommandation d'octroi automatisée
+    description: >-
+      Synthèse les signaux en une décision (accordé, refusé, renvoi vers analyste)
+      assortie d'un niveau de confiance. Les dossiers à faible confiance sont
+      systématiquement routés vers un analyste humain.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-motifs-refus
+    name: Génération des motifs de refus
+    description: >-
+      Produit une explication lisible des principaux facteurs ayant conduit au refus,
+      conformément à l'obligation de transparence algorithmique (RGPD art. 22 et
+      directive crédit consommation).
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 10 : Plateforme de médiation crédit ─────────────────────────────
+  - type: system
+    id: sys-dcre-mediation
+    name: Plateforme de médiation et réclamations MEDIASOL
+    description: >-
+      Reçoit et instruit les réclamations liées aux crédits (refus contesté, taux
+      erroné, incident injustifié). Gère le workflow de traitement, les délais
+      réglementaires de réponse et l'escalade vers le médiateur bancaire si nécessaire.
+    owner_team: Équipe Relation Client Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-enregistrement-reclamation
+    name: Enregistrement et qualification des réclamations
+    description: >-
+      Catégorise chaque réclamation entrante par nature (octroi, taux, assurance,
+      recouvrement) et l'affecte à l'équipe spécialisée compétente avec le délai
+      de traitement réglementaire correspondant.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-escalade-mediateur
+    name: Escalade vers le médiateur bancaire
+    description: >-
+      Lorsqu'une réclamation n'est pas résolue à la satisfaction du client dans le
+      délai légal, génère le dossier de saisine du médiateur et notifie le client
+      des coordonnées et modalités de saisine.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 11 : Moteur de prêt personnel en ligne ──────────────────────────
+  - type: system
+    id: sys-dcre-pret-personnel-ligne
+    name: Moteur de prêt personnel en ligne PRESTOFINANCE
+    description: >-
+      Orchestre le parcours 100 % digital de souscription d'un prêt personnel :
+      simulation, identité numérique, signature électronique et virement du capital
+      sous 24 heures. Cible les clients banque en ligne et les prospects entrants.
+    owner_team: Équipe Digital Crédit
+    domains: [credit, banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-parcours-digital-pret
+    name: Parcours digital de souscription prêt personnel
+    description: >-
+      Guide l'utilisateur en moins de dix étapes depuis la simulation jusqu'à la
+      signature électronique de l'offre de crédit. Intègre les contrôles KYC et
+      la vérification du revenu via agrégation bancaire optionnelle.
+    domains: [credit, banque-en-ligne]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-agregation-revenus
+    name: Agrégation bancaire des revenus déclarés
+    description: >-
+      Connecte le parcours de souscription à un agrégateur de données bancaires
+      pour corroborer les revenus déclarés par le client sans demande de bulletins
+      de salaire, avec consentement explicite du demandeur.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-deblocage-fonds-rapide
+    name: Déblocage rapide des fonds
+    description: >-
+      Déclenche le virement du capital prêté vers le compte courant du client dès
+      l'expiration du délai de rétractation légal de 14 jours ou en cas de renonciation
+      expresse au délai.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 12 : Tableau de bord risque portefeuille ────────────────────────
+  - type: system
+    id: sys-dcre-tableau-bord-risque
+    name: Tableau de bord risque portefeuille RISKBOARD
+    description: >-
+      Consolide les indicateurs de risque crédit du portefeuille (taux de défaut,
+      LGD, EAD, NPL ratio) et les expose aux équipes risque et à la direction.
+      Alimente les reportings Bâle III et les stress tests prudentiels.
+    owner_team: Équipe Risque et Bâle
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-calcul-npl
+    name: Calcul et suivi du taux NPL
+    description: >-
+      Calcule quotidiennement le ratio de prêts non performants (Non-Performing Loans)
+      ventilé par segment de clientèle, type de produit et millésime d'octroi.
+      Alerte la direction risque dès franchissement d'un seuil défini.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-stress-test
+    name: Génération des scénarios de stress test
+    description: >-
+      Applique des chocs macroéconomiques paramétrables (hausse du chômage, remontée
+      des taux) sur le portefeuille crédit pour estimer les pertes attendues en
+      scénario adverse, conformément aux exigences EBA.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-reporting-bale
+    name: Production du reporting Bâle III crédit
+    description: >-
+      Génère les formulaires COREP relatifs au risque de crédit (C 07.00 à C 09.02)
+      et les transmet à l'autorité de supervision dans les délais réglementaires.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 13 : Moteur de crédit bail ──────────────────────────────────────
+  - type: system
+    id: sys-dcre-credit-bail
+    name: Moteur de crédit-bail et LOA LEASEPRO
+    description: >-
+      Gère les contrats de crédit-bail mobilier et de location avec option d'achat,
+      depuis l'origination jusqu'à la levée d'option ou la restitution du bien.
+      Calcule les loyers, la valeur résiduelle et les amortissements comptables.
+    owner_team: Équipe Crédit-Bail
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-origination-bail
+    name: Origination des contrats de crédit-bail
+    description: >-
+      Instruit la demande de crédit-bail : vérification du bien financé, évaluation
+      du preneur, constitution du contrat et signature. Gère les conditions suspensives
+      liées à la livraison effective du bien.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-gestion-loyers
+    name: Gestion et encaissement des loyers
+    description: >-
+      Calcule le tableau de loyers, déclenche les prélèvements à l'échéance et
+      traite les incidents de paiement en appliquant les pénalités contractuelles.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-levee-option
+    name: Gestion de la levée d'option d'achat
+    description: >-
+      Pilote la procédure de levée d'option en fin de contrat : calcul du prix
+      résiduel, génération de la facture, transfert de propriété et clôture du
+      contrat de bail dans le système comptable.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 14 : Plateforme de notation interne ─────────────────────────────
+  - type: system
+    id: sys-dcre-notation-interne
+    name: Plateforme de notation interne RATINGLAB
+    description: >-
+      Attribue et maintient les notations internes (rating) des contreparties
+      entreprises et professionnels ayant des engagements de crédit. Calibre les
+      modèles de probabilité de défaut (PD) et alerte sur les dégradations.
+    owner_team: Équipe Modèles Risque
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-calibrage-pd
+    name: Calibrage des modèles de probabilité de défaut
+    description: >-
+      Entraîne et recalibre périodiquement les modèles PD à partir des données
+      historiques de défaut observées. Documente les performances (Gini, KS) dans
+      le registre modèle réglementaire.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-attribution-rating
+    name: Attribution et mise à jour des ratings
+    description: >-
+      Calcule le rating d'une contrepartie à l'entrée en relation et le révise
+      annuellement ou sur événement déclencheur (alerte comptable, dégradation
+      externe). Notifie les gestionnaires de compte concernés.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 15 : Plateforme de crédit professionnel ─────────────────────────
+  - type: system
+    id: sys-dcre-credit-pro
+    name: Plateforme de crédit professionnel PROPULS
+    description: >-
+      Instruite les demandes de crédit des clients professionnels et TPE : découvert
+      autorisé, escompte commercial, facilités de caisse et prêts d'équipement.
+      Intègre l'analyse financière et la consultation des registres légaux.
+    owner_team: Équipe Crédit Professionnel
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-analyse-financiere-pro
+    name: Analyse financière des dossiers professionnels
+    description: >-
+      Importe les bilans et comptes de résultats du client professionnel via API
+      comptable ou saisie manuelle, calcule les ratios clés (solvabilité, liquidité,
+      rentabilité) et génère une fiche d'analyse standardisée.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-decouverte-autorisee
+    name: Gestion des autorisations de découvert professionnel
+    description: >-
+      Paramètre et surveille les lignes de découvert autorisé pour les comptes
+      professionnels. Déclenche une revue annuelle obligatoire et alerte en cas
+      de dépassement ou d'utilisation prolongée.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-escompte-commercial
+    name: Escompte de créances commerciales
+    description: >-
+      Traite les demandes de mobilisation de créances clients en escompte ou en
+      affacturage interne. Vérifie la validité des effets, calcule l'agios et
+      crédite le compte du cédant.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 16 : Plateforme de simulation collective ────────────────────────
+  - type: system
+    id: sys-dcre-simulation-collective
+    name: Moteur de simulation collective SIMCOL
+    description: >-
+      Permet aux conseillers de générer en masse des simulations de crédit pour
+      des portefeuilles de prospects. Utilisé lors de campagnes de rachat ou de
+      phoning pour préparer des offres personnalisées avant le premier contact.
+    owner_team: Équipe Animation Commerciale Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-generation-masse-simulations
+    name: Génération en masse de simulations
+    description: >-
+      Traite un fichier d'entrée contenant des profils prospects et retourne pour
+      chacun une simulation de crédit avec TAEG, mensualité et durée optimale,
+      sous forme de fichier exportable pour les équipes commerciales.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-filtrage-eligibilite-batch
+    name: Filtrage d'éligibilité en batch
+    description: >-
+      Applique les critères d'éligibilité de base (score minimum, taux d'endettement,
+      fichage FICP) sur l'ensemble du fichier prospect pour exclure d'emblée les
+      cas non finançables avant l'étape de simulation détaillée.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 17 : Moteur de prêt relais ──────────────────────────────────────
+  - type: system
+    id: sys-dcre-pret-relais
+    name: Moteur de prêt relais RELAISFINANCE
+    description: >-
+      Instruite et gère les prêts relais accordés dans l'attente de la vente d'un
+      bien immobilier. Calcule la quotité finançable, surveille l'échéance du relais
+      et orchestre le remboursement anticipé à la réception du produit de cession.
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-calcul-quotite-relais
+    name: Calcul de la quotité finançable en relais
+    description: >-
+      Estime la valeur du bien mis en vente à partir d'une évaluation transmise
+      par un expert ou un outil d'estimation automatisée, puis applique la quotité
+      maximale définie par la politique de crédit (en général 70-80 %).
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-remboursement-relais
+    name: Remboursement du prêt relais à la vente
+    description: >-
+      Détecte le virement du produit de cession sur le compte du client et déclenche
+      le remboursement automatique du capital relais, avec calcul des intérêts
+      intercalaires et clôture du contrat.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 18 : Portail partenaires courtiers ──────────────────────────────
+  - type: system
+    id: sys-dcre-portail-courtiers
+    name: Portail partenaires courtiers COURTNET
+    description: >-
+      Interface dédiée aux courtiers en crédit agréés : dépôt et suivi des dossiers
+      de demande, accès aux barèmes, notification des décisions et signature
+      dématérialisée des mandats de courtage.
+    owner_team: Équipe Partenariats Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-depot-dossier-courtier
+    name: Dépôt de dossier par le courtier
+    description: >-
+      Permet au courtier de saisir un dossier complet directement dans le portail,
+      avec vérification d'exhaustivité des pièces et contrôle préliminaire d'éligibilité
+      avant transmission à l'instructeur interne.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-suivi-dossier-courtier
+    name: Suivi en temps réel du dossier courtier
+    description: >-
+      Expose l'état d'avancement du dossier (en cours d'instruction, accord de
+      principe, offre émise, signé) au courtier via le portail, avec historique
+      des échanges et notifications par e-mail.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 19 : Système d'archivage dossiers crédit ────────────────────────
+  - type: system
+    id: sys-dcre-archivage-dossiers
+    name: Système d'archivage des dossiers crédit ARCHICRED
+    description: >-
+      Conserve l'intégralité des pièces constitutives des dossiers crédit dans un
+      coffre-fort numérique conforme eIDAS. Gère les durées de conservation réglementaires
+      et l'accès contrôlé en lecture pour les équipes d'audit et de conformité.
+    owner_team: Équipe Conformité Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-conservation-contrats
+    name: Conservation des contrats et offres
+    description: >-
+      Archive l'offre de prêt signée, les conditions générales et les avenants
+      éventuels dans le coffre-fort numérique avec horodatage qualifié et intégrité
+      garantie par signature cryptographique.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-acces-audit
+    name: Accès auditable aux dossiers archivés
+    description: >-
+      Fournit une interface de consultation aux équipes d'audit interne, de conformité
+      et de contrôle de gestion. Chaque accès est journalisé avec l'identité du
+      consultant et l'objet de la consultation.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 20 : Moteur de crédit revolving ──────────────────────────────────
+  - type: system
+    id: sys-dcre-credit-revolving
+    name: Moteur de crédit revolving REVOLVCRED
+    description: >-
+      Gère les réserves de crédit renouvelable associées aux cartes de crédit et
+      aux prêts permanents. Pilote les tirages, les remboursements partiels, la
+      facturation des intérêts mensuels et les relevés réglementaires.
+    owner_team: Équipe Crédit Revolving
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-gestion-reserve
+    name: Gestion de la réserve et des tirages
+    description: >-
+      Surveille l'encours utilisé en temps réel, autorise ou refuse les nouveaux
+      tirages selon le capital disponible et les règles de plafond, et recalcule
+      la réserve disponible après chaque opération.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-facturation-interets-revolving
+    name: Facturation mensuelle des intérêts revolving
+    description: >-
+      Calcule les intérêts dus sur l'encours moyen du mois et les facture au client
+      via le relevé mensuel, en distinguant le capital restant dû de la partie
+      intérêts selon les normes Lagarde de transparence.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-alerte-surutilisation
+    name: Alertes de surutilisation de la réserve
+    description: >-
+      Notifie le client et le conseiller lorsque le taux d'utilisation de la réserve
+      dépasse 80 % pendant plus de trois mois consécutifs, signal précurseur de
+      fragilité financière selon la politique de prévention du surendettement.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 21 : Référentiel produits crédit ────────────────────────────────
+  - type: system
+    id: sys-dcre-referentiel-produits
+    name: Référentiel des produits crédit PRODCATALOG
+    description: >-
+      Catalogue les produits de crédit commercialisés : caractéristiques, durées
+      éligibles, montants min/max, garanties requises et documents contractuels
+      de référence. Sert de source unique pour les systèmes d'origination.
+    owner_team: Équipe Marketing Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-catalogue-produits
+    name: Catalogue et paramétrage des produits
+    description: >-
+      Permet aux équipes marketing de créer et publier de nouveaux produits crédit
+      avec leurs règles d'éligibilité, leurs plafonds et leurs documents contractuels,
+      sans intervention de développement informatique.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-exposition-api-produits
+    name: Exposition API du catalogue produits
+    description: >-
+      Fournit un endpoint REST permettant aux frontaux de simulation et d'origination
+      d'interroger en temps réel les caractéristiques du produit sélectionné par
+      le client.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 22 : Plateforme de prévention fraude crédit ─────────────────────
+  - type: system
+    id: sys-dcre-prevention-fraude-credit
+    name: Plateforme de prévention fraude crédit FRAUDCRED
+    description: >-
+      Analyse les dossiers de demande de crédit à la recherche de signaux de fraude
+      documentaire et d'usurpation d'identité. Croise les données déclarées avec
+      des référentiels tiers et des règles expertes.
+    owner_team: Équipe Fraude Crédit
+    domains: [credit, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-detection-fraude-documentaire
+    name: Détection de fraude documentaire
+    description: >-
+      Analyse les pièces justificatives téléchargées (bulletins de salaire, avis
+      d'imposition) à l'aide de modèles de vision pour détecter les altérations,
+      incohérences de police ou métadonnées suspectes.
+    domains: [credit, lcb-ft]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-controle-identite-biometrique
+    name: Contrôle d'identité biométrique
+    description: >-
+      Confronte la photo du document d'identité à un selfie du demandeur via un
+      moteur de reconnaissance faciale pour confirmer l'identité déclarée lors des
+      souscriptions en ligne à enjeu élevé.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 23 : Moteur de renégociation ────────────────────────────────────
+  - type: system
+    id: sys-dcre-moteur-renegociation
+    name: Moteur de renégociation de taux RENEGOTAUX
+    description: >-
+      Instruite les demandes de renégociation de taux d'intérêt initiées par les
+      clients sur leurs prêts immobiliers en cours. Évalue la viabilité économique
+      pour la banque et génère une contre-proposition ou un avenant.
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-eligibilite-renegociation
+    name: Éligibilité à la renégociation de taux
+    description: >-
+      Vérifie les critères d'éligibilité (différentiel de taux suffisant, durée
+      résiduelle minimale, comportement de paiement irréprochable) avant de présenter
+      une proposition chiffrée au client.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-avenant-renegociation
+    name: Génération de l'avenant de renégociation
+    description: >-
+      Produit l'avenant contractuel modifiant le taux et les conditions de remboursement,
+      le soumet à signature électronique et met à jour le tableau d'amortissement
+      dans le système de gestion des prêts.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 24 : Plateforme de consolidation IFRS 9 ─────────────────────────
+  - type: system
+    id: sys-dcre-consolidation-ifrs9
+    name: Plateforme de consolidation IFRS 9 IFRSCONSOLID
+    description: >-
+      Centralise le calcul des dépréciations attendues (ECL) sur l'ensemble du
+      portefeuille crédit selon la norme IFRS 9. Intègre les paramètres de risque
+      (PD, LGD, EAD) issus des modèles internes et produit les écritures comptables.
+    owner_team: Équipe Finance et Comptabilité Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-calcul-ecl
+    name: Calcul des pertes de crédit attendues (ECL)
+    description: >-
+      Applique les formules ECL sur les trois stages IFRS 9 pour chaque contrat
+      de crédit actif. Intègre des informations prospectives macroéconomiques
+      (forward-looking) dans les modèles de perte.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-affectation-stage
+    name: Classification et suivi des stages IFRS 9
+    description: >-
+      Attribue chaque contrat à un stage (1, 2 ou 3) selon les critères de
+      dégradation significative du risque et surveille les transferts inter-stages
+      à chaque arrêté mensuel.
+    domains: [credit]
+    created_from: synthetic
+
+  # ── SYSTÈME 25 : Plateforme de communication client crédit ──────────────────
+  - type: system
+    id: sys-dcre-communication-client
+    name: Plateforme de communication client crédit CREDNOTIF
+    description: >-
+      Centralise tous les envois de documents et notifications aux emprunteurs :
+      offres de prêt, tableaux d'amortissement, relevés annuels, alertes d'impayé
+      et notifications réglementaires. Assure la traçabilité des envois.
+    owner_team: Équipe Éditique Crédit
+    domains: [credit, editique-reporting]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-envoi-offre-pret
+    name: Envoi dématérialisé de l'offre de prêt
+    description: >-
+      Transmet l'offre de prêt au client via son espace en ligne et par courrier
+      postal en parallèle. Enregistre la date de présentation et surveille le
+      délai de réflexion légal avant toute acceptation.
+    domains: [credit]
+    created_from: synthetic
+
+  - type: feature
+    id: feat-dcre-releve-annuel-credit
+    name: Production du relevé annuel de crédit
+    description: >-
+      Génère chaque année le document récapitulatif des remboursements effectués,
+      du capital restant dû et des intérêts payés pour chaque prêt actif, envoyé
+      au client au 31 janvier de l'année suivante.
+    domains: [credit, editique-reporting]
+    created_from: synthetic
+
+  # ── BUSINESS OBJECTS ────────────────────────────────────────────────────────
+  - type: business_object
+    id: obj-dcre-dossier-recouvrement
+    name: Dossier de recouvrement
+    description: >-
+      Représente l'ensemble des informations relatives à une créance en souffrance :
+      montant impayé, historique des relances, plans d'apurement et statut de
+      la procédure en cours.
+    steward_team: Équipe Recouvrement
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-plan-apurement
+    name: Plan d'apurement de dette
+    description: >-
+      Convention d'échelonnement négociée entre le débiteur et la banque, définissant
+      le montant des versements périodiques et la date de fin de remboursement de la
+      créance réaménagée.
+    steward_team: Équipe Recouvrement
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-contrat-assurance-emprunteur
+    name: Contrat d'assurance emprunteur
+    description: >-
+      Contrat couvrant l'emprunteur contre les risques de décès, d'invalidité et
+      de perte d'emploi. Peut être souscrit auprès de l'assureur groupe ou délégué
+      à un assureur externe présentant des garanties équivalentes.
+    steward_team: Équipe Assurance Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-garantie-hypothecaire
+    name: Garantie hypothécaire
+    description: >-
+      Sûreté réelle inscrite sur un bien immobilier au profit de la banque créancière.
+      Conférant un droit de préférence et un droit de suite en cas de défaillance
+      de l'emprunteur.
+    steward_team: Équipe Garanties et Sûretés
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-dossier-surendettement
+    name: Dossier de surendettement
+    description: >-
+      Dossier déposé par un particulier auprès de la commission de surendettement
+      de la Banque de France. Recense l'ensemble des créances, revenus et charges
+      afin d'établir un plan de remboursement ou un effacement.
+    steward_team: Équipe Surendettement et Médiation
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-offre-pret-immobilier
+    name: Offre de prêt immobilier
+    description: >-
+      Document contractuel préréglementé remis à l'emprunteur avant toute acceptation,
+      comportant le montant, la durée, le TAEG, les garanties exigées et les
+      conditions suspensives de déblocage.
+    steward_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-incident-paiement
+    name: Incident de paiement crédit
+    description: >-
+      Événement enregistré lorsqu'une échéance de remboursement n'est pas honorée
+      à sa date de valeur. Déclenche une séquence de relance et, au-delà d'un
+      seuil, une déclaration FICP.
+    steward_team: Équipe Risque Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-bareme-taux
+    name: Barème de taux crédit
+    description: >-
+      Grille tarifaire définissant le TAEG applicable pour chaque combinaison de
+      produit, durée, montant et profil de risque client. Référence normative pour
+      tous les systèmes de simulation et d'origination.
+    steward_team: Équipe Tarification Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-demande-credit
+    name: Demande de crédit
+    description: >-
+      Formulaire structuré capturant les informations nécessaires à l'instruction
+      d'une demande de prêt : montant demandé, durée souhaitée, objet du financement
+      et pièces justificatives associées.
+    steward_team: Équipe Digital Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-notation-contrepartie
+    name: Notation de contrepartie
+    description: >-
+      Évaluation chiffrée ou alpha-numérique du risque de défaut d'une contrepartie,
+      exprimée sur une échelle interne. Utilisée pour le calcul des exigences en
+      fonds propres et la tarification du risque.
+    steward_team: Équipe Modèles Risque
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-credit-bail-contrat
+    name: Contrat de crédit-bail
+    description: >-
+      Convention par laquelle le bailleur met un bien à disposition du preneur
+      moyennant des loyers périodiques, avec option d'achat à terme à un prix
+      résiduel convenu.
+    steward_team: Équipe Crédit-Bail
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-reserve-revolving
+    name: Réserve de crédit renouvelable
+    description: >-
+      Enveloppe de crédit rechargeable mise à disposition du client, dont le capital
+      disponible se reconstitue au fur et à mesure des remboursements. Soumise aux
+      dispositions spécifiques de la loi Lagarde.
+    steward_team: Équipe Crédit Revolving
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-avenant-pret
+    name: Avenant de prêt
+    description: >-
+      Document contractuel modificatif d'un prêt existant, actant un changement
+      de taux, de durée ou de garantie convenu entre l'emprunteur et la banque.
+      Doit être signé par les deux parties pour produire ses effets.
+    steward_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-sinistre-assurance
+    name: Déclaration de sinistre assurance emprunteur
+    description: >-
+      Acte par lequel l'emprunteur ou ses ayants droit notifient à l'assureur la
+      survenance d'un événement garanti (décès, invalidité, chômage) afin de
+      déclencher la prise en charge des échéances.
+    steward_team: Équipe Assurance Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-rapport-stress-test
+    name: Rapport de stress test crédit
+    description: >-
+      Synthèse des pertes potentielles estimées sur le portefeuille de crédit
+      sous différents scénarios macroéconomiques adverses, produite trimestriellement
+      à destination des instances de gouvernance et de la supervision prudentielle.
+    steward_team: Équipe Risque et Bâle
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-rachat-credit-proposition
+    name: Proposition de rachat de crédit
+    description: >-
+      Document remis au client récapitulant les termes du regroupement proposé :
+      mensualité unique, durée totale, TAEG du prêt de rachat et coût de l'opération
+      incluant les indemnités de remboursement anticipé.
+    steward_team: Équipe Crédit Restructuration
+    domains: [credit]
+    created_from: synthetic
+
+  - type: business_object
+    id: obj-dcre-mandat-courtage
+    name: Mandat de courtage en crédit
+    description: >-
+      Convention signée par le client autorisant un courtier agréé à chercher et
+      négocier une offre de crédit en son nom. Définit la rémunération du courtier
+      et les conditions de son intervention.
+    steward_team: Équipe Partenariats Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  # ── PROJETS ─────────────────────────────────────────────────────────────────
+  - type: project
+    id: proj-dcre-refonte-recouvrement
+    name: Refonte de la plateforme de recouvrement amiable
+    description: >-
+      Remplacement de l'ancien outil de recouvrement par RECOUV+. Inclut la migration
+      des plans d'apurement en cours et la formation des 80 conseillers recouvrement
+      au nouveau workflow.
+    status: done
+    owner_team: Équipe Recouvrement
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-loi-lemoine-assurance
+    name: Mise en conformité loi Lemoine assurance emprunteur
+    description: >-
+      Implémentation du droit de résiliation annuelle à tout moment introduit par la
+      loi Lemoine de 2022. Inclut la refonte du parcours de délégation et la mise à
+      jour des documents contractuels.
+    status: done
+    owner_team: Équipe Assurance Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-scoring-credit-v2
+    name: Refonte du scoring crédit V2
+    description: >-
+      Remplacement des modèles de scoring d'octroi basés sur des règles expertes par
+      des modèles machine learning calibrés sur cinq ans d'historique. Inclut la
+      validation réglementaire du nouveau modèle.
+    status: done
+    owner_team: Équipe Data Science Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-hcsf-conformite
+    name: Conformité aux normes HCSF
+    description: >-
+      Intégration des critères HCSF (taux d'effort maximal à 35 %, durée maximale
+      à 25 ans) dans les systèmes d'instruction du crédit immobilier. Nécessite une
+      refonte des règles d'éligibilité dans DECIDCRED et IMMOPORT.
+    status: done
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-portail-courtiers-v1
+    name: Lancement du portail courtiers COURTNET
+    description: >-
+      Création du portail partenaires permettant aux courtiers agréés de déposer et
+      suivre les dossiers en ligne. Objectif de réduire les échanges par e-mail et
+      de raccourcir le délai de traitement des dossiers courtiers de 5 à 2 jours.
+    status: done
+    owner_team: Équipe Partenariats Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-ifrs9-etape2
+    name: Implémentation IFRS 9 étape 2 — forward-looking
+    description: >-
+      Extension du moteur ECL pour intégrer des scénarios macroéconomiques prospectifs
+      (taux de chômage, prix immobilier, taux directeur) dans le calcul des provisions
+      de crédit, conformément aux exigences IFRS 9 complètes.
+    status: ongoing
+    owner_team: Équipe Finance et Comptabilité Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-agregation-revenus-open-banking
+    name: Intégration agrégation open banking pour revenus
+    description: >-
+      Connexion du parcours de souscription en ligne à un prestataire d'agrégation
+      bancaire pour automatiser la vérification des revenus. Réduit la friction
+      documentaire et améliore la détection des revenus irréguliers.
+    status: ongoing
+    owner_team: Équipe Digital Crédit
+    domains: [credit, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-migration-archivage-ged
+    name: Migration GED vers coffre-fort ARCHICRED
+    description: >-
+      Transfert de l'ensemble des dossiers crédit archivés dans l'ancien système
+      de GED vers la nouvelle plateforme ARCHICRED. Implique la reprise de 12 millions
+      de documents et la validation de l'intégrité cryptographique.
+    status: ongoing
+    owner_team: Équipe Conformité Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-refonte-rachat-credit
+    name: Refonte du parcours de rachat de crédit
+    description: >-
+      Modernisation du tunnel de souscription pour les opérations de regroupement de
+      crédits. Intégration d'un nouveau flux de données marché et refonte de l'UX
+      pour les conseillers.
+    status: ongoing
+    owner_team: Équipe Crédit Restructuration
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-renegociation-self-service
+    name: Renégociation en self-service
+    description: >-
+      Ouverture d'un parcours 100 % digital permettant au client de demander une
+      renégociation de son taux immobilier sans passer par un conseiller. Pilote
+      sur les prêts à taux fixe de plus de 200 000 € souscrits avant 2020.
+    status: ongoing
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit, banque-en-ligne]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-refonte-notation-interne
+    name: Refonte des modèles de notation interne entreprises
+    description: >-
+      Recalibrage complet des modèles de notation interne pour les contreparties
+      entreprises afin de tenir compte des impacts post-covid sur les secteurs
+      les plus touchés (hôtellerie, restauration, commerce de détail).
+    status: ongoing
+    owner_team: Équipe Modèles Risque
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-prevention-surendettement
+    name: Programme de prévention du surendettement
+    description: >-
+      Mise en place d'alertes précoces pour détecter les clients en voie de fragilité
+      financière avant l'incident de paiement. Inclut un module de conseil budgétaire
+      et une orientation vers les services de médiation partenaires.
+    status: ongoing
+    owner_team: Équipe Surendettement et Médiation
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-riskboard-v2
+    name: Enrichissement RISKBOARD V2
+    description: >-
+      Ajout de nouveaux indicateurs au tableau de bord risque : concentration sectorielle,
+      exposition géographique, LTV moyenne pondérée et sensibilité aux taux pour le
+      portefeuille de prêts à taux variable.
+    status: ongoing
+    owner_team: Équipe Risque et Bâle
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-fraude-credit-ml
+    name: Déploiement modèle ML de fraude documentaire
+    description: >-
+      Industrialisation du modèle de détection de fraude documentaire entraîné sur
+      les cas historiques avérés. Remplacement des contrôles règle-expert par un
+      modèle de vision combiné à des règles de cohérence.
+    status: ongoing
+    owner_team: Équipe Fraude Crédit
+    domains: [credit, lcb-ft]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-revolving-conformite-lagarde
+    name: Mise en conformité crédit revolving loi Lagarde
+    description: >-
+      Audit et correction des relevés mensuels et des clauses contractuelles du
+      crédit revolving pour assurer leur pleine conformité avec les obligations
+      d'information renforcées introduites par la loi Lagarde.
+    status: done
+    owner_team: Équipe Crédit Revolving
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-credit-bail-numerique
+    name: Numérisation des contrats de crédit-bail
+    description: >-
+      Dématérialisation complète de la signature des contrats de crédit-bail mobilier.
+      Déploiement de la signature électronique qualifiée et intégration avec le
+      système de gestion des preuves ARCHICRED.
+    status: done
+    owner_team: Équipe Crédit-Bail
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-pret-relais-digitalisation
+    name: Digitalisation du prêt relais
+    description: >-
+      Automatisation de l'instruction des prêts relais : intégration avec un outil
+      d'estimation automatisée de la valeur immobilière et digitalisation du suivi
+      de la mise en vente du bien.
+    status: done
+    owner_team: Équipe Crédit Immobilier
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-reporting-bale-automatisation
+    name: Automatisation du reporting Bâle III crédit
+    description: >-
+      Suppression des retraitements manuels dans la production des états COREP crédit.
+      Mise en place d'un pipeline automatisé de collecte, contrôle de qualité et
+      soumission des formulaires réglementaires.
+    status: ongoing
+    owner_team: Équipe Risque et Bâle
+    domains: [credit]
+    created_from: synthetic
+
+  - type: project
+    id: proj-dcre-api-taux-v2
+    name: Migration vers l'API taux V2
+    description: >-
+      Refonte de l'API de diffusion des barèmes TAUXREF pour améliorer les performances
+      (latence P99 < 50 ms) et ajouter un cache Redis invalidable sur événement de
+      publication. Migration progressive des systèmes consommateurs.
+    status: done
+    owner_team: Équipe Tarification Crédit
+    domains: [credit]
+    created_from: synthetic
+
+  # ── DÉCISIONS ────────────────────────────────────────────────────────────────
+  - type: decision
+    id: dec-dcre-modele-scoring-ml
+    title: Adoption d'un scoring crédit par modèle ML
+    statement: >-
+      Le scoring d'octroi de crédit à la consommation sera désormais fondé sur
+      un modèle de gradient boosting entraîné sur l'historique interne, en remplacement
+      des règles expertes. Les modèles devront être soumis à validation indépendante
+      avant tout déploiement en production.
+    rationale: >-
+      Les tests rétrospectifs ont démontré une amélioration de l'indice de Gini de
+      18 points par rapport aux règles expertes, réduisant les refus injustifiés
+      de bons dossiers et limitant les octrois à risque.
+    date: "2023-09-15"
+    decided_by: Comité Risque Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-delegation-assurance-parcours-unique
+    title: Parcours unique de délégation d'assurance
+    statement: >-
+      Toute demande de délégation d'assurance emprunteur transitera exclusivement
+      par le module ASSUREMP, sans possibilité de traitement manuel hors système.
+      Les délais légaux de réponse sont gérés et tracés dans l'outil.
+    rationale: >-
+      La centralisation garantit le respect des délais légaux (10 jours ouvrés) et
+      l'uniformité de la grille d'équivalence appliquée. Les incidents liés au
+      traitement manuel représentaient 60 % des réclamations reçues en 2022.
+    date: "2023-02-01"
+    decided_by: Direction Conformité
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-hcsf-non-derogation
+    title: Application stricte des critères HCSF sans dérogation individuelle
+    statement: >-
+      Les critères HCSF (taux d'effort 35 %, durée 25 ans) s'appliquent à 100 %
+      de la production sans possibilité de dérogation au niveau du conseiller.
+      Les cas éligibles à la flexibilité HCSF (20 % maximum) sont alloués
+      trimestriellement par la Direction du Crédit.
+    rationale: >-
+      La gestion centralisée de l'enveloppe de flexibilité permet d'optimiser son
+      usage sur les primo-accédants et d'éviter des dépassements pouvant exposer
+      la banque à des sanctions de l'ACPR.
+    date: "2022-06-01"
+    decided_by: Direction du Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-ifrs9-stage2-criteres
+    title: Critères de classification IFRS 9 stage 2
+    statement: >-
+      Un crédit est classé en stage 2 dès lors que son score de notation interne
+      s'est dégradé de deux crans ou plus depuis l'origination, ou que l'encours
+      présente un impayé de plus de 30 jours. Le passage est automatique et
+      non réversible sans validation du comité risque.
+    rationale: >-
+      La définition explicite des critères réduit la subjectivité dans la classification
+      et garantit la comparabilité des provisions d'un arrêté à l'autre, conformément
+      aux attentes des auditeurs externes.
+    date: "2021-12-01"
+    decided_by: Comité IFRS 9
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-bureau-credit-unique
+    title: Interrogation d'un bureau de crédit unique
+    statement: >-
+      L'établissement interroge un seul bureau de crédit externe (CREDITCHECK) pour
+      toutes les demandes de crédit. Le recours à un second bureau est réservé aux
+      dossiers dont le premier score est dans la zone grise (entre 450 et 550).
+    rationale: >-
+      La multiplication des interrogations augmente les coûts, génère des traces sur
+      le profil crédit du client et peut être perçue négativement. La zone grise
+      couvre 12 % des dossiers, justifiant le double appel ciblé.
+    date: "2020-03-15"
+    decided_by: Comité Risque Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-pas-de-credit-revolving-acquisition
+    title: Arrêt du crédit revolving en acquisition
+    statement: >-
+      La banque cesse de commercialiser de nouveaux contrats de crédit revolving
+      auprès de clients en acquisition. Le produit reste disponible uniquement pour
+      les clients existants répondant à des critères de fidélité et de comportement
+      de paiement stricts.
+    rationale: >-
+      Le taux de défaut sur les nouvelles souscriptions revolving en acquisition
+      dépasse de 4 points le taux sur le stock fidèle. La décision préserve la
+      qualité du portefeuille et répond aux attentes du superviseur.
+    date: "2023-11-01"
+    decided_by: Comité Exécutif
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-signature-electronique-pret
+    title: Généralisation de la signature électronique pour les prêts
+    statement: >-
+      L'ensemble des offres de prêt (immobilier, personnel, professionnel) sont
+      signées électroniquement via un prestataire de confiance qualifié eIDAS.
+      La signature papier est maintenue uniquement sur demande explicite du client
+      pour raison d'accessibilité.
+    rationale: >-
+      La signature électronique réduit le délai de retour des offres signées de
+      12 à 2 jours en moyenne, accélérant le déblocage des fonds et la satisfaction
+      client post-décision.
+    date: "2022-04-01"
+    decided_by: Direction Digitale
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-ficp-delai-48h
+    title: Déclaration FICP dans les 48 heures ouvrées
+    statement: >-
+      Tout incident de paiement caractérisé doit être déclaré au FICP dans un délai
+      maximum de 48 heures ouvrées suivant la constatation. Les levées d'incident
+      doivent être transmises sous 24 heures.
+    rationale: >-
+      L'amélioration du délai de déclaration réduit le risque de sanction ACPR
+      et limite la période pendant laquelle un client fiché peut contracter de
+      nouveaux crédits sans que les établissements tiers en soient informés.
+    date: "2021-06-01"
+    decided_by: Direction Conformité
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-taux-variable-cap
+    title: Obligation d'un cap sur les crédits à taux variable
+    statement: >-
+      Tout crédit immobilier à taux variable commercialisé par l'établissement doit
+      être assorti d'un cap limitant la hausse maximale à +2 points par rapport au
+      taux initial. La commercialisation de taux variables sans cap est interdite.
+    rationale: >-
+      La montée des taux de 2022-2024 a mis en difficulté des emprunteurs à taux
+      variable sans plafond dans d'autres établissements. Le cap protège les clients
+      et réduit le risque de contentieux et de surendettement.
+    date: "2023-05-15"
+    decided_by: Comité Produits Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-courtiers-habilitation-annuelle
+    title: Revue annuelle de l'habilitation des courtiers partenaires
+    statement: >-
+      La liste des courtiers autorisés à utiliser le portail COURTNET est révisée
+      chaque année. Les courtiers n'ayant pas soumis de dossier depuis 12 mois ou
+      présentant un taux de refus supérieur à 60 % sont suspendus de l'habilitation.
+    rationale: >-
+      La maîtrise du réseau de distribution indirecte est un levier de qualité
+      du portefeuille. Les courtiers à fort taux de refus génèrent une charge
+      d'instruction disproportionnée sans production.
+    date: "2024-01-15"
+    decided_by: Direction Partenariats
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-notation-entreprises-annuelle
+    title: Revue annuelle obligatoire des ratings entreprises
+    statement: >-
+      Chaque contrepartie entreprise disposant d'un encours de crédit supérieur à
+      500 000 € doit faire l'objet d'une révision de notation dans les 12 mois
+      suivant la dernière révision. Au-delà de ce délai, le rating est automatiquement
+      mis en statut « expiré » et déclenche un gel des nouveaux engagements.
+    rationale: >-
+      L'utilisation de notations obsolètes dans le calcul des RWA expose l'établissement
+      à une sous-capitalisation réglementaire et à un risque prudentiel lors des
+      inspections ACPR.
+    date: "2022-09-01"
+    decided_by: Comité Risque Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-stress-test-trimestriel
+    title: Fréquence trimestrielle des stress tests internes
+    statement: >-
+      Les stress tests internes sur le portefeuille de crédit sont réalisés
+      trimestriellement, en complément des exercices annuels requis par l'EBA.
+      Les résultats sont présentés au Conseil d'administration dans les 30 jours
+      suivant l'arrêté trimestriel.
+    rationale: >-
+      La périodicité trimestrielle permet de détecter plus tôt les concentrations
+      de risque émergentes et d'anticiper les besoins en fonds propres avant l'arrêté
+      annuel de Pilier 2.
+    date: "2023-03-01"
+    decided_by: Comité des Risques Groupe
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-agregation-bancaire-consentement
+    title: Consentement explicite pour l'agrégation bancaire des revenus
+    statement: >-
+      L'utilisation de l'agrégation bancaire pour vérifier les revenus est
+      strictement optionnelle et ne peut conditionner l'instruction d'un dossier.
+      Le refus du client de partager ses données bancaires ne peut être utilisé
+      comme critère de décision défavorable.
+    rationale: >-
+      La neutralité du refus d'agrégation est une protection contre tout traitement
+      discriminatoire indirect et garantit la conformité avec le RGPD et les
+      principes DSP2 sur l'accès aux données de paiement.
+    date: "2024-03-01"
+    decided_by: Direction Juridique et Conformité
+    still_active: true
+    domains: [credit, dsp2-open-banking]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-rachat-credit-seuil-rentabilite
+    title: Seuil de rentabilité minimum pour le rachat de crédit
+    statement: >-
+      Une opération de rachat de crédit ne peut être proposée par un conseiller que
+      si l'économie mensuelle nette pour le client est supérieure à 50 € et si le
+      coût total de l'opération (IRA incluses) est amorti en moins de 24 mois.
+    rationale: >-
+      Ce garde-fou protège l'intérêt du client et réduit le risque de mis-selling.
+      Les réclamations liées aux rachats non rentables représentaient 30 % des
+      plaintes crédit en 2021.
+    date: "2022-01-01"
+    decided_by: Direction du Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-sinistre-assurance-delai-reponse
+    title: Délai de réponse aux sinistres assurance emprunteur
+    statement: >-
+      La banque s'engage à transmettre tout dossier de sinistre complet à l'assureur
+      dans un délai de 5 jours ouvrés. Pour les sinistres décès, une prise en charge
+      provisoire des échéances est activée dès 15 jours si la décision de l'assureur
+      n'est pas parvenue.
+    rationale: >-
+      La rapidité de traitement des sinistres est un engagement de service fort
+      vis-à-vis des familles en situation de détresse. Les délais excessifs
+      constituent le premier motif de saisine du médiateur bancaire.
+    date: "2023-07-01"
+    decided_by: Comité Relation Client
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-pret-relais-duree-max
+    title: Durée maximale du prêt relais à 24 mois
+    statement: >-
+      La durée des prêts relais est plafonnée à 24 mois non prorogeables. Au-delà
+      de cette durée, le dossier doit être transformé en prêt immobilier classique
+      ou le client doit procéder à une vente forcée du bien mis en garantie.
+    rationale: >-
+      Les prêts relais de longue durée présentent un risque de dépréciation du bien
+      et d'accumulation des intérêts intercalaires mettant en péril la solvabilité
+      de l'emprunteur dans un marché immobilier baissier.
+    date: "2020-09-01"
+    decided_by: Comité Risque Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-catalogue-produits-gel-manuel
+    title: Gel des modifications manuelles du catalogue produits
+    statement: >-
+      Toute modification des paramètres d'un produit crédit dans PRODCATALOG doit
+      passer par un workflow de validation à deux niveaux (responsable produit +
+      conformité). Les modifications directes en base de données sont interdites.
+    rationale: >-
+      Deux incidents en 2022 ont conduit à la commercialisation temporaire de produits
+      avec des paramètres erronés (durée maximale incorrect). Le workflow double
+      validation prévient ces erreurs opérationnelles.
+    date: "2022-11-01"
+    decided_by: Direction SI Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-prevention-surendettement-seuil
+    title: Seuil d'alerte précoce surendettement à 33 %
+    statement: >-
+      Tout client dont le taux d'endettement calculé sur les données d'utilisation
+      de la réserve revolving et des échéances de prêts dépasse 33 % pendant
+      trois mois consécutifs fait l'objet d'une prise de contact proactive par
+      un conseiller financier.
+    rationale: >-
+      Le seuil de 33 % est le premier signal avant le franchissement du seuil légal
+      de 35 %. L'intervention précoce multiplie par trois les chances d'éviter
+      un incident de paiement selon l'analyse rétrospective de 2023.
+    date: "2024-02-01"
+    decided_by: Direction Risque et Conformité
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-loyer-bail-prelev-auto
+    title: Prélèvement automatique obligatoire pour les loyers de crédit-bail
+    statement: >-
+      Les loyers de crédit-bail sont exclusivement prélevés par prélèvement SEPA
+      automatique. La mise en place du mandat SEPA est une condition suspensive
+      de la signature du contrat. Aucun règlement par virement libre n'est accepté.
+    rationale: >-
+      La régularité des prélèvements automatiques réduit le taux d'impayé de premier
+      rang à moins de 0,5 % sur le portefeuille bail, contre 3,2 % observés sur
+      les contrats à règlement libre.
+    date: "2021-04-01"
+    decided_by: Direction Crédit-Bail
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-renegociation-criteres-economiques
+    title: Critères économiques minimaux pour la renégociation de taux
+    statement: >-
+      Une renégociation de taux n'est instruite que si l'écart entre le taux actuel
+      du contrat et le taux de marché est d'au moins 1 point et si la durée résiduelle
+      est supérieure à 7 ans. En deçà de ces seuils, le client est orienté vers un
+      rachat externe.
+    rationale: >-
+      En-dessous de ces seuils, le coût administratif de l'avenant de renégociation
+      n'est pas compensé par la rétention client. La règle clarifie la position de
+      l'établissement et évite les négociations sans lendemain.
+    date: "2024-05-01"
+    decided_by: Comité Produits Crédit
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-reporting-corep-automatise
+    title: Automatisation complète du reporting COREP crédit
+    statement: >-
+      D'ici fin 2025, tous les formulaires COREP relatifs au risque de crédit doivent
+      être produits automatiquement sans intervention manuelle. Les retraitements
+      Excel intermédiaires sont interdits en production réglementaire.
+    rationale: >-
+      Les retraitements manuels représentaient une source d'erreur récurrente
+      (3 corrections sur 8 arrêtés en 2023) et une dépendance critique sur
+      deux personnes clés. L'automatisation réduit le risque opérationnel et
+      le délai de soumission.
+    date: "2024-06-01"
+    decided_by: Direction Finance et Risque
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+  # ── CONTRAINTES ──────────────────────────────────────────────────────────────
+  - type: constraint
+    id: con-dcre-taux-usure-blocage
+    title: Blocage à l'émission si TAEG > taux d'usure
+    statement: >-
+      Aucun système d'origination ne peut générer ou transmettre une offre de crédit
+      dont le TAEG dépasse le taux d'usure en vigueur publié par la Banque de France.
+      Le blocage est implémenté au niveau du référentiel TAUXREF et ne peut être
+      contourné localement.
+    source: Loi n°66-1010 du 28 décembre 1966 (usure) codifiée aux art. L314-6 C.conso
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-hcsf-taux-effort
+    title: Taux d'effort HCSF plafonné à 35 %
+    statement: >-
+      Le taux d'effort mensuel de l'emprunteur, calculé comme le rapport entre
+      la totalité des charges de remboursement de crédit et le revenu net mensuel,
+      ne peut dépasser 35 % pour toute nouvelle production de crédit immobilier
+      (hors enveloppe de flexibilité trimestrielle).
+    source: Recommandation HCSF R-HCSF-2021-1
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-hcsf-duree-max
+    title: Durée maximale des crédits immobiliers à 25 ans
+    statement: >-
+      La maturité des prêts immobiliers à l'habitat principal ne peut excéder 25 ans
+      (ou 27 ans en cas de différé de remboursement dans le cadre d'un VEFA). Cette
+      contrainte s'applique à la durée totale du prêt, avenant de renégociation inclus.
+    source: Recommandation HCSF R-HCSF-2021-1
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-ficp-consultation-obligatoire
+    title: Consultation obligatoire du FICP avant octroi
+    statement: >-
+      Tout établissement doit consulter le Fichier des Incidents de remboursement des
+      Crédits aux Particuliers avant l'octroi d'un crédit à la consommation ou
+      immobilier à un particulier. L'absence de consultation est un manquement
+      sanctionnable par l'ACPR.
+    source: Art. L333-4 Code de la consommation
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-delai-retractation-14j
+    title: Délai de rétractation légal de 14 jours
+    statement: >-
+      Pour tout crédit à la consommation, l'emprunteur dispose d'un délai de 14 jours
+      calendaires à compter de l'acceptation de l'offre pour exercer son droit de
+      rétractation sans justification ni pénalité. Aucun déblocage de fonds ne peut
+      intervenir avant l'expiration de ce délai sauf renonciation expresse.
+    source: Art. L312-19 Code de la consommation
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-delai-reflexion-10j-immo
+    title: Délai de réflexion de 10 jours pour le crédit immobilier
+    statement: >-
+      L'emprunteur ne peut accepter l'offre de prêt immobilier avant l'expiration
+      d'un délai de réflexion de 10 jours calendaires à compter de la réception de
+      l'offre. Toute acceptation anticipée est nulle.
+    source: Art. L313-34 Code de la consommation
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-rgpd-questionnaire-medical
+    title: Protection des données médicales dans le questionnaire assurance
+    statement: >-
+      Les données de santé collectées dans le cadre du questionnaire médical
+      d'assurance emprunteur constituent des données sensibles au sens du RGPD.
+      Leur traitement requiert un consentement explicite distinct et leur stockage
+      est limité à la durée de vie du contrat d'assurance.
+    source: RGPD art. 9, loi Informatique et Libertés
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-conservation-dossier-10ans
+    title: Conservation des dossiers de crédit pendant 10 ans
+    statement: >-
+      L'ensemble des pièces constitutives d'un dossier de crédit (offre signée,
+      justificatifs, décision) doit être conservé pendant 10 ans à compter de la
+      date de clôture du prêt, conformément aux prescriptions réglementaires et
+      aux délais de prescription civile.
+    source: Art. L110-4 Code de commerce, recommandations ACPR
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-ira-calcul-reglementaire
+    title: Calcul des IRA selon le barème réglementaire
+    statement: >-
+      Les indemnités de remboursement anticipé ne peuvent excéder la valeur la plus
+      faible entre 3 % du capital restant dû avant remboursement et 6 mois d'intérêts
+      sur le capital remboursé au taux moyen du prêt. Tout dépassement est nul.
+    source: Art. L313-47 Code de la consommation
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-secci-obligatoire
+    title: Remise obligatoire de la fiche SECCI
+    statement: >-
+      Pour tout crédit à la consommation, une fiche d'information standardisée
+      européenne (SECCI) doit être remise au demandeur avant la signature de l'offre.
+      Cette fiche doit préciser le TAEG, le coût total, la durée et les garanties
+      requises dans un format normalisé.
+    source: Directive 2008/48/CE, art. L312-12 C.conso
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-equivalence-garanties-assurance
+    title: Vérification de l'équivalence des garanties lors de la délégation
+    statement: >-
+      Lors d'une demande de délégation d'assurance emprunteur, la banque est tenue
+      d'appliquer la grille d'équivalence de garanties publiée et d'accepter ou
+      refuser dans un délai de 10 jours ouvrés. Le refus doit être motivé sur la
+      base de la grille.
+    source: Loi Lemoine art. 10, art. L313-30 C.conso
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-surendettement-suspension-legale
+    title: Suspension légale des créances à réception de la décision Banque de France
+    statement: >-
+      Dès réception de la décision de recevabilité de la Banque de France, toutes
+      les mesures d'exécution et de recouvrement sur les créances déclarées doivent
+      être immédiatement suspendues. Tout manquement est passible de poursuites pénales.
+    source: Art. L711-2 Code de la consommation
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-cap-taux-variable
+    title: Cap obligatoire sur les crédits à taux variable
+    statement: >-
+      Conformément à la politique interne décidée en 2023, tout crédit immobilier
+      à taux variable doit intégrer un cap de taux limitant la hausse à 2 points
+      au-dessus du taux initial. Cette contrainte est vérifiée systématiquement
+      à l'édition de l'offre.
+    source: Politique crédit interne, décision déc-dcre-taux-variable-cap
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-notation-interne-bale
+    title: Notation interne obligatoire pour les engagements entreprises > 500 k€
+    statement: >-
+      Toute contrepartie entreprise présentant un encours crédit supérieur à 500 000 €
+      doit disposer d'un rating interne en cours de validité. En l'absence de rating
+      valide, les nouveaux engagements sont bloqués dans le système d'origination.
+    source: CRR art. 143, guidelines EBA IRB approach
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-transparence-algo-refus
+    title: Transparence algorithmique sur les refus de crédit automatisés
+    statement: >-
+      Tout refus de crédit résultant d'une décision automatisée doit être accompagné
+      d'une explication compréhensible des principaux facteurs ayant conduit à cette
+      décision, conformément au droit d'explication du RGPD. L'explication doit être
+      disponible à la demande.
+    source: RGPD art. 22, directive crédit consommation 2023/2225
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-ltv-max-pret-relais
+    title: LTV maximale à 80 % pour les prêts relais
+    statement: >-
+      Le montant du prêt relais ne peut dépasser 80 % de la valeur estimée du bien
+      mis en vente. Cette valeur doit être appuyée par une expertise immobilière de
+      moins de 6 mois ou une estimation automatisée validée par un expert interne.
+    source: Politique de risque crédit immobilier interne
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-pmd-credit-revolving
+    title: Mention obligatoire du remboursement minimum sur le revolving
+    statement: >-
+      Chaque relevé mensuel de crédit revolving doit mentionner de façon visible
+      le montant de remboursement minimum, le délai pour un remboursement intégral
+      si seul le minimum est payé, et le coût total des intérêts sur cette durée.
+    source: Art. L312-92 Code de la consommation (loi Lagarde)
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-acces-dossier-audit
+    title: Accès tracé aux dossiers de crédit archivés
+    statement: >-
+      Tout accès à un dossier de crédit archivé dans ARCHICRED doit être journalisé
+      avec l'identifiant du consultant, la date, l'heure et le motif déclaré.
+      Les journaux d'accès sont conservés 5 ans et consultables par la conformité.
+    source: RGPD art. 32, politique de sécurité SI
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-qualite-donnee-ecl
+    title: Exhaustivité des paramètres de risque pour le calcul ECL
+    statement: >-
+      Tout contrat de crédit actif doit disposer de valeurs de PD, LGD et EAD
+      validées avant chaque arrêté mensuel. L'absence de paramètre entraîne
+      l'application d'une valeur prudentielle majorée automatiquement.
+    source: IFRS 9, guidelines EBA ECL
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-habilitation-courtier-iobsp
+    title: Vérification de l'habilitation IOBSP des courtiers partenaires
+    statement: >-
+      Seuls les courtiers disposant d'une immatriculation ORIAS en cours de validité
+      au titre des IOBSP peuvent déposer des dossiers sur le portail COURTNET. La
+      vérification est effectuée automatiquement à la connexion via l'API ORIAS.
+    source: Art. L519-1 Code monétaire et financier
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-corep-delai-soumission
+    title: Délai de soumission COREP dans les 12 jours ouvrables
+    statement: >-
+      Les formulaires COREP de risque de crédit doivent être soumis à l'autorité
+      de supervision dans un délai de 12 jours ouvrables suivant la fin du trimestre
+      de référence. Tout retard doit faire l'objet d'une notification préalable.
+    source: Règlement d'exécution UE 680/2014
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-loi-lemoine-resiliation-annuelle
+    title: Droit de résiliation annuelle de l'assurance emprunteur
+    statement: >-
+      Depuis le 1er septembre 2022, tout emprunteur peut résilier son assurance
+      emprunteur à tout moment, sans frais ni pénalité, par simple notification.
+      La banque dispose de 10 jours ouvrés pour accepter ou refuser le nouveau contrat
+      proposé, sous peine de sanctions ACPR.
+    source: Loi n°2022-270 du 28 février 2022 (loi Lemoine)
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-ifrs9-forward-looking
+    title: Intégration d'informations forward-looking dans le calcul ECL
+    statement: >-
+      Le calcul des pertes de crédit attendues (ECL) doit intégrer des informations
+      économiques prospectives raisonnables et justifiables (scénarios macro) et non
+      se limiter aux données historiques. Cette exigence s'applique dès le stage 1.
+    source: IFRS 9 paragraphes 5.5.17 et B5.5.15-B5.5.17
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-consentement-biometrie
+    title: Consentement explicite requis pour le contrôle biométrique
+    statement: >-
+      La reconnaissance faciale utilisée dans le parcours de souscription en ligne
+      nécessite un consentement libre, éclairé, spécifique et non équivoque du
+      demandeur. Le refus du contrôle biométrique ne peut entraîner un refus de
+      traitement du dossier.
+    source: RGPD art. 9, délibération CNIL sur la biométrie
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-encours-client-plafonnes
+    title: Plafonnement des encours crédit par client
+    statement: >-
+      Le cumul des encours de crédit revolving, prêts personnels et crédits immobiliers
+      d'un même client particulier est plafonné à 15 fois son revenu net annuel.
+      Tout dépassement déclenche une analyse risque obligatoire avant tout nouvel octroi.
+    source: Politique interne de gestion des risques crédit
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-dossier-surendettement-confidentialite
+    title: Confidentialité des dossiers de surendettement
+    statement: >-
+      Les informations transmises dans le cadre d'une procédure de surendettement
+      ne peuvent être partagées avec d'autres services de la banque (commercial,
+      commercial entreprises) ni utilisées à des fins de prospection ou de modification
+      des conditions commerciales du client.
+    source: Art. L733-1 Code de la consommation, RGPD
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-revue-modele-annuelle
+    title: Revue annuelle des modèles de scoring crédit
+    statement: >-
+      Les modèles de scoring d'octroi et de notation interne doivent faire l'objet
+      d'une revue annuelle de performance incluant le calcul des indicateurs de
+      discrimination (Gini, KS) et de calibration. Un modèle défaillant doit être
+      retiré de production dans les 90 jours.
+    source: Guidelines EBA on internal governance (art. 74 CRD V)
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-iban-verification-deblocage
+    title: Vérification IBAN avant tout déblocage de fonds
+    statement: >-
+      Avant tout virement de capital prêté, le système de déblocage doit vérifier
+      que l'IBAN bénéficiaire appartient bien à un compte ouvert au nom de l'emprunteur
+      dans un établissement éligible. Les virements vers des tiers sont prohibés.
+    source: Politique anti-fraude crédit interne
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-plan-apurement-ecrit
+    title: Formalisation écrite obligatoire des plans d'apurement
+    statement: >-
+      Tout plan d'apurement négocié avec un débiteur doit être formalisé par écrit
+      et signé des deux parties avant toute suspension des procédures de relance.
+      Les engagements verbaux seuls ne constituent pas un plan opposable.
+    source: Art. L711-4 Code de la consommation, politique interne recouvrement
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-reporting-npl-mensuel
+    title: Reporting NPL mensuel à la Direction des Risques
+    statement: >-
+      Le taux NPL ventilé par segment et par millésime doit être communiqué à la
+      Direction des Risques au plus tard le 15e jour ouvré suivant la fin du mois.
+      Tout franchissement d'un seuil d'alerte défini dans la politique de risque
+      déclenche un rapport spécifique dans les 48 heures.
+    source: Politique de gestion du risque crédit
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-catalogue-produits-validation
+    title: Double validation obligatoire pour les modifications de catalogue produits
+    statement: >-
+      Chaque modification apportée aux paramètres d'un produit crédit (plafond,
+      durée, taux, document contractuel) requiert la validation successive du
+      responsable produit et du responsable conformité. L'absence d'une des deux
+      validations bloque la publication.
+    source: Décision déc-dcre-catalogue-produits-gel-manuel, politique SI crédit
+    severity: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-mandat-sepa-bail
+    title: Prélèvement SEPA obligatoire pour les loyers de crédit-bail
+    statement: >-
+      La mise en place d'un mandat de prélèvement SEPA est une condition sine qua
+      non de la signature d'un contrat de crédit-bail. Le preneur doit fournir son
+      IBAN certifié avant la signature, et ce mandat ne peut être révoqué en cours
+      de contrat sans accord préalable de la direction crédit-bail.
+    source: Décision déc-dcre-loyer-bail-prelev-auto, règlement SEPA
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  # ── RISQUES ──────────────────────────────────────────────────────────────────
+  - type: risk
+    id: risk-dcre-derive-modele-scoring
+    title: Dérive silencieuse du modèle de scoring crédit
+    statement: >-
+      Le modèle de gradient boosting utilisé pour le scoring d'octroi peut se
+      dégrader progressivement si les caractéristiques de la population de demandeurs
+      évoluent sans que cela soit détecté entre deux revues annuelles. Une dérive
+      non détectée peut conduire à des octrois excessifs ou des refus injustifiés.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Monitoring mensuel des indicateurs de stabilité des entrées (PSI) et de discrimination
+      - Alerte automatique si le Gini chute de plus de 5 points sur fenêtre glissante de 3 mois
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-concentration-sectorielle
+    title: Concentration excessive sur un secteur d'activité
+    statement: >-
+      Une surreprésentation de contreparties d'un même secteur économique dans le
+      portefeuille de crédit professionnel expose la banque à une corrélation des
+      défauts en cas de choc sectoriel, amplifiée par la structure concentrée de
+      certains marchés locaux.
+    likelihood: low
+    impact: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-fraude-documentaire-sophistiquee
+    title: Fraude documentaire à l'origination
+    statement: >-
+      Des documents falsifiés de haute qualité (bulletins de salaire, avis
+      d'imposition) peuvent tromper les contrôles automatiques et conduire à
+      l'octroi de crédits à des demandeurs fictifs ou à des personnes usurpant
+      une identité.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Déploiement du modèle de vision FRAUDCRED sur toutes les pièces justificatives
+      - Rapprochement des revenus déclarés avec l'agrégateur bancaire sur les dossiers à enjeu
+    domains: [credit, lcb-ft]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-indisponibilite-bureau-credit
+    title: Indisponibilité du bureau de crédit externe
+    statement: >-
+      Une panne de l'API du bureau de crédit CREDITCHECK bloquerait l'instruction
+      automatisée de toutes les nouvelles demandes de crédit, créant un engorgement
+      opérationnel et une perte de revenus pendant la durée de l'incident.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Mode dégradé documenté permettant une instruction manuelle avec score interne seul
+      - SLA contractuel avec le bureau de crédit incluant une pénalité et un délai de reprise de 4h
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-remontee-taux-revolving
+    title: Hausse des défauts revolving en contexte de remontée des taux
+    statement: >-
+      Une remontée rapide des taux d'intérêt accroît la charge mensuelle des
+      détenteurs de réserves revolving à taux variable et peut déclencher une
+      vague de défauts sur ce segment, historiquement sensible aux chocs de
+      taux et de pouvoir d'achat.
+    likelihood: medium
+    impact: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-retard-ifrs9-forward-looking
+    title: Non-conformité IFRS 9 sur le volet forward-looking
+    statement: >-
+      Le projet d'implémentation du forward-looking dans le calcul ECL est encore
+      en cours. Une clôture d'exercice avant la livraison du module exposerait
+      la banque à une observation de l'auditeur externe et à un potentiel risque
+      réglementaire sur la qualité des provisions déclarées.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Suivi mensuel de l'avancement du projet IFRS9 étape 2 en COPIL risque
+      - Plan de secours avec méthodologie simplifiée approuvée par les auditeurs en cas de retard
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-deperdition-expertise-recouvrement
+    title: Déperdition d'expertise recouvrement lors du turnover
+    statement: >-
+      La plateforme de recouvrement repose sur des règles métier complexes maîtrisées
+      par quelques experts. Un turnover élevé dans l'équipe pourrait dégrader la
+      qualité des relances et réduire le taux de récupération des créances en souffrance.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Documentation des règles métier dans le référentiel de paramétrage RECOUV+
+      - Programme de formation systématique pour les nouveaux entrants
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-mis-selling-rachat
+    title: Risque de mis-selling sur les opérations de rachat de crédit
+    statement: >-
+      Un conseiller peut être incité à proposer un rachat de crédit non avantageux
+      pour le client afin d'atteindre ses objectifs commerciaux. Ce risque est
+      amplifié lorsque les IRA et frais de dossier ne sont pas rendus visibles
+      dans la simulation présentée.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Blocage technique des simulations non rentables selon le seuil défini en dec-dcre-rachat-credit-seuil-rentabilite
+      - Revue aléatoire de 5 % des dossiers de rachat par le contrôle interne
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-perte-hypotheque-defaut-inscription
+    title: Opposabilité des hypothèques compromise par un défaut d'inscription
+    statement: >-
+      Un délai ou une erreur dans la procédure d'inscription hypothécaire auprès
+      du Service de Publicité Foncière peut rendre la sûreté inopposable aux tiers,
+      notamment en cas de procédure collective du débiteur, privant la banque de
+      sa garantie.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Contrôle systématique de la confirmation d'inscription avant le déblocage des fonds
+      - Alerte automatique en cas d'absence de confirmation dans les 30 jours suivant la demande
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-depassement-usure-systemique
+    title: Dépassement du taux d'usure sur des produits non contrôlés
+    statement: >-
+      Une modification du barème de taux sans mise à jour simultanée dans le
+      référentiel TAUXREF, ou une erreur de paramétrage du calcul TAEG, pourrait
+      conduire à des offres illégales au-dessus du taux d'usure sans que le blocage
+      technique soit déclenché.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Rapprochement hebdomadaire automatique des TAEG émis avec le taux d'usure du mois
+      - Alerte immédiate au responsable tarification en cas d'anomalie détectée a posteriori
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-instabilite-api-courtiers
+    title: Instabilité du portail courtiers affectant la production indirecte
+    statement: >-
+      Les courtiers partenaires représentent 35 % de la production crédit immobilier.
+      Une instabilité récurrente du portail COURTNET dégraderait la relation avec
+      les courtiers clés et pourrait les inciter à basculer leur flux vers des
+      concurrents.
+    likelihood: medium
+    impact: medium
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-non-respect-delais-mediation
+    title: Non-respect des délais légaux de traitement des réclamations
+    statement: >-
+      Les délais réglementaires de réponse aux réclamations crédit (10 jours ouvrés
+      pour l'accusé de réception, 2 mois pour la réponse de fond) peuvent être
+      difficiles à tenir en période de forte activité ou lors d'absences dans
+      l'équipe réclamations.
+    likelihood: medium
+    impact: medium
+    mitigations:
+      - Alertes automatiques à J+7 et J+25 dans MEDIASOL sur les dossiers approchant les délais
+      - Capacité de réaffectation transverse en cas de pic de volume
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-rupture-stock-relais
+    title: Accumulation de prêts relais non remboursés
+    statement: >-
+      Un retournement du marché immobilier réduisant les délais de vente peut
+      conduire à l'accumulation de prêts relais atteignant leur échéance sans
+      remboursement, forçant la transformation en prêts classiques ou déclenchant
+      des contentieux sur des biens dévalués.
+    likelihood: medium
+    impact: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-perte-donnees-migration-archivage
+    title: Perte ou corruption de données lors de la migration GED
+    statement: >-
+      La migration de 12 millions de documents vers ARCHICRED comporte un risque
+      de corruption silencieuse, de documents manquants ou de mauvaise association
+      entre document et dossier, remettant en cause l'intégrité de l'historique
+      crédit archivé.
+    likelihood: medium
+    impact: high
+    mitigations:
+      - Migration par vagues avec contrôle d'intégrité cryptographique (hash SHA-256) sur chaque lot
+      - Maintien de l'ancienne GED en lecture pendant 12 mois post-migration
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-dependance-prestataire-biometrie
+    title: Dépendance critique au prestataire de contrôle biométrique
+    statement: >-
+      Le contrôle d'identité biométrique du parcours digital repose sur un prestataire
+      unique. Son indisponibilité bloquerait les souscriptions en ligne à enjeu élevé
+      et son exit strategy est insuffisamment documentée dans le contrat en vigueur.
+    likelihood: low
+    impact: medium
+    mitigations:
+      - Audit contractuel et mise à jour de la clause de réversibilité
+      - Identification d'un prestataire alternatif et test d'intégration en environnement de recette
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-stagflation-portefeuille
+    title: Détérioration simultanée du risque de crédit et du coût de la ressource
+    statement: >-
+      Un scénario stagflationniste (faible croissance + inflation persistante) pourrait
+      à la fois dégrader la qualité du portefeuille crédit (hausse des défauts) et
+      accroître le coût de refinancement de la banque, comprimant la marge nette
+      d'intérêt sur les prêts à taux fixe de longue durée.
+    likelihood: low
+    impact: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: risk
+    id: risk-dcre-erreur-calcul-ecl
+    title: Erreur systématique dans le calcul ECL impactant les provisions
+    statement: >-
+      Une anomalie dans le pipeline de calcul IFRSCONSOLID (paramètre erroné, bug
+      de mapping) pourrait conduire à une sous-estimation ou sur-estimation des
+      provisions IFRS 9 sur plusieurs arrêtés consécutifs avant détection, avec
+      impact sur les résultats publiés.
+    likelihood: low
+    impact: high
+    mitigations:
+      - Contrôle de cohérence entre les provisions calculées et les estimations historiques (± 10 %)
+      - Test de non-régression automatique à chaque release du pipeline ECL
+    domains: [credit]
+    created_from: synthetic
+
+  - type: constraint
+    id: con-dcre-pret-personnel-montant-max
+    title: Plafond réglementaire du crédit à la consommation à 75 000 €
+    statement: >-
+      Les crédits à la consommation entrant dans le champ de la directive
+      2008/48/CE (révisée par 2023/2225) sont plafonnés à 75 000 €. Tout
+      crédit personnel dépassant ce seuil sort du régime protecteur et
+      doit être traité selon les règles du crédit immobilier.
+    source: Directive crédit consommation 2023/2225, art. L312-1 C.conso
+    severity: high
+    domains: [credit]
+    created_from: synthetic
+
+  - type: decision
+    id: dec-dcre-ecl-scenario-macro-trimestriel
+    title: Actualisation trimestrielle des scénarios macroéconomiques ECL
+    statement: >-
+      Les paramètres forward-looking intégrés dans le calcul ECL (croissance PIB,
+      taux de chômage, prix immobiliers) sont mis à jour chaque trimestre sur la
+      base des prévisions publiées par la Banque de France et les instituts de
+      conjoncture. Entre deux mises à jour, les paramètres en vigueur sont figés.
+    rationale: >-
+      La trimestrialité constitue le meilleur compromis entre réactivité aux
+      évolutions macroéconomiques et stabilité des provisions, qui ne doivent
+      pas fluctuer excessivement d'un arrêté mensuel à l'autre.
+    date: "2024-09-01"
+    decided_by: Comité IFRS 9
+    still_active: true
+    domains: [credit]
+    created_from: synthetic
+
+edges:
+
+  # ── PART_OF : chaque feature -> son système parent ───────────────────────────
+  - {source_id: feat-dcre-relance-multicanal, target_id: sys-dcre-plateforme-recouvrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-plan-apurement, target_id: sys-dcre-plateforme-recouvrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-suivi-promesse, target_id: sys-dcre-plateforme-recouvrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-scoring-recouvrement, target_id: sys-dcre-plateforme-recouvrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-passage-contentieux, target_id: sys-dcre-plateforme-recouvrement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-simulation-rachat, target_id: sys-dcre-moteur-rachat, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-indemnite-remboursement, target_id: sys-dcre-moteur-rachat, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-souscription-assurance, target_id: sys-dcre-gestionnaire-assurance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-delegation-assurance, target_id: sys-dcre-gestionnaire-assurance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-sinistre, target_id: sys-dcre-gestionnaire-assurance, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-inscription-hypotheque, target_id: sys-dcre-garanties-credit, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-caution-organisme, target_id: sys-dcre-garanties-credit, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-valorisation-garantie, target_id: sys-dcre-garanties-credit, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-suspension-exigibilite, target_id: sys-dcre-plateforme-surendettement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-plan-conventionnel, target_id: sys-dcre-plateforme-surendettement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-retablissement-personnel, target_id: sys-dcre-plateforme-surendettement, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-simulation-immo, target_id: sys-dcre-portail-immo, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-collecte-pieces, target_id: sys-dcre-portail-immo, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-analyse-capacite, target_id: sys-dcre-portail-immo, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-offre-pret-immobilier, target_id: sys-dcre-portail-immo, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-declaration-ficp, target_id: sys-dcre-registre-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-suivi-impaye, target_id: sys-dcre-registre-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-passage-perte, target_id: sys-dcre-registre-incidents, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-publication-bareme, target_id: sys-dcre-referentiel-taux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-controle-usure, target_id: sys-dcre-referentiel-taux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-diffusion-taux, target_id: sys-dcre-referentiel-taux, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-interrogation-bureau, target_id: sys-dcre-moteur-decision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-scoring-comportemental, target_id: sys-dcre-moteur-decision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-recommandation-octroi, target_id: sys-dcre-moteur-decision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-motifs-refus, target_id: sys-dcre-moteur-decision, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-enregistrement-reclamation, target_id: sys-dcre-mediation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-escalade-mediateur, target_id: sys-dcre-mediation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-parcours-digital-pret, target_id: sys-dcre-pret-personnel-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-agregation-revenus, target_id: sys-dcre-pret-personnel-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-deblocage-fonds-rapide, target_id: sys-dcre-pret-personnel-ligne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-calcul-npl, target_id: sys-dcre-tableau-bord-risque, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-stress-test, target_id: sys-dcre-tableau-bord-risque, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-reporting-bale, target_id: sys-dcre-tableau-bord-risque, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-origination-bail, target_id: sys-dcre-credit-bail, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-loyers, target_id: sys-dcre-credit-bail, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-levee-option, target_id: sys-dcre-credit-bail, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-calibrage-pd, target_id: sys-dcre-notation-interne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-attribution-rating, target_id: sys-dcre-notation-interne, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-analyse-financiere-pro, target_id: sys-dcre-credit-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-decouverte-autorisee, target_id: sys-dcre-credit-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-escompte-commercial, target_id: sys-dcre-credit-pro, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-generation-masse-simulations, target_id: sys-dcre-simulation-collective, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-filtrage-eligibilite-batch, target_id: sys-dcre-simulation-collective, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-calcul-quotite-relais, target_id: sys-dcre-pret-relais, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-remboursement-relais, target_id: sys-dcre-pret-relais, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-depot-dossier-courtier, target_id: sys-dcre-portail-courtiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-suivi-dossier-courtier, target_id: sys-dcre-portail-courtiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-conservation-contrats, target_id: sys-dcre-archivage-dossiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-acces-audit, target_id: sys-dcre-archivage-dossiers, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-reserve, target_id: sys-dcre-credit-revolving, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-facturation-interets-revolving, target_id: sys-dcre-credit-revolving, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-alerte-surutilisation, target_id: sys-dcre-credit-revolving, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-catalogue-produits, target_id: sys-dcre-referentiel-produits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-exposition-api-produits, target_id: sys-dcre-referentiel-produits, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-detection-fraude-documentaire, target_id: sys-dcre-prevention-fraude-credit, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-controle-identite-biometrique, target_id: sys-dcre-prevention-fraude-credit, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-eligibilite-renegociation, target_id: sys-dcre-moteur-renegociation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-avenant-renegociation, target_id: sys-dcre-moteur-renegociation, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-calcul-ecl, target_id: sys-dcre-consolidation-ifrs9, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-affectation-stage, target_id: sys-dcre-consolidation-ifrs9, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-envoi-offre-pret, target_id: sys-dcre-communication-client, type: PART_OF, created_from: synthetic}
+  - {source_id: feat-dcre-releve-annuel-credit, target_id: sys-dcre-communication-client, type: PART_OF, created_from: synthetic}
+
+  # ── OPERATES_ON : feature|system -> business_object ──────────────────────────
+  - {source_id: feat-dcre-relance-multicanal, target_id: obj-dcre-dossier-recouvrement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-plan-apurement, target_id: obj-dcre-plan-apurement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-suivi-promesse, target_id: obj-dcre-dossier-recouvrement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-scoring-recouvrement, target_id: obj-dcre-dossier-recouvrement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-simulation-rachat, target_id: obj-dcre-rachat-credit-proposition, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-indemnite-remboursement, target_id: obj-dcre-rachat-credit-proposition, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-souscription-assurance, target_id: obj-dcre-contrat-assurance-emprunteur, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-delegation-assurance, target_id: obj-dcre-contrat-assurance-emprunteur, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-sinistre, target_id: obj-dcre-sinistre-assurance, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-inscription-hypotheque, target_id: obj-dcre-garantie-hypothecaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-valorisation-garantie, target_id: obj-dcre-garantie-hypothecaire, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-suspension-exigibilite, target_id: obj-dcre-dossier-surendettement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-plan-conventionnel, target_id: obj-dcre-dossier-surendettement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-offre-pret-immobilier, target_id: obj-dcre-offre-pret-immobilier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-declaration-ficp, target_id: obj-dcre-incident-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-suivi-impaye, target_id: obj-dcre-incident-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-publication-bareme, target_id: obj-dcre-bareme-taux, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-controle-usure, target_id: obj-dcre-bareme-taux, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-diffusion-taux, target_id: obj-dcre-bareme-taux, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-recommandation-octroi, target_id: obj-dcre-demande-credit, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-motifs-refus, target_id: obj-dcre-demande-credit, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-attribution-rating, target_id: obj-dcre-notation-contrepartie, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-calibrage-pd, target_id: obj-dcre-notation-contrepartie, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-origination-bail, target_id: obj-dcre-credit-bail-contrat, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-loyers, target_id: obj-dcre-credit-bail-contrat, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-levee-option, target_id: obj-dcre-credit-bail-contrat, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-gestion-reserve, target_id: obj-dcre-reserve-revolving, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-facturation-interets-revolving, target_id: obj-dcre-reserve-revolving, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-avenant-renegociation, target_id: obj-dcre-avenant-pret, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-stress-test, target_id: obj-dcre-rapport-stress-test, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-depot-dossier-courtier, target_id: obj-dcre-mandat-courtage, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-collecte-pieces, target_id: obj-dcre-demande-credit, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: feat-dcre-envoi-offre-pret, target_id: obj-dcre-offre-pret-immobilier, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dcre-tableau-bord-risque, target_id: obj-dcre-rapport-stress-test, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dcre-registre-incidents, target_id: obj-dcre-incident-paiement, type: OPERATES_ON, created_from: synthetic}
+  - {source_id: sys-dcre-consolidation-ifrs9, target_id: obj-dcre-incident-paiement, type: OPERATES_ON, created_from: synthetic}
+
+  # ── DEPENDS_ON : system->system, feature->feature, feature->system ────────────
+  - {source_id: sys-dcre-plateforme-recouvrement, target_id: sys-dcre-registre-incidents, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-moteur-decision, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-portail-immo, target_id: sys-dcre-moteur-decision, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-portail-immo, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-pret-personnel-ligne, target_id: sys-dcre-moteur-decision, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-pret-personnel-ligne, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-credit-bail, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-consolidation-ifrs9, target_id: sys-dcre-notation-interne, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-consolidation-ifrs9, target_id: sys-dcre-registre-incidents, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-simulation-collective, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-moteur-rachat, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: sys-dcre-moteur-renegociation, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-recommandation-octroi, target_id: feat-dcre-interrogation-bureau, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-recommandation-octroi, target_id: feat-dcre-scoring-comportemental, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-passage-contentieux, target_id: feat-dcre-plan-apurement, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-passage-perte, target_id: feat-dcre-suivi-impaye, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-avenant-renegociation, target_id: feat-dcre-eligibilite-renegociation, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-calcul-ecl, target_id: feat-dcre-affectation-stage, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-deblocage-fonds-rapide, target_id: feat-dcre-parcours-digital-pret, type: DEPENDS_ON, created_from: synthetic}
+  - {source_id: feat-dcre-simulation-immo, target_id: sys-dcre-referentiel-taux, type: DEPENDS_ON, created_from: synthetic}
+
+  # ── CONSTRAINS : constraint|decision -> system|feature|business_object|project ─
+  - {source_id: con-dcre-taux-usure-blocage, target_id: sys-dcre-referentiel-taux, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-taux-usure-blocage, target_id: feat-dcre-controle-usure, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-hcsf-taux-effort, target_id: sys-dcre-portail-immo, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-hcsf-taux-effort, target_id: feat-dcre-analyse-capacite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-hcsf-duree-max, target_id: feat-dcre-offre-pret-immobilier, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-hcsf-duree-max, target_id: proj-dcre-hcsf-conformite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-ficp-consultation-obligatoire, target_id: sys-dcre-moteur-decision, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-ficp-consultation-obligatoire, target_id: feat-dcre-declaration-ficp, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-delai-retractation-14j, target_id: feat-dcre-deblocage-fonds-rapide, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-delai-retractation-14j, target_id: sys-dcre-pret-personnel-ligne, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-delai-reflexion-10j-immo, target_id: feat-dcre-offre-pret-immobilier, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-rgpd-questionnaire-medical, target_id: sys-dcre-gestionnaire-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-rgpd-questionnaire-medical, target_id: feat-dcre-souscription-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-conservation-dossier-10ans, target_id: sys-dcre-archivage-dossiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-conservation-dossier-10ans, target_id: proj-dcre-migration-archivage-ged, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-ira-calcul-reglementaire, target_id: feat-dcre-indemnite-remboursement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-secci-obligatoire, target_id: feat-dcre-parcours-digital-pret, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-equivalence-garanties-assurance, target_id: feat-dcre-delegation-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-surendettement-suspension-legale, target_id: feat-dcre-suspension-exigibilite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-cap-taux-variable, target_id: sys-dcre-portail-immo, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-notation-interne-bale, target_id: sys-dcre-notation-interne, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-transparence-algo-refus, target_id: feat-dcre-motifs-refus, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-ltv-max-pret-relais, target_id: feat-dcre-calcul-quotite-relais, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-pmd-credit-revolving, target_id: feat-dcre-facturation-interets-revolving, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-acces-dossier-audit, target_id: feat-dcre-acces-audit, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-qualite-donnee-ecl, target_id: sys-dcre-consolidation-ifrs9, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-habilitation-courtier-iobsp, target_id: sys-dcre-portail-courtiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-corep-delai-soumission, target_id: feat-dcre-reporting-bale, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-loi-lemoine-resiliation-annuelle, target_id: proj-dcre-loi-lemoine-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-ifrs9-forward-looking, target_id: feat-dcre-calcul-ecl, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-consentement-biometrie, target_id: feat-dcre-controle-identite-biometrique, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-encours-client-plafonnes, target_id: sys-dcre-moteur-decision, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-dossier-surendettement-confidentialite, target_id: sys-dcre-plateforme-surendettement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-revue-modele-annuelle, target_id: sys-dcre-moteur-decision, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-revue-modele-annuelle, target_id: sys-dcre-notation-interne, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-iban-verification-deblocage, target_id: feat-dcre-deblocage-fonds-rapide, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-plan-apurement-ecrit, target_id: feat-dcre-plan-apurement, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-reporting-npl-mensuel, target_id: feat-dcre-calcul-npl, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-catalogue-produits-validation, target_id: feat-dcre-catalogue-produits, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-mandat-sepa-bail, target_id: feat-dcre-gestion-loyers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: con-dcre-pret-personnel-montant-max, target_id: feat-dcre-parcours-digital-pret, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-modele-scoring-ml, target_id: sys-dcre-moteur-decision, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-delegation-assurance-parcours-unique, target_id: sys-dcre-gestionnaire-assurance, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-hcsf-non-derogation, target_id: feat-dcre-analyse-capacite, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-ifrs9-stage2-criteres, target_id: feat-dcre-affectation-stage, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-bureau-credit-unique, target_id: feat-dcre-interrogation-bureau, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-pas-de-credit-revolving-acquisition, target_id: sys-dcre-credit-revolving, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-signature-electronique-pret, target_id: feat-dcre-offre-pret-immobilier, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-ficp-delai-48h, target_id: feat-dcre-declaration-ficp, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-taux-variable-cap, target_id: sys-dcre-referentiel-produits, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-courtiers-habilitation-annuelle, target_id: sys-dcre-portail-courtiers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-notation-entreprises-annuelle, target_id: feat-dcre-attribution-rating, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-stress-test-trimestriel, target_id: feat-dcre-stress-test, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-agregation-bancaire-consentement, target_id: feat-dcre-agregation-revenus, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-rachat-credit-seuil-rentabilite, target_id: feat-dcre-simulation-rachat, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-sinistre-assurance-delai-reponse, target_id: feat-dcre-gestion-sinistre, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-pret-relais-duree-max, target_id: sys-dcre-pret-relais, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-catalogue-produits-gel-manuel, target_id: feat-dcre-catalogue-produits, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-prevention-surendettement-seuil, target_id: feat-dcre-alerte-surutilisation, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-loyer-bail-prelev-auto, target_id: feat-dcre-gestion-loyers, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-renegociation-criteres-economiques, target_id: feat-dcre-eligibilite-renegociation, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-reporting-corep-automatise, target_id: proj-dcre-reporting-bale-automatisation, type: CONSTRAINS, created_from: synthetic}
+  - {source_id: dec-dcre-ecl-scenario-macro-trimestriel, target_id: feat-dcre-calcul-ecl, type: CONSTRAINS, created_from: synthetic}

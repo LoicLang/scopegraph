@@ -103,3 +103,31 @@ def test_empty_graph_builds_and_returns_no_results() -> None:
     index = VectorIndex(FakeEmbedder())
     assert index.build(GraphService({}, [])) is True
     assert index.query("n'importe quoi", n=5) == []
+
+
+def test_persistent_index_skips_rebuild_when_fingerprint_matches(tmp_path: Path) -> None:
+    service = _mini_service()
+    embedder = FakeEmbedder(["bénéficiaire"])
+
+    first = VectorIndex(embedder, persist_dir=tmp_path / "chroma")
+    assert first.build(service, fingerprint="fp-1") is True
+
+    second = VectorIndex(embedder, persist_dir=tmp_path / "chroma")
+    assert second.build(service, fingerprint="fp-1") is False  # reused, not rebuilt
+    assert second.query("bénéficiaire", n=1)[0][0] == "sys-gestion-beneficiaires"
+
+
+def test_persistent_index_rebuilds_when_fingerprint_changes(tmp_path: Path) -> None:
+    service = _mini_service()
+    embedder = FakeEmbedder(["bénéficiaire"])
+    VectorIndex(embedder, persist_dir=tmp_path / "chroma").build(service, fingerprint="fp-1")
+
+    stale = VectorIndex(embedder, persist_dir=tmp_path / "chroma")
+    assert stale.build(service, fingerprint="fp-2") is True  # content changed → rebuilt
+
+
+def test_ephemeral_index_always_rebuilds() -> None:
+    service = _mini_service()
+    index = VectorIndex(FakeEmbedder())
+    assert index.build(service, fingerprint="fp-1") is True
+    assert index.build(service, fingerprint="fp-1") is False  # same client instance reuses

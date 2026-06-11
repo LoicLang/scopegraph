@@ -61,10 +61,11 @@ Node rules (all enforced by the existing fail-fast loader, plus new hermetic tes
 Edge rules:
 - Every distractor feature has exactly one PART_OF to a distractor system *in the same
   shard* (loader cardinality rule).
-- Intra-domain edges (PART_OF and OPERATES_ON) live in the shard's `edges:` list alongside
-  the `nodes:` list.
-- Inter-domain edges (DEPENDS_ON, CONSTRAINS, RELATES_TO, OPERATES_ON) live in `edges.yaml`
-  and connect distractors to distractors only. **No edge may reference a seed id** (tested).
+- Placement rule: an edge whose two endpoints sit in the same shard lives in that shard's
+  `edges:` list (PART_OF, OPERATES_ON, DEPENDS_ON, CONSTRAINS); an edge crossing shards
+  (DEPENDS_ON, CONSTRAINS, OPERATES_ON, RELATES_TO) lives in `edges.yaml`.
+- All pool edges connect distractors to distractors only. **No edge may reference a seed
+  id** (tested).
 
 ## 3. Generation protocol (replayable, documented here)
 

@@ -91,3 +91,16 @@ def test_node_union_discriminates_on_type():
 def test_node_requires_at_least_one_domain():
     with pytest.raises(ValidationError):
         System(id="sys-x", name="X", description="d", owner_team="t", domains=[])
+
+
+def test_created_from_accepts_synthetic():
+    """ADR 0002: provenance label for generated stress-test data."""
+    node = System(
+        id="sys-dmon-exemple",
+        name="Exemple",
+        description="Système distracteur.",
+        owner_team="X",
+        domains=["monetique"],
+        created_from="synthetic",
+    )
+    assert node.created_from == "synthetic"

@@ -40,10 +40,10 @@ bench (and tests) read it.
 
 ```
 graph-distractors/
-  monetique.yaml            # ~200 nodes, YAML list under a `nodes:` key
+  monetique.yaml            # 200 nodes (`nodes:` list) + intra-domain edges (`edges:` list)
   tpe-acceptation.yaml
   ... (one shard per domain, 10 total)
-  edges.yaml                # PART_OF (intra-domain) + inter-domain edges, `edges:` key
+  edges.yaml                # inter-domain edges among distractors only (`edges:` key)
 ```
 
 Shard format: one file per domain holding a **list** of nodes (not one file per node —
@@ -61,8 +61,10 @@ Node rules (all enforced by the existing fail-fast loader, plus new hermetic tes
 Edge rules:
 - Every distractor feature has exactly one PART_OF to a distractor system *in the same
   shard* (loader cardinality rule).
-- Inter-domain edges (DEPENDS_ON, CONSTRAINS, RELATES_TO, OPERATES_ON) connect distractors
-  to distractors only. **No edge may reference a seed id** (tested).
+- Intra-domain edges (PART_OF and OPERATES_ON) live in the shard's `edges:` list alongside
+  the `nodes:` list.
+- Inter-domain edges (DEPENDS_ON, CONSTRAINS, RELATES_TO, OPERATES_ON) live in `edges.yaml`
+  and connect distractors to distractors only. **No edge may reference a seed id** (tested).
 
 ## 3. Generation protocol (replayable, documented here)
 
@@ -72,9 +74,11 @@ Edge rules:
    reserved seed ids for its domain, and an instruction to produce a *coherent fictional
    mini-ecosystem* (named systems with their features, plausible French banking-IT
    constraints/decisions/risks/projects around them) — not a flat list of lorem ipsum.
-   Output: the domain shard + its intra-domain PART_OF/OPERATES_ON edges.
+   Output: the domain shard with `nodes:` list and intra-domain `edges:` list
+   (PART_OF/OPERATES_ON edges).
 2. **1 edge agent** afterwards: reads shard summaries (system/object titles per domain),
-   proposes inter-domain DEPENDS_ON/CONSTRAINS/RELATES_TO edges among distractors.
+   proposes inter-domain DEPENDS_ON/CONSTRAINS/RELATES_TO edges among distractors into
+   `edges.yaml`.
 3. **Review by sampling** (orchestrator): read a random sample per shard for plausibility,
    French quality, and fictional-entities compliance; reject and regenerate weak shards.
 4. **Mechanical gates**: full fail-fast load of seed + pool, id-uniqueness and

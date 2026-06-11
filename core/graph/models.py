@@ -11,7 +11,7 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 SLUG_PATTERN = r"^[a-z0-9]+(-[a-z0-9]+)*$"
-CREATED_FROM_PATTERN = r"^(seed|scoping:[a-z0-9-]+|ingestion:[a-z0-9-]+)$"
+CREATED_FROM_PATTERN = r"^(seed|synthetic|scoping:[a-z0-9-]+|ingestion:[a-z0-9-]+)$"
 
 
 class EdgeType(StrEnum):

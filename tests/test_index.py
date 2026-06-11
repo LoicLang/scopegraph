@@ -6,7 +6,7 @@ import pytest
 from core.graph.models import Decision, System
 from core.graph.service import GraphService
 from core.retrieval.embedder import FakeEmbedder
-from core.retrieval.index import VectorIndex, graph_fingerprint, node_document
+from core.retrieval.index import VectorIndex, embedder_id, graph_fingerprint, node_document
 
 
 def test_node_document_includes_name_aliases_description() -> None:
@@ -131,3 +131,19 @@ def test_ephemeral_index_always_rebuilds() -> None:
     index = VectorIndex(FakeEmbedder())
     assert index.build(service, fingerprint="fp-1") is True
     assert index.build(service, fingerprint="fp-1") is False  # same client instance reuses
+
+
+def test_fingerprint_distinguishes_embedder_identity(tmp_path: Path) -> None:
+    service = _mini_service()
+    embedder = FakeEmbedder(["bénéficiaire"])
+    index = VectorIndex(embedder, persist_dir=tmp_path / "chroma")
+    first = index.build(service, fingerprint=f"graph-hash:{embedder_id(embedder)}")
+    assert first is True
+
+    class OtherEmbedder(FakeEmbedder):
+        pass
+
+    other = OtherEmbedder(["bénéficiaire"])
+    stale = VectorIndex(other, persist_dir=tmp_path / "chroma")
+    rebuilt = stale.build(service, fingerprint=f"graph-hash:{embedder_id(other)}")
+    assert rebuilt is True  # different embedder identity → rebuild

@@ -5,6 +5,7 @@ from core.retrieval.config import EMBED_MODEL
 
 class SentenceTransformersEmbedder:
     def __init__(self, model_name: str = EMBED_MODEL) -> None:
+        self.model_name = model_name
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:  # clear startup error (W2 spec: error handling)

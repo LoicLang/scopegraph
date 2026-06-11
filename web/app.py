@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 
 from core.graph.service import GraphService
 from core.retrieval.embedder import Embedder
-from core.retrieval.index import VectorIndex, graph_fingerprint
+from core.retrieval.index import VectorIndex, embedder_id, graph_fingerprint
 from core.retrieval.retriever import RetrievalResult
 from core.runtime.session import ScopingSession
 from core.viz.payload import build_payload
@@ -54,7 +54,7 @@ def create_app(
         embedder = SentenceTransformersEmbedder()
         persist_dir = persist_dir or CHROMA_DIR
     index = VectorIndex(embedder, persist_dir=persist_dir)
-    index.build(service, graph_fingerprint(graph_dir))
+    index.build(service, f"{graph_fingerprint(graph_dir)}:{embedder_id(embedder)}")
 
     app = FastAPI(title="scopegraph")
     sessions: dict[str, ScopingSession] = {}

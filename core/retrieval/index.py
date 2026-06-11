@@ -22,6 +22,11 @@ def node_document(node: Node) -> str:
     return " — ".join(part for part in (label, aliases, body) if part)
 
 
+def embedder_id(embedder: Embedder) -> str:
+    """Identity folded into the index fingerprint: model swap → stale index rebuilds."""
+    return getattr(embedder, "model_name", type(embedder).__name__)
+
+
 def graph_fingerprint(graph_dir: Path) -> str:
     """Stable content hash of every YAML under graph_dir (staleness check)."""
     digest = hashlib.sha256()

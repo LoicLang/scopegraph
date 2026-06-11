@@ -57,6 +57,14 @@ W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
 (89 % recall, 13 % precision, no threshold fix possible) — **the challenge layer IS the
 precision stage**. Scope, ordered by measured impact:
 
+0. **Distractor stress bench (de-risks everything else — do first, ~one evening).** Keep
+   the 72-node seed as the untouched truth island; generate 500–2000 plausible
+   banking-IT distractor nodes (`created_from: synthetic`, separate dir, NEVER in the
+   demo); re-run the 11 `retrieval-eval` scenarios against the polluted index. Measures
+   the one genuinely scale-biased result: anchor ranking under noise (known-limits L4).
+   Recall holds → measured scale argument for the demo. Recall collapses → swap embedder
+   (multilingual-e5, the spec's recorded escalation) BEFORE building W3 on sand.
+   Deliverables: `scripts/generate-distractors` + `retrieval-eval --distractors N`.
 1. `LLMProvider` Protocol + Mistral (default) / DeepSeek (dev) / Mock (hermetic), JSON
    contract with one schema-reminder retry (MVP spec §2).
 2. **CHALLENGING + grounding gate + propose/validate ledger** — the LLM reads the
@@ -79,11 +87,13 @@ Brainstorm/plan first — no W3 spec exists yet. Open points for the brainstorm:
 displayed/validated in the UI · challenge output schema and its grounding-gate contract ·
 what the W3 demo must show end-to-end.
 
-## Scale milestone (parked, do not start)
+## Scale milestone (split, 2026-06-11 discussion)
 
-Real retrieval validation needs volume the demo seed must not carry (known-limits L4/L1):
-either ecosystem-foundry output or a disposable synthetic stress graph (300–500 generated
-nodes, never hand-curated, out of the demo). Couple it to the foundry kickoff, after W4.
+The noise-robustness half is now W3 lot 0 (distractor bench above) — measurable without
+foundry. The *realistic-volume* half (messy real-world graph structure, not plausible
+noise) still needs ecosystem-foundry output; couple that final validation to the foundry
+kickoff, after W4. Hand-growing the demo seed stays rejected (fictional-entities rule,
+curation cost, artificial coherence).
 
 ## Later
 

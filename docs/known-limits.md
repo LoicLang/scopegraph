@@ -67,14 +67,27 @@ the retrieval architecture, only its mechanics. Retrieval+expansion is an **arch
 bet on scale** (real ecosystems: thousands of nodes), not an empirically forced choice at
 seed size.
 
+**What is actually size-biased vs not** (refined 2026-06-11 evening): the expansion
+mechanics, the L2/L3 findings, and the vs-naive-prompt comparison hold at any size. The
+genuinely unknown quantity is **anchor ranking under distractor pressure** — at 72 nodes
+the right anchors reach TOP_N almost by default; with thousands of plausible distractors
+and MiniLM's narrow similarity band, nobody knows.
+
 **Resolution.**
 - The W4 eval gains a third arm: (a) naive prompt, no graph · (a') **full-graph-in-context**
   LLM · (b) scopegraph. At 72 nodes (a') is expected to be competitive — the honest claims
   against it are determinism, grounding/citations, write-back, and the scale trajectory.
-- Real-scale validation is deferred to ecosystem-foundry volume (or a disposable synthetic
-  stress graph of 300–500 nodes, generated, never hand-curated, kept out of the demo).
-  Hand-growing the demo seed is explicitly rejected: fictional-entities rule makes large
-  hand-curation a project of its own, and volume production is foundry's job.
+- **W3 lot 0 — distractor stress bench** (decided 2026-06-11, see BUILD-ORDER): keep the
+  seed as the untouched truth island, generate 500–2000 plausible distractor nodes
+  (`created_from: synthetic`, never in the demo), re-run the 11 scenarios. This measures
+  the size-biased quantity directly, without circular ground truth (a fully synthetic
+  graph — generated nodes AND edges AND truth — would be a worse test than the small
+  honest one: the generator decides where the buried dependencies are, then we verify we
+  find them). Recall collapse → swap embedder (multilingual-e5) before W3 builds on it.
+- *Realistic*-volume validation (messy real structure, not plausible noise) still comes
+  from ecosystem-foundry output, after W4. Hand-growing the demo seed stays rejected:
+  fictional-entities rule makes large hand-curation a project of its own, and volume
+  production is foundry's job.
 
 ## L5 — Methodology traps in our own bench
 

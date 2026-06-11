@@ -12,6 +12,7 @@ dependencies = [
     "pyyaml",
     "fastapi",
     "uvicorn",
+    "chromadb",
 ]
 
 [project.optional-dependencies]
@@ -19,6 +20,10 @@ dev = [
     "pytest",
     "ruff",
     "pre-commit",
+    "httpx",
+]
+embeddings = [
+    "sentence-transformers",
 ]
 
 [tool.hatch.build.targets.wheel]

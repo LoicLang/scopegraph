@@ -8,6 +8,19 @@ from core.graph.service import GraphService
 from core.retrieval import config
 from core.retrieval.index import VectorIndex
 
+# Tiebreak priority for equal-scoring anchors: primary architectural subjects rank first.
+# Systems and business_objects are the "things" a brief asks about; features, projects,
+# decisions, constraints, and risks are derivative or governance artifacts.
+_TYPE_PRIORITY: dict[str, int] = {
+    "system": 0,
+    "business_object": 1,
+    "feature": 2,
+    "project": 3,
+    "decision": 4,
+    "constraint": 5,
+    "risk": 6,
+}
+
 
 @dataclass(frozen=True)
 class ScoredNode:
@@ -57,7 +70,14 @@ def retrieve(
     }
     anchor_ids = [
         node_id
-        for node_id, score in sorted(boosted.items(), key=lambda kv: (-kv[1], kv[0]))
+        for node_id, score in sorted(
+            boosted.items(),
+            key=lambda kv: (
+                -kv[1],
+                _TYPE_PRIORITY.get(service.get_node(kv[0]).type, 99),
+                kv[0],
+            ),
+        )
         if score >= config.TAU_ANCHOR
     ][: config.TOP_K]
     anchors = [

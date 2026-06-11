@@ -100,7 +100,7 @@ def retrieve(
         key=lambda d: (-domain_scores[d], d),
     )
 
-    expanded = _expand(anchors, service, sims, set(excluded_domains))
+    expanded = _expand(anchors, service, sims, set(excluded_domains), set(domains))
     return RetrievalResult(anchors, expanded, domain_scores, derived)
 
 
@@ -109,6 +109,7 @@ def _expand(
     service: GraphService,
     sims: dict[str, float],
     excluded: set[str],
+    confirmed: set[str] = frozenset(),
 ) -> list[ScoredNode]:
     anchor_ids = {anchor.node_id for anchor in anchors}
     best: dict[str, ScoredNode] = {}
@@ -117,7 +118,9 @@ def _expand(
             if node_id in anchor_ids:
                 continue
             node = service.get_node(node_id)
-            if set(node.domains) & excluded:
+            node_domains = set(node.domains)
+            # exclusion drops a node only if no user-confirmed domain rescues it
+            if node_domains & excluded and not (node_domains & confirmed):
                 continue
             score = anchor.score * config.DECAY ** len(path)
             if score < config.TAU_KEEP:

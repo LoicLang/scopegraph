@@ -105,6 +105,8 @@ included) could find.
 | T2 | top-2 candidate domain scores within `DELTA` | « Le projet relève-t-il plutôt de {domaine_a} ou de {domaine_b} ? » | Answer sets `brief.domains`. |
 | T3 (pivot) | a node reached **only** by expansion (semantic sim < `TAU_NOISE`) whose domains ∩ brief.domains = ∅ | « Le périmètre inclut-il {domaine} ? ({node.name} serait alors concerné) » | Yes → domain added to `brief.domains`; no → domain added to `excluded_domains`, its expansion-only nodes drop off the map. One question per *domain*, not per node. |
 
+> **Node-level rule (clarified 2026-06-11, final review).** Pivot applies at the *node* level: a node justified by any known domain (confirmed or derived) never triggers a pivot question on its other domains. In the resolution column: an excluded domain drops a node only if no user-confirmed domain rescues it — confirmation takes priority over exclusion for the same node.
+
 - **Convergence**: T1 fires once; each T2/T3 answer strictly resolves its own condition
   (domain set / domain included-or-excluded, never re-asked); `MAX_QUESTIONS` is the
   backstop. Loop exits when no trigger fires → map stable → session waits at end of

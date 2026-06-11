@@ -59,9 +59,10 @@ def detect_trigger(
     for scored in result.expanded:  # already sorted best-first
         if not scored.expansion_only:
             continue
+        # node-level check: if ANY domain is known, the node is already justified — skip it
+        if set(scored.domains) & known:
+            continue
         for domain in scored.domains:
-            if domain in known:
-                continue
             trigger = PivotTrigger(domain=domain, node_id=scored.node_id)
             if trigger.key not in asked:
                 return trigger

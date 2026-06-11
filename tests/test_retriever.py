@@ -130,6 +130,27 @@ def test_excluded_domains_drop_expanded_nodes() -> None:
     assert "sys-moteur" in expanded_ids  # other domains untouched
 
 
+def test_confirmed_domain_rescues_node_from_exclusion() -> None:
+    service, index = make_index(["canal"])
+    result = retrieve(
+        "améliorer notre canal mobile", service, index,
+        domains=["monetique"], excluded_domains=["monetique"],
+    )
+    # degenerate overlap: confirmation wins over exclusion
+    assert "sys-moteur" in {s.node_id for s in result.expanded}
+
+
+def test_exclusion_drops_unrescued_nodes_only() -> None:
+    service, index = make_index(["canal"])
+    result = retrieve(
+        "améliorer notre canal mobile", service, index,
+        domains=[], excluded_domains=["tpe-acceptation"],
+    )
+    ids = {s.node_id for s in result.expanded}
+    assert "sys-terminal" not in ids
+    assert "sys-moteur" in ids
+
+
 def test_anchor_tie_break_prefers_system_over_feature() -> None:
     """Exact score ties resolve by node type: the System (the subject) outranks
     Features that match the same text — executable spec of _TYPE_PRIORITY."""

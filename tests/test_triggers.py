@@ -95,3 +95,16 @@ def test_precedence_weak_then_tie_then_pivot() -> None:
     assert isinstance(detect_trigger(result, brief, {"weak"}), DomainTieTrigger)
     tie_key = DomainTieTrigger(domain_a="credit", domain_b="monetique").key
     assert isinstance(detect_trigger(result, brief, {"weak", tie_key}), PivotTrigger)
+
+
+def test_pivot_skips_nodes_already_justified_by_a_known_domain() -> None:
+    bridge = ScoredNode(
+        "sys-pont", 0.49, domains=("credit", "tpe-acceptation"), semantic_sim=0.0,
+        anchor_id="sys-a", path=(EDGE,),
+    )
+    result = make_result(
+        anchors=[strong_anchor()], expanded=[bridge],
+        domain_scores={"credit": 1.0}, derived=["credit"],
+    )
+    # the node carries credit (known) → no pivot question about tpe-acceptation
+    assert detect_trigger(result, ProjectBrief(description="x"), set()) is None

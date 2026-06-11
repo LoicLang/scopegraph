@@ -33,6 +33,7 @@ class Turn:
     state: SessionState
     question: str | None
     result: RetrievalResult
+    # NOTE: brief is the live session object, not a snapshot (fine in W2; revisit for multi-turn history in W3)
     brief: ProjectBrief
 
 
@@ -70,10 +71,10 @@ class ScopingSession:
         )
         match trigger:
             case DomainTieTrigger(domain_a=domain_a, domain_b=domain_b):
-                lowered = answer.lower()
-                for domain in (domain_a, domain_b):
-                    if domain.lower() in lowered and domain not in self.brief.domains:
+                for domain in _match_domains(answer, (domain_a, domain_b)):
+                    if domain not in self.brief.domains:
                         self.brief.domains.append(domain)
+                # an answer naming neither domain resolves nothing: the QA text still enriches the brief
             case PivotTrigger(domain=domain):
                 verdict = _parse_yes_no(answer)
                 if verdict is True and domain not in self.brief.domains:
@@ -104,10 +105,22 @@ class ScopingSession:
         return Turn(state=self.state, question=question, result=result, brief=self.brief)
 
 
+def _tokens(text: str) -> set[str]:
+    return {token.strip(".,!?;:()«»\"'").lower() for token in text.split()}
+
+
+def _match_domains(answer: str, candidates: tuple[str, ...]) -> list[str]:
+    """Domains explicitly named in the answer (whole-token match — slugs have no spaces)."""
+    tokens = _tokens(answer)
+    return [domain for domain in candidates if domain.lower() in tokens]
+
+
 def _parse_yes_no(answer: str) -> bool | None:
-    tokens = {token.strip(".,!?;:()«»\"'").lower() for token in answer.split()}
-    if tokens & {"oui", "yes"}:
+    tokens = _tokens(answer)
+    yes = bool(tokens & {"oui", "yes"})
+    no = bool(tokens & {"non", "no"})
+    if yes and not no:
         return True
-    if tokens & {"non", "no"}:
+    if no and not yes:
         return False
-    return None
+    return None  # hedge ("ni oui ni non") or neither: never a silent confirmation

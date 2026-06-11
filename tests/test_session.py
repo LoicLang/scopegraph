@@ -100,3 +100,21 @@ def test_empty_message_rejected_and_future_states_guarded() -> None:
     session.state = SessionState.CHALLENGING
     with pytest.raises(NotImplementedError):
         session.handle_message("peu importe")
+
+
+def test_hedged_answer_is_not_a_confirmation() -> None:
+    session = make_session(["canal"])
+    session.handle_message("améliorer notre canal mobile")  # pivot monetique pending
+    session.handle_message("ni oui ni non")
+    assert "monetique" not in session.brief.domains
+    assert "monetique" not in session.brief.excluded_domains
+
+
+def test_tie_answer_matches_whole_domain_tokens_only() -> None:
+    from core.runtime.session import _match_domains
+
+    assert _match_domains("plutôt credit-immobilier", ("credit", "credit-immobilier")) == [
+        "credit-immobilier"
+    ]
+    assert _match_domains("le credit, clairement", ("credit", "credit-immobilier")) == ["credit"]
+    assert _match_domains("les deux", ("credit", "monetique")) == []

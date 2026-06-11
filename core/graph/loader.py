@@ -31,6 +31,27 @@ class GraphLoadError(Exception):
     """The graph on disk violates schema v1 (ADR 0001)."""
 
 
+def validate_node(data: dict, path: Path, vocabulary: frozenset[str]) -> Node:
+    """Validate one raw node mapping: schema v1, id prefix, domain vocabulary."""
+    try:
+        node = _NODE_ADAPTER.validate_python(data)
+    except ValidationError as exc:
+        raise GraphLoadError(f"{path}: invalid node: {exc}") from exc
+    expected_prefix = _ID_PREFIXES[node.type]
+    if not node.id.startswith(expected_prefix):
+        raise GraphLoadError(
+            f"{path}: id '{node.id}' must carry the '{expected_prefix}' prefix "
+            f"for type '{node.type}' (ADR 0001)"
+        )
+    unknown = set(node.domains) - vocabulary
+    if unknown:
+        raise GraphLoadError(
+            f"{path}: unknown domains {sorted(unknown)} "
+            "(vocabulary: graph/domains.yaml, governed by ADR)"
+        )
+    return node
+
+
 def load_domains(graph_dir: Path) -> frozenset[str]:
     path = graph_dir / "domains.yaml"
     if not path.exists():
@@ -46,25 +67,9 @@ def load_graph(graph_dir: Path) -> tuple[dict[str, Node], list[Edge]]:
 
     nodes: dict[str, Node] = {}
     for path in sorted((graph_dir / "nodes").glob("*.yaml")):
-        data = _read_yaml(path)
-        try:
-            node = _NODE_ADAPTER.validate_python(data)
-        except ValidationError as exc:
-            raise GraphLoadError(f"{path}: invalid node: {exc}") from exc
+        node = validate_node(_read_yaml(path), path, vocabulary)
         if node.id in nodes:
             raise GraphLoadError(f"{path}: duplicate node id '{node.id}'")
-        expected_prefix = _ID_PREFIXES[node.type]
-        if not node.id.startswith(expected_prefix):
-            raise GraphLoadError(
-                f"{path}: id '{node.id}' must carry the '{expected_prefix}' prefix "
-                f"for type '{node.type}' (ADR 0001)"
-            )
-        unknown = set(node.domains) - vocabulary
-        if unknown:
-            raise GraphLoadError(
-                f"{path}: unknown domains {sorted(unknown)} "
-                "(vocabulary: graph/domains.yaml, governed by ADR)"
-            )
         nodes[node.id] = node
 
     edges: list[Edge] = []

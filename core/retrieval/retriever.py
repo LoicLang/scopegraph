@@ -43,6 +43,12 @@ def retrieve(
     domains: Sequence[str] = (),
     excluded_domains: Sequence[str] = (),
 ) -> RetrievalResult:
+    """Hybrid retrieval: semantic anchors + domain boost + bounded expansion.
+
+    `domains` are the brief's user-confirmed domains (boost + derivation override);
+    `excluded_domains` only filter the expansion layer — anchors are never dropped
+    (the user literally named them).
+    """
     sims = dict(index.query(text, config.TOP_N))
     wanted = set(domains)
     boosted = {
@@ -84,4 +90,25 @@ def _expand(
     sims: dict[str, float],
     excluded: set[str],
 ) -> list[ScoredNode]:
-    return []  # Task 8
+    anchor_ids = {anchor.node_id for anchor in anchors}
+    best: dict[str, ScoredNode] = {}
+    for anchor in anchors:  # strongest first → ties resolve to the strongest anchor
+        for node_id, path in service.k_hop(anchor.node_id, config.MAX_HOPS).items():
+            if node_id in anchor_ids:
+                continue
+            node = service.get_node(node_id)
+            if set(node.domains) & excluded:
+                continue
+            score = anchor.score * config.DECAY ** len(path)
+            if score < config.TAU_KEEP:
+                continue
+            if node_id not in best or score > best[node_id].score:
+                best[node_id] = ScoredNode(
+                    node_id=node_id,
+                    score=score,
+                    domains=tuple(node.domains),
+                    semantic_sim=sims.get(node_id),
+                    anchor_id=anchor.node_id,
+                    path=tuple(path),
+                )
+    return sorted(best.values(), key=lambda scored: (-scored.score, scored.node_id))

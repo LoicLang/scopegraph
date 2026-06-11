@@ -91,3 +91,40 @@ def test_domain_scores_and_derivation() -> None:
     assert set(result.domain_scores) == {"banque-en-ligne", "monetique"}
     # equal anchor scores → both domains derived (≥ DOMAIN_FRACTION · top)
     assert set(result.derived_domains) == {"banque-en-ligne", "monetique"}
+
+
+def test_expansion_carries_provenance_and_decay() -> None:
+    service, index = make_index(["canal"])
+    result = retrieve("améliorer notre canal mobile", service, index)
+    by_id = {s.node_id: s for s in result.expanded}
+
+    moteur = by_id["sys-moteur"]
+    assert moteur.score == pytest.approx(config.DECAY)  # anchor score 1.0 · DECAY^1
+    assert moteur.anchor_id == "sys-canal"
+    assert [edge.type for edge in moteur.path] == [EdgeType.DEPENDS_ON]
+
+    terminal = by_id["sys-terminal"]
+    assert terminal.score == pytest.approx(config.DECAY**2)
+    assert len(terminal.path) == 2
+    assert terminal.expansion_only  # zero textual similarity, pure structure
+
+    assert "con-regle" in by_id  # constraints ride the same expansion
+
+
+def test_expansion_skips_anchors_and_sorts_by_score() -> None:
+    service, index = make_index(["canal"])
+    result = retrieve("améliorer notre canal mobile", service, index)
+    expanded_ids = [s.node_id for s in result.expanded]
+    assert "sys-canal" not in expanded_ids
+    scores = [s.score for s in result.expanded]
+    assert scores == sorted(scores, reverse=True)
+
+
+def test_excluded_domains_drop_expanded_nodes() -> None:
+    service, index = make_index(["canal"])
+    result = retrieve(
+        "améliorer notre canal mobile", service, index, excluded_domains=["tpe-acceptation"]
+    )
+    expanded_ids = {s.node_id for s in result.expanded}
+    assert "sys-terminal" not in expanded_ids
+    assert "sys-moteur" in expanded_ids  # other domains untouched

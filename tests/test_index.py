@@ -1,6 +1,8 @@
 import datetime
 from pathlib import Path
 
+import pytest
+
 from core.graph.models import Decision, System
 from core.graph.service import GraphService
 from core.retrieval.embedder import FakeEmbedder
@@ -89,3 +91,15 @@ def test_query_n_is_bounded_by_corpus_size() -> None:
     index = VectorIndex(FakeEmbedder())
     index.build(service)
     assert len(index.query("n'importe quoi", n=50)) == 3
+
+
+def test_query_before_build_raises() -> None:
+    index = VectorIndex(FakeEmbedder())
+    with pytest.raises(RuntimeError, match="before build"):
+        index.query("quoi que ce soit", n=3)
+
+
+def test_empty_graph_builds_and_returns_no_results() -> None:
+    index = VectorIndex(FakeEmbedder())
+    assert index.build(GraphService({}, [])) is True
+    assert index.query("n'importe quoi", n=5) == []

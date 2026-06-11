@@ -61,6 +61,8 @@ class VectorIndex:
             metadata={"hnsw:space": "cosine", "fingerprint": fingerprint or "unversioned"},
         )
         nodes = service.all_nodes()
+        if not nodes:  # empty graph: collection exists, nothing to add
+            return True
         documents = [node_document(node) for node in nodes]
         self._collection.add(
             ids=[node.id for node in nodes],
@@ -74,6 +76,8 @@ class VectorIndex:
         """Top-n (node_id, cosine similarity), best first."""
         if self._collection is None:
             raise RuntimeError("VectorIndex.query called before build()")
+        if self._collection.count() == 0:
+            return []
         [vector] = self._embedder.embed([text])
         response = self._collection.query(
             query_embeddings=[vector], n_results=min(n, self._collection.count())

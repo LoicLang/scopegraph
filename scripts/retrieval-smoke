@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""Calibration bench: run the REAL embedder over the 6 eval briefs (never in CI).
+
+Usage:  pip install -e ".[embeddings]"  &&  ./scripts/retrieval-smoke
+Prints anchors, expanded nodes with provenance, and domain derivation per brief —
+the §3 constants in core/retrieval/config.py are tuned by reading this output.
+"""
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from core.graph.service import GraphService  # noqa: E402
+from core.retrieval.index import VectorIndex, graph_fingerprint  # noqa: E402
+from core.retrieval.retriever import retrieve  # noqa: E402
+from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
+
+BRIEFS = {
+    "cas-1-bnpl": "Ajouter une option de paiement en 3 fois dans l'app mobile.",
+    "cas-2-beneficiaires": (
+        "Permettre aux clients entreprise de créer des bénéficiaires depuis leur portail."
+    ),
+    "cas-3-cashback": (
+        "Proposer un programme de cash-back aux clients lors de leurs paiements "
+        "chez les commerçants partenaires."
+    ),
+    "cas-4-plafonds-ip": "Relever les plafonds de virement instantané pour les clients premium.",
+    "cas-5-ia-reclamations": (
+        "Mettre en place un assistant IA qui rédige les réponses aux réclamations clients."
+    ),
+    "cas-6-onboarding": "Refondre le parcours d'entrée en relation 100 % digital.",
+}
+
+
+def main() -> None:
+    service = GraphService.from_dir(ROOT / "graph")
+    index = VectorIndex(SentenceTransformersEmbedder())
+    index.build(service, graph_fingerprint(ROOT / "graph"))
+    for case, brief in BRIEFS.items():
+        result = retrieve(brief, service, index)
+        print(f"\n=== {case}: {brief}")
+        print("  -- anchors")
+        for scored in result.anchors:
+            print(f"    {scored.score:.3f}  {scored.node_id}  (sim {scored.semantic_sim:.3f})")
+        print("  -- expanded (top 12)")
+        for scored in result.expanded[:12]:
+            hops = len(scored.path)
+            print(f"    {scored.score:.3f}  {scored.node_id}  via {scored.anchor_id} ({hops} hop)")
+        print(f"  -- domains {result.domain_scores} -> derived {result.derived_domains}")
+
+
+if __name__ == "__main__":
+    main()

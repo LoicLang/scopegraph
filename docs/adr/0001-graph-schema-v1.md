@@ -31,7 +31,8 @@ All nodes share the following fields:
 - `id` — slug, prefixed by type: `sys-`, `feat-`, `obj-`, `proj-`, `dec-`, `con-`, `risk-`
 - `domains[]` — one or more values, validated at load time against the loaded domain vocabulary
 - `tags[]`
-- `created_from` — one of `seed`, `scoping:<id>`, or `ingestion:<id>`
+- `created_from` — one of `seed`, `scoping:<id>`, or `ingestion:<id>`; `synthetic` added
+  by ADR 0002 (stress-test data only, never produced by the runtime)
 
 Specific fields per type:
 

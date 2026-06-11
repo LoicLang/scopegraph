@@ -6,6 +6,7 @@ import pytest
 
 from core.graph.distractors import load_distractor_pool, sample_pool
 from core.graph.loader import GraphLoadError
+from core.graph.service import GraphService
 
 DOMAINS_YAML = "domains:\n  - alpha\n  - beta\n"
 
@@ -157,3 +158,55 @@ def test_sample_pool_prefix_and_remainder(tmp_path):
     # n=3 over 2 shards: divmod -> base 1, remainder to alphabetically-first (alpha)
     assert [n.id for n in sample_pool(shards, 3)] == ["sys-da-un", "feat-da-un-a", "sys-db-un"]
     assert sample_pool(shards, 0) == []
+
+
+def test_from_dirs_merges_seed_and_prefix_sample(tmp_path):
+    graph_dir = write_seed(tmp_path)
+    pool_dir = write_pool(tmp_path)
+    # n=3 → alpha gets 2 (sys-da-un, feat-da-un-a), beta gets 1 (sys-db-un)
+    service = GraphService.from_dirs(graph_dir, pool_dir, 3)
+    ids = {node.id for node in service.all_nodes()}
+    assert ids == {"sys-core", "sys-da-un", "feat-da-un-a", "sys-db-un"}
+    # the sampled feature's PART_OF edge survived the endpoint filter
+    assert any(e.type.value == "PART_OF" for e in service.all_edges())
+
+
+def test_from_dirs_is_deterministic(tmp_path):
+    graph_dir = write_seed(tmp_path)
+    pool_dir = write_pool(tmp_path)
+    first = [n.id for n in GraphService.from_dirs(graph_dir, pool_dir, 3).all_nodes()]
+    second = [n.id for n in GraphService.from_dirs(graph_dir, pool_dir, 3).all_nodes()]
+    assert first == second
+
+
+def test_from_dirs_n_zero_equals_seed_only(tmp_path):
+    graph_dir = write_seed(tmp_path)
+    pool_dir = write_pool(tmp_path)
+    service = GraphService.from_dirs(graph_dir, pool_dir, 0)
+    assert [n.id for n in service.all_nodes()] == ["sys-core"]
+
+
+def test_shard_violating_parent_order_fails_at_cutting_n(tmp_path):
+    # feature first, its parent system after: a prefix of 1 strands the feature
+    bad = """\
+nodes:
+  - type: feature
+    id: feat-da-orphelin
+    name: Orpheline
+    description: Feature déclarée avant son système parent.
+    domains: [alpha]
+    created_from: synthetic
+  - type: system
+    id: sys-da-parent
+    name: Parent
+    description: Système parent déclaré trop tard.
+    owner_team: Equipe A
+    domains: [alpha]
+    created_from: synthetic
+edges:
+  - {source_id: feat-da-orphelin, target_id: sys-da-parent, type: PART_OF, created_from: synthetic}
+"""
+    graph_dir = write_seed(tmp_path)
+    pool_dir = write_pool(tmp_path, alpha=bad)
+    with pytest.raises(GraphLoadError, match="exactly one PART_OF"):
+        GraphService.from_dirs(graph_dir, pool_dir, 1)

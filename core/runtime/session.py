@@ -6,6 +6,7 @@ from enum import StrEnum
 
 from core.graph.service import GraphService
 from core.retrieval import config
+from core.retrieval.config import DEFAULT_PROFILE, RetrievalProfile
 from core.retrieval.index import VectorIndex
 from core.retrieval.retriever import RetrievalResult, retrieve
 from core.runtime.brief import QA, ProjectBrief
@@ -38,9 +39,15 @@ class Turn:
 
 
 class ScopingSession:
-    def __init__(self, service: GraphService, index: VectorIndex) -> None:
+    def __init__(
+        self,
+        service: GraphService,
+        index: VectorIndex,
+        profile: RetrievalProfile = DEFAULT_PROFILE,
+    ) -> None:
         self._service = service
         self._index = index
+        self._profile = profile
         self.state = SessionState.DESCRIBING
         self.brief: ProjectBrief | None = None
         self.asked: set[str] = set()
@@ -93,10 +100,11 @@ class ScopingSession:
             self._index,
             domains=self.brief.domains,
             excluded_domains=self.brief.excluded_domains,
+            profile=self._profile,
         )
         question: str | None = None
         if self.questions_asked < config.MAX_QUESTIONS:
-            trigger = detect_trigger(result, self.brief, self.asked)
+            trigger = detect_trigger(result, self.brief, self.asked, self._profile)
             if trigger is not None:
                 self.asked.add(trigger.key)
                 self.questions_asked += 1

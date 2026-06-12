@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from core.retrieval import config
+from core.retrieval.config import DEFAULT_PROFILE, RetrievalProfile
 from core.retrieval.retriever import RetrievalResult
 from core.runtime.brief import ProjectBrief
 
@@ -38,11 +38,14 @@ Trigger = WeakBriefTrigger | DomainTieTrigger | PivotTrigger
 
 
 def detect_trigger(
-    result: RetrievalResult, brief: ProjectBrief, asked: set[str]
+    result: RetrievalResult,
+    brief: ProjectBrief,
+    asked: set[str],
+    profile: RetrievalProfile = DEFAULT_PROFILE,
 ) -> Trigger | None:
     """First firing trigger in T1 → T2 → T3 order, skipping already-asked keys."""
     best = result.anchors[0].score if result.anchors else 0.0
-    if best < config.TAU_WEAK:
+    if best < profile.tau_weak:
         trigger = WeakBriefTrigger()
         if trigger.key not in asked:
             return trigger
@@ -50,7 +53,7 @@ def detect_trigger(
     ranked = sorted(result.domain_scores.items(), key=lambda kv: (-kv[1], kv[0]))
     if len(ranked) >= 2:
         (domain_a, score_a), (domain_b, score_b) = ranked[0], ranked[1]
-        if score_a - score_b < config.DELTA * score_a:
+        if score_a - score_b < profile.delta * score_a:
             trigger = DomainTieTrigger(domain_a=domain_a, domain_b=domain_b)
             if trigger.key not in asked:
                 return trigger

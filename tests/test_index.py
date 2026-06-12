@@ -141,6 +141,10 @@ def test_embedder_id_distinguishes_prefix_variants() -> None:
     assert embedder_id(plain) != embedder_id(asymmetric)
 
 
+def test_embedder_id_falls_back_to_class_name_and_empty_prefixes():
+    assert embedder_id(FakeEmbedder()) == "FakeEmbedder||"
+
+
 def test_fingerprint_distinguishes_embedder_identity(tmp_path: Path) -> None:
     service = _mini_service()
     embedder = FakeEmbedder(["bénéficiaire"])

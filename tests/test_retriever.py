@@ -3,6 +3,7 @@ import pytest
 from core.graph.models import Constraint, Edge, EdgeType, Feature, System
 from core.graph.service import GraphService
 from core.retrieval import config
+from core.retrieval.config import MINILM
 from core.retrieval.embedder import FakeEmbedder
 from core.retrieval.index import VectorIndex
 from core.retrieval.retriever import retrieve
@@ -76,18 +77,18 @@ def test_no_anchor_when_nothing_matches() -> None:
 
 def test_domain_boost_adds_alpha_per_shared_domain() -> None:
     service, index = make_index(["canal", "central"])
-    plain = retrieve("le canal et le traitement central", service, index)
+    plain = retrieve("le canal et le traitement central", service, index, profile=MINILM)
     boosted = retrieve(
-        "le canal et le traitement central", service, index, domains=["monetique"]
+        "le canal et le traitement central", service, index, domains=["monetique"], profile=MINILM
     )
-    expected = anchor_score(plain, "sys-moteur") + config.DEFAULT_PROFILE.alpha
+    expected = anchor_score(plain, "sys-moteur") + MINILM.alpha
     assert anchor_score(boosted, "sys-moteur") == pytest.approx(expected)
     assert boosted.anchors[0].node_id == "sys-moteur"  # boost reorders the tie
 
 
 def test_domain_scores_and_derivation() -> None:
     service, index = make_index(["canal", "central"])
-    result = retrieve("le canal et le traitement central", service, index)
+    result = retrieve("le canal et le traitement central", service, index, profile=MINILM)
     assert set(result.domain_scores) == {"banque-en-ligne", "monetique"}
     # equal anchor scores → both domains derived (≥ DOMAIN_FRACTION · top)
     assert set(result.derived_domains) == {"banque-en-ligne", "monetique"}

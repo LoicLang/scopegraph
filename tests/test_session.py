@@ -110,6 +110,29 @@ def test_hedged_answer_is_not_a_confirmation() -> None:
     assert "monetique" not in session.brief.excluded_domains
 
 
+def test_session_threads_its_profile_into_retrieve_and_triggers():
+    from dataclasses import replace
+
+    from core.retrieval.config import MINILM
+
+    # A fragment that matches sys-canal so retrieval yields anchors under MINILM thresholds.
+    BRIEF_MATCHING_FRAGMENT = "canal"
+
+    service = make_service()
+    index = VectorIndex(FakeEmbedder([BRIEF_MATCHING_FRAGMENT]))
+    index.build(service)
+
+    # tau_weak above any cosine: T1 fires despite a perfect anchor → detect_trigger got the profile
+    paranoid = ScopingSession(service, index, profile=replace(MINILM, tau_weak=1.5))
+    turn = paranoid.handle_message("améliorer notre canal mobile")
+    assert turn.result.anchors  # retrieval still anchored — only the trigger judged it weak
+    assert "weak" in paranoid.asked
+
+    # tau_anchor above any cosine: no anchors at all → retrieve got the profile
+    blind = ScopingSession(service, index, profile=replace(MINILM, tau_anchor=1.5))
+    assert blind.handle_message("améliorer notre canal mobile").result.anchors == []
+
+
 def test_tie_answer_matches_whole_domain_tokens_only() -> None:
     from core.runtime.session import _match_domains
 

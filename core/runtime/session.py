@@ -104,7 +104,7 @@ class ScopingSession:
         )
         question: str | None = None
         if self.questions_asked < config.MAX_QUESTIONS:
-            trigger = detect_trigger(result, self.brief, self.asked, self._profile)
+            trigger = detect_trigger(result, self.brief, self.asked, profile=self._profile)
             if trigger is not None:
                 self.asked.add(trigger.key)
                 self.questions_asked += 1

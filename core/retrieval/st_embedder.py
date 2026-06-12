@@ -7,9 +7,7 @@ from core.retrieval.embedder import prefixed
 class SentenceTransformersEmbedder:
     def __init__(self, profile: RetrievalProfile = DEFAULT_PROFILE) -> None:
         self.model_name = profile.model_name  # embedder_id() folds this into fingerprints
-        self._query_prefix = profile.query_prefix
-        self._passage_prefix = profile.passage_prefix
-        self.prefixes = (self._query_prefix, self._passage_prefix)  # part of embedder_id
+        self.prefixes = (profile.query_prefix, profile.passage_prefix)  # part of embedder_id
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:  # clear startup error (W2 spec: error handling)
@@ -23,7 +21,9 @@ class SentenceTransformersEmbedder:
         return [[float(value) for value in row] for row in rows]
 
     def embed_queries(self, texts: list[str]) -> list[list[float]]:
-        return self._encode(prefixed(self._query_prefix, texts))
+        query_prefix, _ = self.prefixes
+        return self._encode(prefixed(query_prefix, texts))
 
     def embed_passages(self, texts: list[str]) -> list[list[float]]:
-        return self._encode(prefixed(self._passage_prefix, texts))
+        _, passage_prefix = self.prefixes
+        return self._encode(prefixed(passage_prefix, texts))

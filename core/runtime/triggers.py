@@ -41,6 +41,7 @@ def detect_trigger(
     result: RetrievalResult,
     brief: ProjectBrief,
     asked: set[str],
+    *,
     profile: RetrievalProfile = DEFAULT_PROFILE,
 ) -> Trigger | None:
     """First firing trigger in T1 → T2 → T3 order, skipping already-asked keys."""

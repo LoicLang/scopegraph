@@ -1,6 +1,6 @@
 """RetrievalProfile: frozen MiniLM values (known-limits reproducibility) + TOP_N policy."""
 
-from core.retrieval.config import DEFAULT_PROFILE, E5_BASE, MINILM, PROFILES
+from core.retrieval.config import DEFAULT_PROFILE, E5_BASE, MINILM, PROFILES, QWEN3
 
 
 def test_minilm_profile_is_frozen_to_w2_values():
@@ -36,8 +36,25 @@ def test_top_n_coverage_scales_with_floor():
 
 
 def test_registry_and_default():
-    assert PROFILES == {"minilm": MINILM, "e5": E5_BASE}
+    assert PROFILES == {"minilm": MINILM, "e5": E5_BASE, "qwen3": QWEN3}
     assert DEFAULT_PROFILE is MINILM  # flipped only by the exit contract (spec §1)
+
+
+def test_qwen3_profile_instruction_and_mac_workarounds():
+    assert QWEN3.model_name == "Qwen/Qwen3-Embedding-0.6B"
+    # Instruction-aware query side (Qwen3 card format), bare passages.
+    assert QWEN3.query_prefix.startswith("Instruct: ")
+    assert QWEN3.query_prefix.endswith("\nQuery:")
+    assert QWEN3.passage_prefix == ""
+    # macOS: SDPA produces NaN embeddings (sentence-transformers#3498) → eager attention;
+    # Qwen3 card: left padding for last-token pooling.
+    assert QWEN3.model_kwargs == {"attn_implementation": "eager"}
+    assert QWEN3.tokenizer_kwargs == {"padding_side": "left"}
+
+
+def test_profiles_without_st_kwargs_default_to_empty():
+    assert MINILM.model_kwargs == {} and MINILM.tokenizer_kwargs == {}
+    assert E5_BASE.model_kwargs == {} and E5_BASE.tokenizer_kwargs == {}
 
 
 def test_top_n_unknown_policy_fails_loud():

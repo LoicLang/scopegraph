@@ -87,7 +87,7 @@ def test_st_embedder_routes_prefixes_per_method(monkeypatch):
     captured: list[list[str]] = []
 
     class _RecordingModel:
-        def __init__(self, model_name):
+        def __init__(self, model_name, **kwargs):
             pass
 
         def encode(self, texts, normalize_embeddings):
@@ -104,3 +104,62 @@ def test_st_embedder_routes_prefixes_per_method(monkeypatch):
     embedder.embed_queries(["plafonds"])
     embedder.embed_passages(["plafonds"])
     assert captured == [["query: plafonds"], ["passage: plafonds"]]
+
+
+def test_st_embedder_passes_profile_st_kwargs(monkeypatch):
+    import sys
+    import types
+    from dataclasses import replace
+
+    from core.retrieval.config import MINILM
+
+    captured_kwargs: dict = {}
+
+    class _RecordingModel:
+        def __init__(self, model_name, **kwargs):
+            captured_kwargs.update(kwargs)
+
+        def encode(self, texts, normalize_embeddings):
+            return [[1.0, 0.0] for _ in texts]
+
+    fake_module = types.ModuleType("sentence_transformers")
+    fake_module.SentenceTransformer = _RecordingModel
+    monkeypatch.setitem(sys.modules, "sentence_transformers", fake_module)
+
+    from core.retrieval.st_embedder import SentenceTransformersEmbedder
+
+    profile = replace(
+        MINILM,
+        model_kwargs={"attn_implementation": "eager"},
+        tokenizer_kwargs={"padding_side": "left"},
+    )
+    SentenceTransformersEmbedder(profile)
+    assert captured_kwargs == {
+        "model_kwargs": {"attn_implementation": "eager"},
+        "tokenizer_kwargs": {"padding_side": "left"},
+    }
+
+
+def test_st_embedder_omits_empty_st_kwargs(monkeypatch):
+    import sys
+    import types
+
+    from core.retrieval.config import MINILM
+
+    captured_kwargs: dict = {}
+
+    class _RecordingModel:
+        def __init__(self, model_name, **kwargs):
+            captured_kwargs.update(kwargs)
+
+        def encode(self, texts, normalize_embeddings):
+            return [[1.0, 0.0] for _ in texts]
+
+    fake_module = types.ModuleType("sentence_transformers")
+    fake_module.SentenceTransformer = _RecordingModel
+    monkeypatch.setitem(sys.modules, "sentence_transformers", fake_module)
+
+    from core.retrieval.st_embedder import SentenceTransformersEmbedder
+
+    SentenceTransformersEmbedder(MINILM)
+    assert captured_kwargs == {}  # legacy models keep the exact historical constructor call

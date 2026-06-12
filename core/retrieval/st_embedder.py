@@ -14,7 +14,12 @@ class SentenceTransformersEmbedder:
             raise RuntimeError(
                 "sentence-transformers is not installed — run: pip install -e '.[embeddings]'"
             ) from exc
-        self._model = SentenceTransformer(profile.model_name)
+        extra: dict = {}
+        if profile.model_kwargs:
+            extra["model_kwargs"] = dict(profile.model_kwargs)
+        if profile.tokenizer_kwargs:
+            extra["tokenizer_kwargs"] = dict(profile.tokenizer_kwargs)
+        self._model = SentenceTransformer(profile.model_name, **extra)
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
         rows = self._model.encode(texts, normalize_embeddings=True)

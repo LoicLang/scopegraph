@@ -13,7 +13,7 @@ retune it.
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 
@@ -31,6 +31,11 @@ class RetrievalProfile:
     decay: float  # expanded score = anchor score · decay^hops
     query_prefix: str = ""  # e5-style asymmetric prefixes; empty = symmetric model
     passage_prefix: str = ""
+    # Extra SentenceTransformer constructor kwargs some models need (e.g. Qwen3 on
+    # macOS: eager attention against the SDPA NaN bug, left padding for last-token
+    # pooling). Empty dicts → the constructor call stays byte-identical to W2's.
+    model_kwargs: dict[str, str] = field(default_factory=dict)
+    tokenizer_kwargs: dict[str, str] = field(default_factory=dict)
     top_n_policy: Literal["fixed", "coverage"] = "fixed"
     top_n_fixed: int = 20
     top_n_fraction: float = 0.28  # W2 coverage parity ≈ 20/72 candidates (spec §1)
@@ -94,7 +99,33 @@ E5_BASE = RetrievalProfile(
     passage_prefix="passage: ",
 )
 
-PROFILES: dict[str, RetrievalProfile] = {p.name: p for p in (MINILM, E5_BASE)}
+# PROVISIONAL thresholds — pending §4.ii calibration on the qwen3 smoke band (the
+# raw-band block does not depend on them). Query side carries a task instruction
+# (Qwen3 is instruction-aware; English on purpose — its training instructions were
+# English): this is the lever aimed at the e5 failure mode (S3: no semantic path
+# from a cash-back brief to the monetique cluster). Passages stay bare per the card.
+QWEN3 = RetrievalProfile(
+    name="qwen3",
+    model_name="Qwen/Qwen3-Embedding-0.6B",
+    tau_anchor=0.5,
+    tau_keep=0.4,
+    tau_weak=0.6,
+    tau_noise=0.45,
+    alpha=0.05,
+    delta=0.15,
+    domain_fraction=0.5,
+    decay=0.9,
+    query_prefix=(
+        "Instruct: Given a French banking-IT project brief, retrieve the systems, "
+        "features, business objects, constraints, decisions, risks and projects "
+        "the project impacts or depends on\nQuery:"
+    ),
+    passage_prefix="",
+    model_kwargs={"attn_implementation": "eager"},
+    tokenizer_kwargs={"padding_side": "left"},
+)
+
+PROFILES: dict[str, RetrievalProfile] = {p.name: p for p in (MINILM, E5_BASE, QWEN3)}
 DEFAULT_PROFILE = MINILM  # flipped to E5_BASE only by the exit contract (spec §1)
 
 # Structural knobs — band-independent, shared by every profile.

@@ -7,6 +7,7 @@ fallback) only picks within this pool and phrases the question.
 from dataclasses import dataclass
 
 from core.dossier.template import EdbState
+from core.retrieval.config import DEFAULT_PROFILE, RetrievalProfile
 from core.retrieval.retriever import RetrievalResult
 from core.runtime.brief import ProjectBrief
 from core.runtime.triggers import (
@@ -29,10 +30,15 @@ class Candidate:
 
 
 def build_pool(
-    result: RetrievalResult, brief: ProjectBrief, asked: set[str], edb: EdbState
+    result: RetrievalResult,
+    brief: ProjectBrief,
+    asked: set[str],
+    edb: EdbState,
+    *,
+    profile: RetrievalProfile = DEFAULT_PROFILE,
 ) -> list[Candidate]:
     pool: list[Candidate] = []
-    primary = detect_trigger(result, brief, asked)
+    primary = detect_trigger(result, brief, asked, profile=profile)
     if isinstance(primary, WeakBriefTrigger):
         pool.append(Candidate(kind="weak", key=primary.key, trigger=primary))
     elif isinstance(primary, DomainTieTrigger):

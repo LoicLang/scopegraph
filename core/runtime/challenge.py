@@ -72,6 +72,43 @@ def pull_governance(
     return pulled
 
 
+def _node_line(node) -> str:
+    title = getattr(node, "name", "") or getattr(node, "title", "")
+    description = getattr(node, "description", "") or getattr(node, "statement", "")
+    return f"{node.id} · {node.type} · {title} — {description} (domaines : {', '.join(node.domains)})"
+
+
+def _edge_lines(service: GraphService, ids: set[str]) -> list[str]:
+    return [
+        f"{edge.source_id} —{edge.type}→ {edge.target_id}"
+        for edge in service.all_edges()
+        if edge.source_id in ids and edge.target_id in ids
+    ]
+
+
+def render_subgraph(result, service: GraphService) -> str:
+    """Plain-text French rendering of the raw retrieved map (triage input).
+
+    Dumb and complete — the LLM needs the descriptions to judge. Shared with
+    the challenge bench (scripts/challenge-eval)."""
+    ids = set(result.node_ids())
+    lines = [_node_line(service.get_node(s.node_id)) for s in [*result.anchors, *result.expanded]]
+    return "\n".join(lines + _edge_lines(service, ids))
+
+
+def render_stabilized(
+    keeps: dict[str, str], pulled: list[PulledNode], service: GraphService
+) -> str:
+    """Plain-text rendering of the stabilized map: keeps + pulled-back governance."""
+    ids = set(keeps) | {p.node_id for p in pulled}
+    lines = [_node_line(service.get_node(node_id)) for node_id in sorted(keeps)]
+    lines += [
+        f"{_node_line(service.get_node(p.node_id))} [ramené via {p.via_id} ← {p.edge_type}]"
+        for p in pulled
+    ]
+    return "\n".join(lines + _edge_lines(service, ids))
+
+
 def gate_domains(domains: list[str], service: GraphService) -> list[str]:
     known = service.known_domains()
     return [d for d in domains if d in known]

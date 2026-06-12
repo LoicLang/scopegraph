@@ -3,6 +3,7 @@ import pytest
 from core.graph.models import Constraint, Edge, EdgeType, System
 from core.graph.service import GraphService
 from core.retrieval import config
+from core.llm.provider import MockProvider
 from core.retrieval.embedder import FakeEmbedder
 from core.retrieval.index import VectorIndex
 from core.runtime.questions import WEAK_QUESTION
@@ -63,7 +64,8 @@ def test_answer_non_excludes_domain_and_loop_converges() -> None:
     # next pivot: tpe-acceptation (sys-terminal)
     assert turn.question is not None and "tpe-acceptation" in turn.question
     final = session.handle_message("non")
-    assert final.question is None  # no trigger left → map stable
+    # W3: no graph trigger left → the interview flows into EDB gap questions
+    assert final.question is not None and "contexte" in final.question
     assert "sys-terminal" not in set(final.result.node_ids())
 
 
@@ -97,7 +99,7 @@ def test_empty_message_rejected_and_future_states_guarded() -> None:
     with pytest.raises(ValueError):
         session.handle_message("   ")
     session.handle_message("améliorer notre canal mobile")
-    session.state = SessionState.CHALLENGING
+    session.state = SessionState.DRAFTING  # W3 handles MAPPING/SCOPING; W4 states stay guarded
     with pytest.raises(NotImplementedError):
         session.handle_message("peu importe")
 
@@ -131,6 +133,84 @@ def test_session_threads_its_profile_into_retrieve_and_triggers():
     # tau_anchor above any cosine: no anchors at all → retrieve got the profile
     blind = ScopingSession(service, index, profile=replace(MINILM, tau_anchor=1.5))
     assert blind.handle_message("améliorer notre canal mobile").result.anchors == []
+
+
+# -- W3: provider-driven turns, EDB, challenge --------------------------------
+
+
+def make_challenge_session(provider) -> ScopingSession:
+    """Single-system graph: strong anchor, no expansion → no graph trigger fires."""
+    nodes = [
+        System(id="sys-canal", name="Canal mobile", description="Canal client mobile.",
+               owner_team="T", domains=["banque-en-ligne"]),
+    ]
+    service = GraphService({n.id: n for n in nodes}, [])
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    return ScopingSession(service, index, provider=provider)
+
+
+def test_full_turn_with_provider_fills_edb_and_asks_woven_question() -> None:
+    # queue: enrich(no additions) · pick_question(valid gap choice)
+    provider = MockProvider([
+        {"additions": []},
+        {"candidate_key": "gap:objectifs", "question": "Quel succès, sachant le gel T3 ?"},
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+    turn = session.handle_message("améliorer notre canal mobile")
+    assert turn.question == "Quel succès, sachant le gel T3 ?"
+    assert "gap:objectifs" in session.asked
+
+
+def test_no_provider_session_behaves_like_w2_plus_gap_templates() -> None:
+    session = make_session(["canal"])  # provider=None
+    turn = session.handle_message("améliorer notre canal mobile")
+    assert turn.question is not None  # template (graph trigger or gap hint)
+    assert session.challenge_done is False
+
+
+def _challenge_provider() -> MockProvider:
+    # queue: enrich · triage(keep all) · claims(one valid claim + statement)
+    return MockProvider([
+        {"additions": []},
+        {"verdicts": []},  # gate A defaults everything to keep
+        {"pulled_justifications": [], "claims": [
+            {"kind": "depends_on", "node_ids": ["sys-canal"],
+             "target_section": "dependances", "reason": "le canal porte le besoin"}],
+         "domains": [], "challenge_statement": "Défi : le gel bloque T3."},
+    ])
+
+
+def test_challenge_runs_when_map_stable_and_fills_ledger_and_edb() -> None:
+    session = make_challenge_session(_challenge_provider())
+    turn = session.handle_message("refonte du canal")
+    assert session.challenge_done is True
+    assert session.edb.status("challenge") == "filled"
+    pending = session.ledger.pending()
+    assert len(pending) == 1 and pending[0].payload["target_section"] == "dependances"
+    assert "Défi" in (turn.message or "")
+
+
+def test_accept_claim_card_writes_edb_section() -> None:
+    session = make_challenge_session(_challenge_provider())
+    session.handle_message("refonte du canal")
+    pid = session.ledger.pending()[0].id
+    session.accept_proposal(pid)
+    assert session.edb.status("dependances") == "filled"
+    assert session.edb.sections["dependances"][0].source == f"claim:{pid}"
+
+
+def test_challenge_provider_failure_keeps_state_mapping() -> None:
+    # queue: enrich ok · triage invalid twice (contract failure)
+    provider = MockProvider([{"additions": []}, {"bad": 1}, {"bad": 2}])
+    session = make_challenge_session(provider)
+    turn = session.handle_message("refonte du canal")
+    assert session.challenge_done is False
+    assert session.state is SessionState.MAPPING
+    assert "réessayez" in (turn.message or "")
 
 
 def test_tie_answer_matches_whole_domain_tokens_only() -> None:

@@ -125,17 +125,18 @@ read_when:
   - 102 hermetic tests, ruff clean. Run the app: `pip install -e ".[embeddings]"` then
     `uvicorn --factory web.app:create_app --reload`.
 
-## Next chantier — run the W3 bench + demo (needs keys + Loïc's go)
+## Next chantier — L7 triage levers, then the demo
 
-The W3 plan is fully executed (see Current state). What remains is exactly the
-hard stop:
-1. `DEEPSEEK_API_KEY=... .venv/bin/python scripts/challenge-eval --provider deepseek`
-   then `--n 0 2000` — record per-stage recall and lost_by_llm in known-limits
-   L1/L4 (does the challenge layer deliver the precision stage? does the pull
-   save the governance traps at N=2000?).
-2. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough, expected
-   on-screen behavior at each step).
-3. Merge decision on `w3-llm-edb` after the numbers.
+The W3 bench ran 2026-06-12 (keys provided; deepseek-v4-flash, sweep N=0+2000).
+Numbers and analysis recorded in known-limits **L1 (precision 13→53 %, map 11.5),
+L4 (N=2000 end-to-end), L5 (the bench caught a missing-brief bug in the challenge
+calls on day one), and the new L7** (triage rejects governance with plausible
+"non spécifique" arguments; pull can't recover an explicit rejection). Remaining:
+1. **L7 levers** — prompt iterations (recall-first triage, SUPERSEDED-as-history)
+   and the cross-model comparison (`--provider mistral` / `grok`) — cheap, cached.
+   Decide on the structural lever (governance unrejectable at triage) only after.
+2. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough).
+3. Merge decision on `w3-llm-edb`.
 
 ## Week 3 original scope notes (superseded by the spec above — kept for history)
 

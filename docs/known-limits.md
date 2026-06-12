@@ -8,8 +8,10 @@ read_when:
 
 # Known limits (measured 2026-06-11, end of W2)
 
-Source of every number: `./scripts/retrieval-eval` (11 fictional scoping scenarios, real
-models, ground truth hand-derived from the seed's DEPENDS_ON/CONSTRAINS/SUPERSEDES edges).
+Source of every number: `./scripts/retrieval-eval` (retrieval quality) and
+`./scripts/challenge-eval` (W3 end-to-end challenge, since 2026-06-12) — 11 fictional
+scoping scenarios, real models, ground truth hand-derived from the seed's
+DEPENDS_ON/CONSTRAINS/SUPERSEDES edges (single source: `core/benchdata/scenarios.py`).
 L1–L3 numbers are the W2 MiniLM baseline — reproduce them with `--embedder minilm` (the
 script defaults to DEFAULT_PROFILE, qwen3 since 2026-06-12). Re-run the bench after any
 change and update this file.
@@ -36,6 +38,14 @@ reads the over-complete subgraph and keeps only what it can justify, under the g
 gate). Retrieval stays a recall-first net; constants stay as they are. Secondary lever if
 W3 proves insufficient: a stronger embedder (multilingual-e5, bge-m3 — see the no-reranker
 decision in the W2 spec). Do NOT tune thresholds for precision.
+
+**W3 measurement (2026-06-12, `./scripts/challenge-eval --provider deepseek`,
+deepseek-v4-flash, N=0).** The challenge layer delivers the precision stage: mean map
+**60 → 11.5 nodes**, precision **13 % → 53 %**, gate B rejected 0/57 claims (everything
+the model asserts cites real map nodes). Cost: expected-node recall 95 % raw → 74 %
+after triage → **76 %** after the governance pull. The pull recovers nodes whose kept
+anchor brings them back (S6: 1/7 → 2/7) but cannot save what the LLM explicitly
+rejected — see L7 for the failure mode and the prompt levers to test.
 
 ## L2 — Vocabulary bridge: user words vs graph words
 
@@ -176,6 +186,23 @@ REJECTED at the N=0 gate · Qwen3-Embedding-0.6B adopted (DEFAULT_PROFILE).**
   chantier. (c) *The homonym class is closed*: S2 holds 8/8 at N=2000 under
   qwen3 — the BM25-hybrid escalation loses its motivating case.
 
+**MEASURED (2026-06-12, W3 main lot — `./scripts/challenge-eval --provider deepseek
+--n 0 2000`, deepseek-v4-flash, end-to-end retrieve → triage → pull → claims).**
+
+| N | raw recall | post-triage | final (+pull) | map | precision |
+|---|---|---|---|---|---|
+| 0 | 95 % | 74 % | 76 % | 11.5 | **53 %** |
+| 2000 | 68 % | 59 % | 60 % | 25.7 | 18 % |
+
+- At N=2000 the deaths are dominated by **retrieval collapse** (S3 0/6, S5 1/7, S6 0/7
+  raw — the L4 anchor-saturation residual), not by the challenge layer: triage costs
+  ≈8 pts on top of raw at N=2000 vs ≈21 pts at N=0 (less left to reject). The challenge
+  layer behaves consistently under pollution; the pull recovered a node even at N=2000
+  (S7). Precision 18 % at N=2000: the model keeps plausible distractors it cannot know
+  are synthetic — partly the L5 substitution bias again.
+- Gate B rejected 0 claims across both runs: with the map in context, grounding is not
+  where this model fails. Where it fails is triage — see L7.
+
 ## L5 — Methodology traps in our own bench
 
 - **Aggregate recall hides critical-case death**: an 84 % average looked fine while the
@@ -202,6 +229,14 @@ REJECTED at the N=0 gate · Qwen3-Embedding-0.6B adopted (DEFAULT_PROFILE).**
   hence no boost, hence anchors = top-8 of the raw ranking at any list size. Check
   a lever's activation conditions against the harness BEFORE burning a grid row
   on it (the lever is real, but only the multi-turn bench can see it).
+- **The bench's reason lines caught a real bug on day one (2026-06-12)**: the first
+  challenge-eval run showed rejection reasons about projects that were not the
+  briefs ("nouveau rail de paiement" on cash-back, "API bénéficiaires" on the IA
+  scenario) — the challenge calls were sending the map WITHOUT the brief, so the
+  model judged relevance against a hallucinated project. Two runs differed by
+  20 recall points on identical inputs. Lesson: always print the model's *reasons*,
+  not just scores — numbers alone would have read as "LLM is mediocre at triage"
+  instead of "the prompt is missing its subject".
 
 ## L6 — Map readability (UI debt, W3 polish list)
 
@@ -210,4 +245,35 @@ REJECTED at the N=0 gate · Qwen3-Embedding-0.6B adopted (DEFAULT_PROFILE).**
 after a domain exclusion (path through a dropped node) · click detail shows raw node ids ·
 template questions expose domain slugs (« paiement-instantane ») instead of French labels.
 Most of this dissolves when W3's challenge layer shrinks the displayed set to justified
-nodes; the rest is cosmetic fixes alongside W3.
+nodes (confirmed 2026-06-12: mean map 11.5 nodes post-challenge at N=0); the rest is
+cosmetic fixes alongside W3.
+
+## L7 — Triage rejects governance with plausible "non spécifique" arguments (measured 2026-06-12)
+
+**Evidence (`challenge-eval`, deepseek-v4-flash, N=0 — reasons in the lost_by_llm
+lines).** The recurring rejection pattern is *"contrainte générale, non spécifique au
+projet"*: S3 cash-back rejects `dec-gel-evolutions-monetique` (« ne concerne que
+MONAUT ») while keeping MONAUT itself — the freeze IS the project's blocker; S4
+rejects the LCB-FT screening on a limits-raising brief; S7 rejects the SUPERSEDED
+scoring decision as « obsolète » when the trap wants it surfaced *as history*; S1
+rejects the TPE chain (« sans rapport avec une option mobile ») — the BNPL in-store
+half of the founding trap.
+
+**Structural blind spot.** `pull_governance` excludes *explicitly rejected* ids (user
+consent: a rejection is restorable in the UI, the runtime must not silently override
+it). Consequence: when triage rejects a governance node, the pull cannot save it even
+though its kept anchor would have pulled it back. Triage rejection of governance is
+therefore unrecoverable inside one challenge — only the user's Restaurer button undoes
+it.
+
+**Levers to test, in order (cheap → structural), all measurable for cents thanks to
+the response cache:**
+1. Triage prompt: add a recall-first instruction — « en cas de doute, garde » and
+   « ne rejette une contrainte/décision/risque que si AUCUN élément gardé n'y est
+   relié » (the renderer already prints the edges).
+2. Triage prompt: SUPERSEDED decisions are kept as history by definition.
+3. Structural: make governance node types (decision/constraint/risk) unrejectable at
+   triage — the LLM only triages systems/features/objects, governance follows its
+   anchors through the pull. Changes gate A semantics; needs a spec amendment.
+4. Model: re-run with mistral-small-latest and grok-4.3 (`--provider`) before any
+   structural change — this may be a deepseek-v4-flash weakness.

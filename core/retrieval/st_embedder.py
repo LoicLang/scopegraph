@@ -9,6 +9,7 @@ class SentenceTransformersEmbedder:
         self.model_name = profile.model_name  # embedder_id() folds this into fingerprints
         self._query_prefix = profile.query_prefix
         self._passage_prefix = profile.passage_prefix
+        self.prefixes = (self._query_prefix, self._passage_prefix)  # part of embedder_id
         try:
             from sentence_transformers import SentenceTransformer
         except ImportError as exc:  # clear startup error (W2 spec: error handling)

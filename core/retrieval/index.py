@@ -23,8 +23,10 @@ def node_document(node: Node) -> str:
 
 
 def embedder_id(embedder: Embedder) -> str:
-    """Identity folded into the index fingerprint: model swap → stale index rebuilds."""
-    return getattr(embedder, "model_name", type(embedder).__name__)
+    """Identity folded into the index fingerprint: model OR prefix swap → stale index rebuilds."""
+    model = getattr(embedder, "model_name", type(embedder).__name__)
+    query_prefix, passage_prefix = getattr(embedder, "prefixes", ("", ""))
+    return f"{model}|{query_prefix}|{passage_prefix}"
 
 
 def graph_fingerprint(graph_dir: Path) -> str:
@@ -71,7 +73,7 @@ class VectorIndex:
         documents = [node_document(node) for node in nodes]
         self._collection.add(
             ids=[node.id for node in nodes],
-            embeddings=self._embedder.embed(documents),
+            embeddings=self._embedder.embed_passages(documents),
             documents=documents,
             metadatas=[{"type": node.type, "domains": " ".join(node.domains)} for node in nodes],
         )
@@ -83,7 +85,7 @@ class VectorIndex:
             raise RuntimeError("VectorIndex.query called before build()")
         if self._collection.count() == 0:
             return []
-        [vector] = self._embedder.embed([text])
+        [vector] = self._embedder.embed_queries([text])
         response = self._collection.query(
             query_embeddings=[vector], n_results=min(n, self._collection.count())
         )

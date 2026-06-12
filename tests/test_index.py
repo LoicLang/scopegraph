@@ -133,6 +133,14 @@ def test_ephemeral_index_always_rebuilds() -> None:
     assert index.build(service, fingerprint="fp-1") is False  # same client instance reuses
 
 
+def test_embedder_id_distinguishes_prefix_variants() -> None:
+    from types import SimpleNamespace
+
+    plain = SimpleNamespace(model_name="m", prefixes=("", ""))
+    asymmetric = SimpleNamespace(model_name="m", prefixes=("query: ", "passage: "))
+    assert embedder_id(plain) != embedder_id(asymmetric)
+
+
 def test_fingerprint_distinguishes_embedder_identity(tmp_path: Path) -> None:
     service = _mini_service()
     embedder = FakeEmbedder(["bénéficiaire"])

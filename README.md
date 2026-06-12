@@ -147,6 +147,12 @@ python3 -m venv .venv
 
 # Explore active docs with "read when" hints
 ./scripts/docs-list
+
+# Run the app (real embedder; LLM optional)
+.venv/bin/pip install -e ".[embeddings,llm]"
+export SCOPEGRAPH_LLM_PROVIDER=mistral   # or deepseek | none (template mode, default)
+export MISTRAL_API_KEY=...               # DEEPSEEK_API_KEY for deepseek
+.venv/bin/uvicorn --factory web.app:create_app
 ```
 
 ---

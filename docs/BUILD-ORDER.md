@@ -8,7 +8,41 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-12, end of session 2)
+## Current state (2026-06-12, end of session 3)
+
+- **W3 main lot DONE — LLM layer + EDB conversation + two-phase challenge**
+  (branch `w3-llm-edb`, executed inline via executing-plans from
+  `docs/plans/2026-06-12-week3-llm-edb.md`; spec
+  `docs/specs/2026-06-12-week3-llm-challenge-design.md`):
+  - `core/llm/`: LLMProvider Protocol + MockProvider, JSON contract (one
+    schema-reminder retry, clean French error), prompt loader (`prompts/*.txt`,
+    all French), Mistral + DeepSeek providers (official SDKs, lazy, `llm` extra),
+    env factory (`SCOPEGRAPH_LLM_PROVIDER`).
+  - `core/dossier/template.py`: EDB v1 — 12 frozen sections, owners, entry
+    sources, binary completeness (the `partial` status is deferred to W4's
+    renderer, noted in the plan).
+  - `core/runtime/`: ledger (propose/validate, accept-with-edit) · mixed
+    candidate pool (all qualifying pivots + EDB gaps, asked-log unified,
+    profile-threaded) · per-turn LLM steps (enrichment chips ≤4 revocable,
+    gated field extraction, pool-gated question pick — template fallback
+    everywhere) · challenge mechanics (gate A triage with keep-by-default,
+    deterministic governance pull cap 10, gate B claims, French subgraph
+    renderings shared with the bench) · session orchestration (EDB-driven
+    turns, two-message challenge, ledger application, restore/chip-removal).
+  - `web/`: full session payload (edb, cards, rejected, gate_rejections,
+    pulled, missing_sections) + proposal/enrichment/restore endpoints; 3-pane
+    UI (chat+cards+chips · map+rejected panel+pulled styling · live EDB).
+  - `scripts/challenge-eval`: end-to-end real-LLM bench (per-stage recall
+    raw→keeps→+pull, lost_by_llm autopsy, disk cache in `.bench-cache/`,
+    `--provider deepseek|mistral --n 0 2000`). Scenario ground truth moved to
+    `core/benchdata/scenarios.py` (single source with retrieval-eval).
+  - 200 hermetic tests, ruff clean. `provider=None` degrades to W2 behavior +
+    gap questions (asserted in tests).
+  - **NOT done (hard stop honored): the real-LLM bench run and the live Mistral
+    demo — they need API keys and Loïc's go. Bench numbers land in known-limits
+    L1/L4 in a follow-up session.**
+
+## Previous state (2026-06-12, end of session 2)
 
 - **W3 lot 0bis DONE — embedder swap: e5-base rejected, Qwen3-Embedding-0.6B
   adopted as DEFAULT_PROFILE** (branch `w3-embedder-swap`, ready to merge; spec
@@ -91,18 +125,17 @@ read_when:
   - 102 hermetic tests, ruff clean. Run the app: `pip install -e ".[embeddings]"` then
     `uvicorn --factory web.app:create_app --reload`.
 
-## Next chantier — EXECUTE the W3 plan
+## Next chantier — run the W3 bench + demo (needs keys + Loïc's go)
 
-W3 is fully designed and planned (2026-06-12 evening session):
-- Spec: `docs/specs/2026-06-12-week3-llm-challenge-design.md` — official SDKs, EDB
-  template as conversation engine (12 sections, fluid graph-woven interview — never
-  a form), two-phase challenge + deterministic governance pull (the L4-residual
-  answer), end-to-end real-LLM challenge bench.
-- Plan: `docs/plans/2026-06-12-week3-llm-edb.md` — 12 TDD tasks, branch
-  `w3-llm-edb`, complete code per task. Execution mode chosen by Loïc:
-  **inline via superpowers:executing-plans** in a fresh session.
-- HARD STOP after task 12: the real-LLM bench run (`./scripts/challenge-eval`) and
-  the Mistral demo need API keys and Loïc's go.
+The W3 plan is fully executed (see Current state). What remains is exactly the
+hard stop:
+1. `DEEPSEEK_API_KEY=... .venv/bin/python scripts/challenge-eval --provider deepseek`
+   then `--n 0 2000` — record per-stage recall and lost_by_llm in known-limits
+   L1/L4 (does the challenge layer deliver the precision stage? does the pull
+   save the governance traps at N=2000?).
+2. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough, expected
+   on-screen behavior at each step).
+3. Merge decision on `w3-llm-edb` after the numbers.
 
 ## Week 3 original scope notes (superseded by the spec above — kept for history)
 

@@ -1,0 +1,6 @@
+Tu assistes un outil de cadrage de projets bancaires. À partir du brief ci-dessous,
+propose au plus 4 ajouts de vocabulaire qui aideraient une recherche sémantique dans
+le référentiel du SI : synonymes métier, objets métier sous-entendus, termes internes
+probables. N'invente aucun fait, ne reformule pas le besoin — uniquement du
+vocabulaire. Réponds en JSON : {"additions": [{"text": "...", "kind": "synonym"}]}
+avec kind ∈ {"synonym", "business_object"}.

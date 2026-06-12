@@ -81,6 +81,8 @@ class ScopingSession:
         self.pulled: list[PulledNode] = []
         self.gate_rejections: list[dict] = []
         self.proposed_domains: list[str] = []
+        self.restored: set[str] = set()  # user-restored nodes (provenance for the map)
+        self.last_result: RetrievalResult | None = None
 
     def handle_message(self, text: str) -> Turn:
         text = text.strip()
@@ -170,6 +172,7 @@ class ScopingSession:
             question = self._ask(pool)
         elif not pool:
             message = EDB_COMPLETE_MESSAGE
+        self.last_result = result
         return Turn(state=self.state, question=question, result=result,
                     brief=self.brief, message=message, cards=cards)
 
@@ -225,6 +228,18 @@ class ScopingSession:
 
     def reject_proposal(self, pid: str) -> Proposal:
         return self.ledger.reject(pid)
+
+    def restore_node(self, node_id: str) -> None:
+        """Moves an LLM-rejected node back into the kept map (user override)."""
+        if node_id in self.rejected_nodes:
+            del self.rejected_nodes[node_id]
+            self.restored.add(node_id)
+
+    def remove_enrichment(self, index: int) -> Turn:
+        """Drops one AI vocabulary chip and re-runs the round on the leaner query."""
+        assert self.brief is not None
+        del self.brief.enrichments[index]
+        return self._map_round()
 
 
 def _tokens(text: str) -> set[str]:

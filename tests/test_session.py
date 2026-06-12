@@ -213,6 +213,23 @@ def test_challenge_provider_failure_keeps_state_mapping() -> None:
     assert "réessayez" in (turn.message or "")
 
 
+def test_restore_node_clears_rejection_and_marks_provenance() -> None:
+    session = make_session(["canal"])
+    session.rejected_nodes = {"sys-x": "hors sujet"}
+    session.restore_node("sys-x")
+    assert session.rejected_nodes == {}
+    assert "sys-x" in session.restored
+
+
+def test_remove_enrichment_reruns_the_round() -> None:
+    session = make_session(["canal"])
+    session.handle_message("améliorer notre canal mobile")
+    session.brief.enrichments.append("fidélité")
+    turn = session.remove_enrichment(0)
+    assert session.brief.enrichments == []
+    assert turn.result is not None
+
+
 def test_tie_answer_matches_whole_domain_tokens_only() -> None:
     from core.runtime.session import _match_domains
 

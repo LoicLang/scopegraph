@@ -34,7 +34,7 @@ is read.
 | TOP_N scaling rule (the "scaled" arm) | **Coverage parity: `TOP_N = max(20, ceil(0.28 · |V|))`** → 581 at 2072 nodes. | Reproduces exactly the candidate-coverage ratio W2 was calibrated at, so the arm cleanly isolates "did relative coverage matter?". Recall-side capacity, not precision tuning (TOP_K=8 still caps anchors; L1 doctrine intact). The long-term production rule (sqrt, cap…) is chosen AFTER reading both arms, not here. Decided over: sqrt rule (~110 candidates risks under-dosing the lever against 6.6/8 intrusion), fixed 100 (arbitrary, says nothing about the scale trajectory). |
 | BM25 / reranker escalation | **Out of scope — separate decision after the grid is read.** The bench prints a per-trap autopsy (§5) so that decision takes minutes, not a re-investigation. | The hybrid fix's design depends on WHICH thief class survives e5: homonyms (class c) → lexical+dense rank fusion on the query; governance-chain death via near-twins (class b) → BM25 is useless (twins share vocabulary), the lever is elsewhere. Same pattern that just worked for lot 0: pre-committed criterion, measure, then decide with data. Reranker stays the W2 recorded no-go unless forced. |
 | Multi-turn polluted sweep | **Out of scope — noted in BUILD-ORDER as a conditional follow-up.** | It measures a different quantity (the MAPPING loop's recovery net — a product argument, not the embedder GO/NO-GO) and needs a harness that does not exist (simulated user answers: canned-per-scenario or LLM — the latter is circular before W3 lot 1). Not on W3's critical path either way the verdict goes. |
-| Exit contract | Best cell passes → flip `EMBED_MODEL` default to e5-base + scaled TOP_N becomes the default policy, update L4 + BUILD-ORDER, unblock lots 1–4. Any trap death in the best cell → stop, read the autopsy, separate BM25 brainstorm with data in hand. | One chantier = one measurement, one verdict, one docs commit. |
+| Exit contract | Best cell passes → flip `EMBED_MODEL` default to e5-base + scaled TOP_N becomes the default policy, update L4 + BUILD-ORDER, unblock lots 1–4. Any trap death in the best cell → stop, run the thief relevance annotation (§5), THEN the separate escalation brainstorm with both the autopsy and the annotation in hand. | One chantier = one measurement, one verdict, one docs commit. The annotation distinguishes embedder weakness from anchor saturation — two failures with opposite fixes (§5). |
 
 ## 2. Embedder — asymmetric Protocol
 
@@ -112,6 +112,21 @@ sim, plus a mechanical flag: `same-domain` (shares ≥1 domain with a dead node 
 material, classes a/b) vs `cross-domain` (homonym material, class c). The a-vs-b call
 (legitimate substitution vs genuine trap death) stays human — the lineup is what makes
 that reading a 10-minute job instead of a re-run with instrumentation.
+
+**Thief relevance annotation (mandatory on a failing verdict, before any escalation
+decision).** Hand-annotate the thieves of the failing cases on the sweep logs (L5
+option a, ~1 h): is each intruding anchor *genuinely relevant* to the brief in the
+merged universe? Two opposite diagnoses follow:
+
+- Thieves mostly irrelevant → embedder/lexical weakness is confirmed; the escalation
+  brainstorm (BM25-class levers) proceeds as planned, and the annotation says which
+  thief class dominates.
+- Thieves mostly relevant → **anchor saturation**: the merged graph legitimately
+  contains more relevant nodes than TOP_K=8 anchor slots can hold, and no embedder
+  fixes that. The follow-up brainstorm is then about anchor capacity and selection
+  (TOP_K rethink, near-twin dedup/clustering, letting the challenge layer arbitrate a
+  larger anchor set) — NOT about lexical signals. Record the corrected recall in L5
+  (closing its "no action decided" note).
 
 Realism sanity check unchanged and still gating: an invalid check voids the cell's
 verdict. The bench stays out of CI (real model), like today.

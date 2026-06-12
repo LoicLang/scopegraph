@@ -277,3 +277,23 @@ the response cache:**
    anchors through the pull. Changes gate A semantics; needs a spec amendment.
 4. Model: re-run with mistral-small-latest and grok-4.3 (`--provider`) before any
    structural change — this may be a deepseek-v4-flash weakness.
+
+**Lever 4 MEASURED (2026-06-12, N=0, same prompts/cache key per model):**
+
+| model | final recall | map | precision | profile |
+|---|---|---|---|---|
+| deepseek-v4-flash | 76 % | 11.5 | 53 % | balanced |
+| mistral-small-latest (Small 4) | 75 % | 21.2 | 35 % | conservative — keeps more, bigger maps |
+| grok-4.3 | 68 % | 7.6 | 66 % | aggressive — tiny maps, kills whole scenarios |
+
+- **No model dominates; they kill different traps.** The monetique freeze: grok keeps
+  it on all three scenarios (S3/S9/S10), deepseek on two, mistral rejects it on ALL
+  three. S5 (IA réclamations): mistral 7/7 perfect, deepseek 4/7, grok 1/7 (a 1-node
+  map — it rejected the entire neighborhood as « non spécifique au projet IA »).
+- **Universal failure, all three models: the SUPERSEDED decision** (S7) is rejected
+  as « obsolète » — lever 2 (history-by-definition in the prompt) is model-independent
+  and the clearest single fix.
+- The « contrainte générale, non spécifique » pattern appears in every model's
+  reasons — lever 1 (recall-first instruction + edge-based benefit of the doubt)
+  targets the shared failure mode, not a model quirk. Iterate prompts on deepseek
+  (cheapest), confirm on the other two via cache-keyed re-runs.

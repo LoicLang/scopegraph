@@ -3,6 +3,7 @@
 W3 will add LLM rephrasing on top; these templates remain the permanent fallback.
 """
 
+from core.dossier.template import section_spec
 from core.graph.service import GraphService
 from core.runtime.triggers import DomainTieTrigger, PivotTrigger, Trigger, WeakBriefTrigger
 
@@ -23,3 +24,8 @@ def render_question(trigger: Trigger, service: GraphService) -> str:
             label = getattr(node, "name", "") or getattr(node, "title", "")
             return f"Le périmètre inclut-il « {domain} » ? ({label} serait alors concerné)"
     raise TypeError(f"unknown trigger type: {trigger!r}")  # pragma: no cover
+
+
+def gap_question(section_id: str) -> str:
+    """Deterministic fallback question for an EDB gap (the section's hint)."""
+    return section_spec(section_id).prompt_hint_fr

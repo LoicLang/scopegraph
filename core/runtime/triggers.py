@@ -74,3 +74,27 @@ def detect_trigger(
             if trigger.key not in asked:
                 return trigger
     return None
+
+
+def collect_pivot_candidates(
+    result: RetrievalResult, brief: ProjectBrief, asked: set[str]
+) -> list[PivotTrigger]:
+    """ALL qualifying pivots (not just the first) — the W3 pool feeds the LLM choice.
+
+    Same qualification rules as detect_trigger's T3 branch: expansion-only node,
+    no known domain, not already asked. One candidate per unknown domain (the
+    best-scored node represents it, list order = expansion score order).
+    """
+    known = set(brief.domains) | set(result.derived_domains) | set(brief.excluded_domains)
+    candidates: list[PivotTrigger] = []
+    seen_domains: set[str] = set()
+    for scored in result.expanded:  # already sorted best-first
+        if not scored.expansion_only or set(scored.domains) & known:
+            continue
+        for domain in scored.domains:
+            trigger = PivotTrigger(domain=domain, node_id=scored.node_id)
+            if trigger.key in asked or domain in seen_domains:
+                continue
+            seen_domains.add(domain)
+            candidates.append(trigger)
+    return candidates

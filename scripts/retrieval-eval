@@ -142,6 +142,8 @@ SCENARIOS: list[tuple[str, str, set[str], str]] = [
     ),
 ]
 
+BRIEFS = {name: brief for name, brief, _, _ in SCENARIOS}
+
 GRIDS = [
     ("baseline W2", 0.35, 0.20, 8, 2),
     ("tight+", 0.40, 0.28, 6, 2),
@@ -169,6 +171,13 @@ class RunSummary:
     thieves: dict[str, list[tuple[str, str, tuple[str, ...], float]]] = field(
         default_factory=dict
     )  # scenario -> [(id, title, domains, sim)] for distractor anchors
+
+
+@dataclass
+class CellResult:
+    holds: bool
+    base_recall: float
+    worst_recall: float
 
 
 def run_cases(service: GraphService, index: VectorIndex, profile: RetrievalProfile) -> RunSummary:
@@ -261,17 +270,19 @@ def print_verdict(base: RunSummary, worst: RunSummary, service: GraphService) ->
     for name, nodes in sorted(dead.items()):
         dead_domains = {d for node_id in nodes for d in service.get_node(node_id).domains}
         print(f"  {name}: lost {', '.join(nodes)}")
+        print(f"    brief: {BRIEFS[name]}")
         for thief_id, title, domains, sim in worst.thieves.get(name, []):
             flag = "same-domain" if set(domains) & dead_domains else "cross-domain"
             print(f"    thief [{flag}] {thief_id} (sim {sim:.3f}) — {title} {list(domains)}")
     return False
 
 
-def distractor_sweep(embedder: SentenceTransformersEmbedder, profile: RetrievalProfile) -> bool:
+def distractor_sweep(embedder: SentenceTransformersEmbedder, profile: RetrievalProfile) -> CellResult:
     runs: dict[int, RunSummary] = {}
-    service = None
+    services: dict[int, GraphService] = {}
     for n in SWEEP_POINTS:
         service = build_service(n)
+        services[n] = service
         index = VectorIndex(embedder)
         index.build(service)
         top_n = profile.top_n(len(service.all_nodes()))
@@ -281,24 +292,35 @@ def distractor_sweep(embedder: SentenceTransformersEmbedder, profile: RetrievalP
         runs[n] = run_cases(service, index, profile)
         print(f"==> recall {runs[n].recall:.0%} | map {runs[n].size:.1f}"
               f" | precision {runs[n].precision:.0%}")
-    return print_verdict(runs[0], runs[max(SWEEP_POINTS)], service)
+    verdict_bool = print_verdict(runs[0], runs[max(SWEEP_POINTS)], services[max(SWEEP_POINTS)])
+    return CellResult(holds=verdict_bool, base_recall=runs[0].recall, worst_recall=runs[max(SWEEP_POINTS)].recall)
 
 
 def run_grid() -> None:
     """Spec §5: the four cells, each a full sweep; one embedder load per row."""
-    outcomes: dict[str, bool] = {}
+    outcomes: dict[str, CellResult | None] = {}
     for embedder_name in ("minilm", "e5"):
+        # one load per row: --top-n resolution only changes top_n_policy, never embedding identity
         embedder = SentenceTransformersEmbedder(PROFILES[embedder_name])
         for top_n in ("fixed", "scaled"):
             cell = f"{embedder_name} × top-n {top_n}"
             print(f"\n{'=' * 20} CELL {cell} {'=' * 20}")
-            outcomes[cell] = distractor_sweep(embedder, resolve_profile(embedder_name, top_n))
+            try:
+                outcomes[cell] = distractor_sweep(embedder, resolve_profile(embedder_name, top_n))
+            except Exception as exc:  # a dead cell must not eat the others' hour of compute
+                print(f"CELL CRASHED: {exc!r}")
+                outcomes[cell] = None
     print("\n===== GRID SUMMARY =====")
-    for cell, holds in outcomes.items():
-        print(f"  {cell:28s} {'HOLDS' if holds else 'TRAPS DIE'}")
+    for cell, result in outcomes.items():
+        if result is None:
+            print(f"  {cell:28s} CRASHED")
+        else:
+            status = "HOLDS" if result.holds else "TRAPS DIE"
+            print(f"  {cell:28s} {status}  recall {result.base_recall:.0%} -> {result.worst_recall:.0%}")
 
 
 def main() -> None:
+    sys.stdout.reconfigure(line_buffering=True)  # tee-friendly: a 60-min grid run must stream, and a hard crash must not eat output
     parser = argparse.ArgumentParser()
     parser.add_argument("--sweep", action="store_true", help="run the threshold grid sweep")
     parser.add_argument("--distractors", type=int, default=0, metavar="N",
@@ -319,7 +341,7 @@ def main() -> None:
 
     name = args.embedder or config.DEFAULT_PROFILE.name
     profile = resolve_profile(name, args.top_n)
-    embedder = SentenceTransformersEmbedder(PROFILES[name])
+    embedder = SentenceTransformersEmbedder(profile)
 
     if args.distractor_sweep:
         distractor_sweep(embedder, profile)

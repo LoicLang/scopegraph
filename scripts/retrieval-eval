@@ -12,12 +12,15 @@ Usage:
     ./scripts/retrieval-eval --sweep                # recall/size/precision across threshold grids
     ./scripts/retrieval-eval --distractors N        # merge N pool distractors before running
     ./scripts/retrieval-eval --distractor-sweep     # run at N=0,500,1000,2000 and print verdict
+    ./scripts/retrieval-eval --embedder {minilm,e5} # select profile (default: DEFAULT_PROFILE)
+    ./scripts/retrieval-eval --top-n {fixed,scaled} # override profile TOP_N policy
+    ./scripts/retrieval-eval --grid                 # run 2x2 grid (embedder x top-n) as full sweeps
 """
 
 import argparse
 import statistics
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace as dc_replace
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -25,6 +28,7 @@ sys.path.insert(0, str(ROOT))
 
 from core.graph.service import GraphService  # noqa: E402
 from core.retrieval import config  # noqa: E402
+from core.retrieval.config import PROFILES, RetrievalProfile  # noqa: E402
 from core.retrieval.index import VectorIndex  # noqa: E402
 from core.retrieval.retriever import retrieve  # noqa: E402
 from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
@@ -149,21 +153,32 @@ GRIDS = [
 SWEEP_POINTS = [0, 500, 1000, 2000]
 
 
+def resolve_profile(name: str, top_n: str | None) -> RetrievalProfile:
+    profile = PROFILES[name]
+    if top_n is not None:
+        profile = dc_replace(profile, top_n_policy="coverage" if top_n == "scaled" else "fixed")
+    return profile
+
+
 @dataclass
 class RunSummary:
     recall: float
     size: float
     precision: float
     found: dict[str, set[str]] = field(default_factory=dict)  # scenario -> expected hits
+    thieves: dict[str, list[tuple[str, str, tuple[str, ...], float]]] = field(
+        default_factory=dict
+    )  # scenario -> [(id, title, domains, sim)] for distractor anchors
 
 
-def run_cases(service: GraphService, index: VectorIndex) -> RunSummary:
+def run_cases(service: GraphService, index: VectorIndex, profile: RetrievalProfile) -> RunSummary:
     distractor_ids = {n.id for n in service.all_nodes() if n.created_from == "synthetic"}
     total = len(service.all_nodes())
     recalls, sizes, precisions = [], [], []
     found: dict[str, set[str]] = {}
+    thieves: dict[str, list] = {}
     for name, brief, expected, trap in SCENARIOS:
-        result = retrieve(brief, service, index)
+        result = retrieve(brief, service, index, profile=profile)
         got = set(result.node_ids())
         hit = expected & got
         found[name] = hit
@@ -177,11 +192,20 @@ def run_cases(service: GraphService, index: VectorIndex) -> RunSummary:
             pollution = len(got & distractor_ids) / max(len(got), 1)
             line += (f"  anchor-intrusion {intrusion}/{len(result.anchors)}"
                      f"  pollution {pollution:.0%}")
+            found_thieves = []
+            for scored in result.anchors:
+                if scored.node_id in distractor_ids:
+                    node = service.get_node(scored.node_id)
+                    title = getattr(node, "name", "") or getattr(node, "title", "")
+                    found_thieves.append(
+                        (scored.node_id, title, tuple(node.domains), scored.semantic_sim or 0.0)
+                    )
+            thieves[name] = found_thieves
         print(f"{line}  missing: {missing}")
         if expected - got:
             print(f"    trap: {trap}")
     n = len(SCENARIOS)
-    return RunSummary(sum(recalls) / n, sum(sizes) / n, sum(precisions) / n, found)
+    return RunSummary(sum(recalls) / n, sum(sizes) / n, sum(precisions) / n, found, thieves)
 
 
 def build_service(n: int) -> GraphService:
@@ -220,22 +244,8 @@ def realism_check(service: GraphService, index: VectorIndex) -> None:
               " too easy, this verdict is not trustworthy")
 
 
-def distractor_sweep(embedder: SentenceTransformersEmbedder) -> None:
-    runs: dict[int, RunSummary] = {}
-    for n in SWEEP_POINTS:
-        service = build_service(n)
-        index = VectorIndex(embedder)
-        index.build(service)
-        print(f"\n--- distractors N={n} ({len(service.all_nodes())} nodes) ---")
-        realism_check(service, index)
-        runs[n] = run_cases(service, index)
-        print(f"==> recall {runs[n].recall:.0%} | map {runs[n].size:.1f}"
-              f" | precision {runs[n].precision:.0%}")
-    print_verdict(runs[0], runs[max(SWEEP_POINTS)])
-
-
-def print_verdict(base: RunSummary, worst: RunSummary) -> None:
-    """Criterion fixed BEFORE measurement (spec §1): per-case survival + mean drop ≤10pts."""
+def print_verdict(base: RunSummary, worst: RunSummary, service: GraphService) -> bool:
+    """Criterion fixed BEFORE measurement (spec §6): per-case survival + mean drop ≤10pts."""
     dead = {
         name: sorted(base.found[name] - worst.found[name])
         for name in base.found
@@ -246,10 +256,46 @@ def print_verdict(base: RunSummary, worst: RunSummary) -> None:
           f" (drop {drop:.0%})")
     if not dead and drop <= 0.10:
         print("VERDICT: HOLDS — no per-case regression, mean drop within 10 pts")
-    else:
-        print("VERDICT: SWAP EMBEDDER (multilingual-e5) — see spec §1 criterion")
-        for name, nodes in sorted(dead.items()):
-            print(f"  {name}: lost {', '.join(nodes)}")
+        return True
+    print("VERDICT: TRAPS DIE — read the autopsy, then spec §5 annotation before escalating")
+    for name, nodes in sorted(dead.items()):
+        dead_domains = {d for node_id in nodes for d in service.get_node(node_id).domains}
+        print(f"  {name}: lost {', '.join(nodes)}")
+        for thief_id, title, domains, sim in worst.thieves.get(name, []):
+            flag = "same-domain" if set(domains) & dead_domains else "cross-domain"
+            print(f"    thief [{flag}] {thief_id} (sim {sim:.3f}) — {title} {list(domains)}")
+    return False
+
+
+def distractor_sweep(embedder: SentenceTransformersEmbedder, profile: RetrievalProfile) -> bool:
+    runs: dict[int, RunSummary] = {}
+    service = None
+    for n in SWEEP_POINTS:
+        service = build_service(n)
+        index = VectorIndex(embedder)
+        index.build(service)
+        top_n = profile.top_n(len(service.all_nodes()))
+        print(f"\n--- distractors N={n} ({len(service.all_nodes())} nodes,"
+              f" top_n {top_n}) ---")
+        realism_check(service, index)
+        runs[n] = run_cases(service, index, profile)
+        print(f"==> recall {runs[n].recall:.0%} | map {runs[n].size:.1f}"
+              f" | precision {runs[n].precision:.0%}")
+    return print_verdict(runs[0], runs[max(SWEEP_POINTS)], service)
+
+
+def run_grid() -> None:
+    """Spec §5: the four cells, each a full sweep; one embedder load per row."""
+    outcomes: dict[str, bool] = {}
+    for embedder_name in ("minilm", "e5"):
+        embedder = SentenceTransformersEmbedder(PROFILES[embedder_name])
+        for top_n in ("fixed", "scaled"):
+            cell = f"{embedder_name} × top-n {top_n}"
+            print(f"\n{'=' * 20} CELL {cell} {'=' * 20}")
+            outcomes[cell] = distractor_sweep(embedder, resolve_profile(embedder_name, top_n))
+    print("\n===== GRID SUMMARY =====")
+    for cell, holds in outcomes.items():
+        print(f"  {cell:28s} {'HOLDS' if holds else 'TRAPS DIE'}")
 
 
 def main() -> None:
@@ -259,12 +305,24 @@ def main() -> None:
                         help="merge the first N pool distractors before running")
     parser.add_argument("--distractor-sweep", action="store_true",
                         help=f"run at N={SWEEP_POINTS} and print the verdict")
+    parser.add_argument("--embedder", choices=sorted(PROFILES), default=None,
+                        help="profile to run (default: DEFAULT_PROFILE)")
+    parser.add_argument("--top-n", choices=["fixed", "scaled"], default=None,
+                        help="override the profile's TOP_N policy")
+    parser.add_argument("--grid", action="store_true",
+                        help="run the 2x2 grid (embedder x top-n policy) as full sweeps")
     args = parser.parse_args()
 
-    embedder = SentenceTransformersEmbedder()
+    if args.grid:
+        run_grid()
+        return
+
+    name = args.embedder or config.DEFAULT_PROFILE.name
+    profile = resolve_profile(name, args.top_n)
+    embedder = SentenceTransformersEmbedder(PROFILES[name])
 
     if args.distractor_sweep:
-        distractor_sweep(embedder)
+        distractor_sweep(embedder, profile)
         return
 
     service = build_service(args.distractors)
@@ -272,19 +330,20 @@ def main() -> None:
     index.build(service)
 
     if not args.sweep:
-        print(f"config: TAU_ANCHOR={config.TAU_ANCHOR} TAU_KEEP={config.TAU_KEEP} "
-              f"TOP_K={config.TOP_K} MAX_HOPS={config.MAX_HOPS}")
-        summary = run_cases(service, index)
+        print(f"profile: {profile.name}  tau_anchor={profile.tau_anchor}"
+              f" tau_keep={profile.tau_keep} top_n_policy={profile.top_n_policy}"
+              f" TOP_K={config.TOP_K} MAX_HOPS={config.MAX_HOPS}")
+        summary = run_cases(service, index, profile)
         print(f"\n  mean recall {summary.recall:.0%} | mean map {summary.size:.1f}"
               f" | mean precision {summary.precision:.0%}")
         return
 
     print(f"{'grid':14s} TAU_A TAU_K K hops | recall | map   | precision")
-    for name, tau_a, tau_k, top_k, hops in GRIDS:
-        config.TAU_ANCHOR, config.TAU_KEEP = tau_a, tau_k
+    for grid_name, tau_a, tau_k, top_k, hops in GRIDS:
+        grid_profile = dc_replace(profile, tau_anchor=tau_a, tau_keep=tau_k)
         config.TOP_K, config.MAX_HOPS = top_k, hops
-        print(f"\n--- {name} ---")
-        summary = run_cases(service, index)
+        print(f"\n--- {grid_name} ---")
+        summary = run_cases(service, index, grid_profile)
         print(f"==> recall {summary.recall:.0%} | map {summary.size:.1f}"
               f" | precision {summary.precision:.0%}")
 

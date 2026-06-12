@@ -6,10 +6,10 @@ Usage:  pip install -e ".[embeddings]"  &&  ./scripts/retrieval-smoke
 Prints anchors, expanded nodes with provenance, and domain derivation per brief —
 the §3 constants in core/retrieval/config.py are tuned by reading this output.
 
-The raw top-20 similarity block (ungated) is printed first per case — this is the
-band the §4.ii calibration reads to set thresholds for a new embedder.  The index
-is EPHEMERAL (no persist_dir); the fingerprint arg (graph hash : model name) is
-cosmetic here but mirrors the web/app.py pattern for consistency.
+The raw FULL-GRAPH similarity block (ungated, all 72 nodes) is printed first per
+case — the §4.ii calibration reads this band to set thresholds for a new embedder;
+the noise body and floor (ranks 21+) are what resolve tau_noise and the DECAY form.
+The index is EPHEMERAL (no persist_dir), so no fingerprint is passed.
 """
 
 import argparse
@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 
 from core.graph.service import GraphService  # noqa: E402
 from core.retrieval.config import DEFAULT_PROFILE, PROFILES  # noqa: E402
-from core.retrieval.index import VectorIndex, graph_fingerprint  # noqa: E402
+from core.retrieval.index import VectorIndex  # noqa: E402
 from core.retrieval.retriever import retrieve  # noqa: E402
 from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
 
@@ -47,16 +47,17 @@ def main() -> None:
     parser.add_argument("--embedder", choices=sorted(PROFILES), default=None,
                         help="profile to run (default: DEFAULT_PROFILE)")
     args = parser.parse_args()
+    sys.stdout.reconfigure(line_buffering=True)  # tee-friendly: stream the calibration log
     profile = PROFILES[args.embedder] if args.embedder else DEFAULT_PROFILE
 
     service = GraphService.from_dir(ROOT / "graph")
     index = VectorIndex(SentenceTransformersEmbedder(profile))
-    index.build(service, f"{graph_fingerprint(ROOT / 'graph')}:{profile.model_name}")
+    index.build(service)
     for case, brief in BRIEFS.items():
         result = retrieve(brief, service, index, profile=profile)
         print(f"\n=== {case}: {brief}")
-        print("  -- raw top-20 sims (ungated — calibration reads THIS band)")
-        for node_id, sim in index.query(brief, 20):
+        print("  -- raw sims, full graph (ungated — calibration reads THIS band)")
+        for node_id, sim in index.query(brief, len(service.all_nodes())):
             print(f"    {sim:.3f}  {node_id}")
         print("  -- anchors")
         for scored in result.anchors:

@@ -91,7 +91,20 @@ read_when:
   - 102 hermetic tests, ruff clean. Run the app: `pip install -e ".[embeddings]"` then
     `uvicorn --factory web.app:create_app --reload`.
 
-## Next chantier — Week 3 (LLM providers + grounding + challenge)
+## Next chantier — EXECUTE the W3 plan
+
+W3 is fully designed and planned (2026-06-12 evening session):
+- Spec: `docs/specs/2026-06-12-week3-llm-challenge-design.md` — official SDKs, EDB
+  template as conversation engine (12 sections, fluid graph-woven interview — never
+  a form), two-phase challenge + deterministic governance pull (the L4-residual
+  answer), end-to-end real-LLM challenge bench.
+- Plan: `docs/plans/2026-06-12-week3-llm-edb.md` — 12 TDD tasks, branch
+  `w3-llm-edb`, complete code per task. Execution mode chosen by Loïc:
+  **inline via superpowers:executing-plans** in a fresh session.
+- HARD STOP after task 12: the real-LLM bench run (`./scripts/challenge-eval`) and
+  the Mistral demo need API keys and Loïc's go.
+
+## Week 3 original scope notes (superseded by the spec above — kept for history)
 
 W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
 `./scripts/retrieval-eval`, findings in `docs/known-limits.md`) showed a recall-first net

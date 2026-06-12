@@ -6,7 +6,8 @@ _BASE_URL = "https://api.x.ai/v1"
 
 
 class GrokProvider:
-    def __init__(self, api_key: str, model: str = "grok-4-fast-non-reasoning") -> None:
+    # grok-4-fast-* retired 2026-05-15 (redirected); grok-4.3 is xAI's recommended model.
+    def __init__(self, api_key: str, model: str = "grok-4.3") -> None:
         self.model = model
         try:
             from openai import OpenAI

@@ -6,7 +6,8 @@ _BASE_URL = "https://api.deepseek.com"
 
 
 class DeepSeekProvider:
-    def __init__(self, api_key: str, model: str = "deepseek-chat") -> None:
+    # deepseek-chat is deprecated 2026-07-24; v4-flash is its successor (non-thinking).
+    def __init__(self, api_key: str, model: str = "deepseek-v4-flash") -> None:
         self.model = model
         try:
             from openai import OpenAI

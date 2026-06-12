@@ -185,8 +185,12 @@ def _challenge_provider() -> MockProvider:
 
 
 def test_challenge_runs_when_map_stable_and_fills_ledger_and_edb() -> None:
-    session = make_challenge_session(_challenge_provider())
+    provider = _challenge_provider()
+    session = make_challenge_session(provider)
     turn = session.handle_message("refonte du canal")
+    # both challenge calls must carry the brief — the model judges relevance TO this project
+    assert "refonte du canal" in provider.calls[1][1]  # triage user message
+    assert "refonte du canal" in provider.calls[2][1]  # claims user message
     assert session.challenge_done is True
     assert session.edb.status("challenge") == "filled"
     pending = session.ledger.pending()

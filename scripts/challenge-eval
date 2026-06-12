@@ -81,10 +81,11 @@ def build_service(n: int) -> GraphService:
     return GraphService.from_dirs(ROOT / "graph", ROOT / "graph-distractors", n)
 
 
-def run_challenge(provider, service, result, *, use_cache: bool, key_parts) -> dict:
+def run_challenge(provider, service, result, brief: str, *, use_cache: bool, key_parts) -> dict:
     """The SAME code path the session uses, without the interview around it."""
     submitted = {s.node_id for s in [*result.anchors, *result.expanded]}
-    triage_user = render_subgraph(result, service)
+    brief_header = f"Brief du projet :\n{brief}\n\n"
+    triage_user = brief_header + "Carte brute :\n" + render_subgraph(result, service)
     key = cache_key(*key_parts, subgraph_text=triage_user)
     cache_file = CACHE_DIR / f"{key}.json"
     cached = json.loads(cache_file.read_text()) if use_cache and cache_file.is_file() else None
@@ -98,7 +99,8 @@ def run_challenge(provider, service, result, *, use_cache: bool, key_parts) -> d
         keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
         pulled = pull_governance(service, set(keeps), set(rejects))
         out2 = complete_with_retry(provider, load_prompt("challenge_claims"),
-                                   render_stabilized(keeps, pulled, service),
+                                   brief_header + "Carte stabilisée :\n"
+                                   + render_stabilized(keeps, pulled, service),
                                    required_keys=("pulled_justifications", "claims",
                                                   "domains", "challenge_statement"))
         CACHE_DIR.mkdir(exist_ok=True)
@@ -137,7 +139,8 @@ def main() -> None:
         for name, brief, expected, trap in SCENARIOS:
             result = retrieve(brief, service, index)
             try:
-                run = run_challenge(provider, service, result, use_cache=not args.no_cache,
+                run = run_challenge(provider, service, result, brief,
+                                    use_cache=not args.no_cache,
                                     key_parts=(name, n, args.provider, provider.model))
             except JsonContractError as exc:
                 print(f"  {name:30s} CHALLENGE FAILED: {exc}")

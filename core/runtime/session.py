@@ -187,7 +187,10 @@ class ScopingSession:
     def _run_challenge(self, result: RetrievalResult) -> tuple[str, list[Proposal]]:
         """Two-message challenge (spec §5). Returns (statement, new claim cards)."""
         submitted = {s.node_id for s in [*result.anchors, *result.expanded]}
-        triage_user = render_subgraph(result, self._service)
+        # The brief MUST ride along: the model judges relevance TO this project —
+        # without it, it hallucinates a project from the map (caught by the bench).
+        brief_header = f"Brief du projet :\n{self.brief.text()}\n\n"
+        triage_user = brief_header + "Carte brute :\n" + render_subgraph(result, self._service)
         out1 = complete_with_retry(self._provider, load_prompt("challenge_triage"),
                                    triage_user, required_keys=("verdicts",))
         keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
@@ -195,7 +198,8 @@ class ScopingSession:
         self.gate_rejections += [{"kind": "triage", "node_id": d} for d in dropped]
         self.pulled = pull_governance(self._service, set(keeps), set(rejects))
         map_ids = set(keeps) | {p.node_id for p in self.pulled}
-        claims_user = render_stabilized(keeps, self.pulled, self._service)
+        claims_user = (brief_header + "Carte stabilisée :\n"
+                       + render_stabilized(keeps, self.pulled, self._service))
         out2 = complete_with_retry(self._provider, load_prompt("challenge_claims"),
                                    claims_user, required_keys=(
                                        "pulled_justifications", "claims",

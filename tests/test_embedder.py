@@ -136,7 +136,7 @@ def test_st_embedder_passes_profile_st_kwargs(monkeypatch):
     SentenceTransformersEmbedder(profile)
     assert captured_kwargs == {
         "model_kwargs": {"attn_implementation": "eager"},
-        "tokenizer_kwargs": {"padding_side": "left"},
+        "processor_kwargs": {"padding_side": "left"},  # ST 5.x name for tokenizer kwargs
     }
 
 

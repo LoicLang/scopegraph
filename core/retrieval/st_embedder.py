@@ -18,7 +18,9 @@ class SentenceTransformersEmbedder:
         if profile.model_kwargs:
             extra["model_kwargs"] = dict(profile.model_kwargs)
         if profile.tokenizer_kwargs:
-            extra["tokenizer_kwargs"] = dict(profile.tokenizer_kwargs)
+            # sentence-transformers 5.x renamed tokenizer_kwargs → processor_kwargs;
+            # the profile keeps the semantic name (these ARE tokenizer settings).
+            extra["processor_kwargs"] = dict(profile.tokenizer_kwargs)
         self._model = SentenceTransformer(profile.model_name, **extra)
 
     def _encode(self, texts: list[str]) -> list[list[float]]:

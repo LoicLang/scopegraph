@@ -132,9 +132,11 @@ Numbers and analysis recorded in known-limits **L1 (precision 13→53 %, map 11.
 L4 (N=2000 end-to-end), L5 (the bench caught a missing-brief bug in the challenge
 calls on day one), and the new L7** (triage rejects governance with plausible
 "non spécifique" arguments; pull can't recover an explicit rejection). Remaining:
-1. **L7 levers** — prompt iterations (recall-first triage, SUPERSEDED-as-history)
-   and the cross-model comparison (`--provider mistral` / `grok`) — cheap, cached.
-   Decide on the structural lever (governance unrejectable at triage) only after.
+1. ~~L7 levers~~ DONE (2026-06-12 evening): prompt-only fix, +10–18 recall points on
+   all three models (deepseek 90 %, mistral 91 %, grok 86 % final recall at N=0);
+   S3 passes 6/6 everywhere; structural lever closed as unnecessary. Grok provider
+   added (`grok-4.3`); model ids verified online (deepseek-v4-flash, mistral-small-
+   latest→Small 4). All in known-limits L7.
 2. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough).
 3. Merge decision on `w3-llm-edb`.
 

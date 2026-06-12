@@ -7,11 +7,14 @@ class MistralProvider:
     def __init__(self, api_key: str, model: str = "mistral-small-latest") -> None:
         self.model = model
         try:
-            from mistralai import Mistral
-        except ImportError as exc:
-            raise RuntimeError(
-                "mistralai is not installed — run: pip install -e '.[llm]'"
-            ) from exc
+            from mistralai.client import Mistral  # SDK >= 2.x
+        except ImportError:
+            try:
+                from mistralai import Mistral  # SDK 1.x
+            except ImportError as exc:
+                raise RuntimeError(
+                    "mistralai is not installed — run: pip install -e '.[llm]'"
+                ) from exc
         self._client = Mistral(api_key=api_key)
 
     def complete_json(self, system: str, user: str) -> dict:

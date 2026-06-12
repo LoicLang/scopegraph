@@ -188,12 +188,55 @@ def test_profile_top_n_caps_the_candidate_pool():
 
 
 def test_expansion_only_threshold_comes_from_the_profile():
+    """Y sits at intermediate sim ≈ 0.707 (shares one of the query's two fragments):
+    visible under MiniLM's tau_noise=0.25, invisible under a strict profile."""
     from dataclasses import replace
 
     from core.retrieval.config import MINILM
 
-    service, index = make_index(["canal"])
-    strict = replace(MINILM, tau_noise=2.0)  # every expanded node is textually invisible
-    result = retrieve("améliorer notre canal mobile", service, index, profile=strict)
-    assert result.expanded, "scenario must expand for the assertion to mean anything"
-    assert all(scored.expansion_only for scored in result.expanded)
+    # Build a dedicated two-node graph so the math is isolated from make_service().
+    # X contains both fragments → cosine 1.0 with the query → anchor under tau_anchor=0.9.
+    # Y contains only frag-a → cosine 1/√2 ≈ 0.707 with the query → expanded, not anchor.
+    FRAG_A = "zeta-one"
+    FRAG_B = "zeta-two"
+    QUERY = f"testing {FRAG_A} and {FRAG_B} integration"
+    X_ID = "sys-alpha"
+    Y_ID = "sys-beta"
+
+    nodes = [
+        System(
+            id=X_ID,
+            name="Alpha system",
+            description=f"Handles {FRAG_A} and {FRAG_B}.",
+            owner_team="T",
+            domains=["test-domain"],
+        ),
+        System(
+            id=Y_ID,
+            name="Beta system",
+            description=f"Handles {FRAG_A} only.",
+            owner_team="T",
+            domains=["test-domain"],
+        ),
+    ]
+    edges = [
+        Edge(source_id=Y_ID, target_id=X_ID, type=EdgeType.DEPENDS_ON),
+    ]
+    svc = GraphService({n.id: n for n in nodes}, edges)
+    idx = VectorIndex(FakeEmbedder([FRAG_A, FRAG_B]))
+    idx.build(svc)
+
+    # tau_anchor=0.9: X (sim=1.0) is an anchor; Y (sim≈0.707) is NOT → Y appears in expanded.
+    # top_n_fixed=20 (default) so Y reaches the scorer and gets a real semantic_sim (not None).
+    lax = replace(MINILM, tau_anchor=0.9)
+    strict = replace(MINILM, tau_anchor=0.9, tau_noise=2.0)
+
+    lax_result = retrieve(QUERY, svc, idx, profile=lax)
+    strict_result = retrieve(QUERY, svc, idx, profile=strict)
+
+    lax_y = next(s for s in lax_result.expanded if s.node_id == Y_ID)
+    strict_y = next(s for s in strict_result.expanded if s.node_id == Y_ID)
+
+    assert lax_y.semantic_sim is not None and 0.25 < lax_y.semantic_sim < 1.0  # setup is honest
+    assert not lax_y.expansion_only  # 0.707 ≥ tau_noise 0.25 → textually visible
+    assert strict_y.expansion_only  # 0.707 < tau_noise 2.0 → invisible under the strict profile

@@ -8,7 +8,40 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-12, end of session)
+## Current state (2026-06-12, end of session 2)
+
+- **W3 lot 0bis IN PROGRESS — embedder swap: code DONE, e5-base REJECTED at the
+  N=0 gate** (branch `w3-embedder-swap`, spec
+  `docs/specs/2026-06-12-embedder-swap-design.md`, plan
+  `docs/plans/2026-06-12-embedder-swap.md`, subagent-driven):
+  - Code (tasks 1-8) done: asymmetric Embedder Protocol (`embed_queries`/
+    `embed_passages`, e5 prefixes inside the embedder), `RetrievalProfile` per
+    embedder (MiniLM frozen + regression-locked), profile threaded through
+    retrieve/triggers/session, fingerprint covers prefixes, bench flags
+    `--embedder`/`--top-n`/`--grid` + per-trap anchor autopsy (thief lineup),
+    smoke prints the full-graph raw band. 143 hermetic tests, ruff clean.
+  - **Calibration measured (spec §4.ii-iii): e5-base FAILS the N=0 gate.** Band is
+    ~7x narrower than MiniLM (whole graph in 0.73-0.86, top-median spread
+    0.026-0.069). Calibrated by band transposition (profile committed for
+    reproducibility); mean recall 85 % ≥ 84 % BUT per-case: S1 loses
+    dec-releases-tpe-trimestrielles (hub misses the 8th anchor slot by 0.001 sim),
+    S3 loses the governance freeze (dec-gel-evolutions-monetique ranks **72/72**
+    on the cash-back brief — e5 simply does not map cash-back to the monetique
+    cluster), S5 loses con-ai-act (rank 17, crowded out of TOP_K). The single
+    allowed §4.ii iteration changed nothing: anchor-RANKING failures, not
+    thresholds. Accent-sensitivity ruled out. **The 2×2 grid was NOT run** (no
+    point stressing an embedder that fails unpolluted). MiniLM stays
+    DEFAULT_PROFILE.
+  - **DECISION NEEDED (next session): which lever next?** Options, cheapest
+    first: (a) e5-large gate test — same harness, one profile entry away, ~20 min
+    incl. 2.2 GB download; risk: the failure mode (compressed band + French
+    banking semantics) may be family-wide; (b) bge-m3 (the W2 spec's other
+    recorded candidate); (c) accept MiniLM + go straight at the candidate-list
+    levers (TOP_N scaling arm measured alone on the grid, hybrid BM25 — lexical
+    signal would catch S2's homonyms but NOT S3's semantic leap); (d) rethink
+    node_document (label+aliases+description may be too diffuse for e5-style
+    passage embedding — would need its own mini-bench). The grid harness is ready
+    whichever way.
 
 - **W3 lot 0 DONE — distractor stress bench, verdict: SWAP EMBEDDER** (branch
   `w3-distractor-bench`, subagent-driven from `docs/archive/2026-06-11-distractor-stress-bench.md`,

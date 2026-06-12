@@ -144,7 +144,8 @@ the per-case criterion only looks at trap nodes.
 - Protocol: both methods on `FakeEmbedder` and `SentenceTransformersEmbedder`
   (the latter's prefix application tested via the pure function, not the model).
 - e5 prefixing: `query: ` / `passage: ` applied; MiniLM profile applies none.
-- TOP_N scaling formula: 72 → 20, 2072 → 581, floor respected.
+- TOP_N scaling formula: `max(20, ceil(0.28·|V|))` → 72 → 21, 2072 → 581, floor
+  respected on small graphs (10 → 20).
 - Profile selection + MiniLM value non-regression (current constants frozen by test).
 - `expansion_only` with injected threshold.
 - Existing 127 tests migrate mechanically to the new Protocol signature.

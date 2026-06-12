@@ -49,3 +49,66 @@ def test_load_prompt_reads_french_template():
 def test_load_prompt_unknown_fails_loud():
     with pytest.raises(FileNotFoundError):
         load_prompt("does-not-exist")
+
+
+def test_importing_provider_modules_does_not_import_sdks():
+    import sys
+
+    import core.llm.deepseek  # noqa: F401
+    import core.llm.mistral  # noqa: F401
+
+    assert "mistralai" not in sys.modules
+    assert "openai" not in sys.modules
+
+
+def test_mistral_missing_sdk_raises_clear_error(monkeypatch):
+    import sys
+
+    from core.llm.mistral import MistralProvider
+
+    monkeypatch.setitem(sys.modules, "mistralai", None)
+    with pytest.raises(RuntimeError, match="mistralai"):
+        MistralProvider(api_key="k")
+
+
+def test_deepseek_calls_openai_compatible_endpoint(monkeypatch):
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class _Completions:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            msg = types.SimpleNamespace(content='{"ok": true}')
+            return types.SimpleNamespace(choices=[types.SimpleNamespace(message=msg)])
+
+    class _Client:
+        def __init__(self, api_key, base_url):
+            captured["base_url"] = base_url
+            self.chat = types.SimpleNamespace(completions=_Completions())
+
+    fake = types.ModuleType("openai")
+    fake.OpenAI = _Client
+    monkeypatch.setitem(sys.modules, "openai", fake)
+
+    from core.llm.deepseek import DeepSeekProvider
+
+    out = DeepSeekProvider(api_key="k").complete_json("sys", "user")
+    assert out == {"ok": True}
+    assert captured["base_url"] == "https://api.deepseek.com"
+    assert captured["temperature"] == 0
+    assert captured["response_format"] == {"type": "json_object"}
+    assert captured["messages"][0] == {"role": "system", "content": "sys"}
+
+
+def test_factory_resolves_provider_from_env(monkeypatch):
+    from core.llm.factory import make_provider
+
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "mock")
+    assert type(make_provider()).__name__ == "MockProvider"
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "none")
+    assert make_provider() is None
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "nope")
+    with pytest.raises(ValueError, match="nope"):
+        make_provider()

@@ -26,6 +26,10 @@ dev = [
 embeddings = [
     "sentence-transformers",
 ]
+llm = [
+    "mistralai>=1.0",
+    "openai>=1.40",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["core"]

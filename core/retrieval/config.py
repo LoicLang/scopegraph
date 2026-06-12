@@ -33,14 +33,16 @@ class RetrievalProfile:
     passage_prefix: str = ""
     top_n_policy: Literal["fixed", "coverage"] = "fixed"
     top_n_fixed: int = 20
-    top_n_fraction: float = 0.28  # W2 coverage parity: 20/72 candidates (spec §1)
+    top_n_fraction: float = 0.28  # W2 coverage parity ≈ 20/72 candidates (spec §1)
     top_n_floor: int = 20
 
     def top_n(self, graph_size: int) -> int:
         """Semantic candidates pulled from the vector index for this graph size."""
         if self.top_n_policy == "fixed":
             return self.top_n_fixed
-        return max(self.top_n_floor, math.ceil(self.top_n_fraction * graph_size))
+        if self.top_n_policy == "coverage":
+            return max(self.top_n_floor, math.ceil(round(self.top_n_fraction * graph_size, 9)))
+        raise ValueError(f"unknown top_n_policy: {self.top_n_policy!r}")
 
 
 MINILM = RetrievalProfile(
@@ -62,7 +64,7 @@ MINILM = RetrievalProfile(
 # multiplicative 0.7² collapses 2-hop scores below noise; 0.9 is a stopgap and the
 # calibration may impose a different form.
 E5_BASE = RetrievalProfile(
-    name="e5-base",
+    name="e5",
     model_name="intfloat/multilingual-e5-base",
     tau_anchor=0.82,
     tau_keep=0.76,
@@ -76,7 +78,7 @@ E5_BASE = RetrievalProfile(
     passage_prefix="passage: ",
 )
 
-PROFILES: dict[str, RetrievalProfile] = {"minilm": MINILM, "e5": E5_BASE}
+PROFILES: dict[str, RetrievalProfile] = {p.name: p for p in (MINILM, E5_BASE)}
 DEFAULT_PROFILE = MINILM  # flipped to E5_BASE only by the exit contract (spec §1)
 
 # Structural knobs — band-independent, shared by every profile.

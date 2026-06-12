@@ -31,9 +31,19 @@ def test_top_n_coverage_scales_with_floor():
     scaled = replace(MINILM, top_n_policy="coverage")
     assert scaled.top_n(72) == 21  # ceil(0.28 * 72)
     assert scaled.top_n(2072) == 581  # ceil(0.28 * 2072)
+    assert scaled.top_n(100) == 28  # exact product must not overshoot via float noise
     assert scaled.top_n(10) == 20  # floor wins on small graphs
 
 
 def test_registry_and_default():
     assert PROFILES == {"minilm": MINILM, "e5": E5_BASE}
     assert DEFAULT_PROFILE is MINILM  # flipped only by the exit contract (spec §1)
+
+
+def test_top_n_unknown_policy_fails_loud():
+    import pytest
+    from dataclasses import replace
+
+    broken = replace(MINILM, top_n_policy="scale")
+    with pytest.raises(ValueError, match="unknown top_n_policy"):
+        broken.top_n(72)

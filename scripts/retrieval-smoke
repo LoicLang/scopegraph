@@ -2,10 +2,17 @@
 """Calibration bench: run the REAL embedder over the 6 eval briefs (never in CI).
 
 Usage:  pip install -e ".[embeddings]"  &&  ./scripts/retrieval-smoke
+        ./scripts/retrieval-smoke --embedder e5
 Prints anchors, expanded nodes with provenance, and domain derivation per brief —
 the §3 constants in core/retrieval/config.py are tuned by reading this output.
+
+The raw top-20 similarity block (ungated) is printed first per case — this is the
+band the §4.ii calibration reads to set thresholds for a new embedder.  The index
+is EPHEMERAL (no persist_dir); the fingerprint arg (graph hash : model name) is
+cosmetic here but mirrors the web/app.py pattern for consistency.
 """
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -13,6 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from core.graph.service import GraphService  # noqa: E402
+from core.retrieval.config import DEFAULT_PROFILE, PROFILES  # noqa: E402
 from core.retrieval.index import VectorIndex, graph_fingerprint  # noqa: E402
 from core.retrieval.retriever import retrieve  # noqa: E402
 from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
@@ -35,12 +43,21 @@ BRIEFS = {
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--embedder", choices=sorted(PROFILES), default=None,
+                        help="profile to run (default: DEFAULT_PROFILE)")
+    args = parser.parse_args()
+    profile = PROFILES[args.embedder] if args.embedder else DEFAULT_PROFILE
+
     service = GraphService.from_dir(ROOT / "graph")
-    index = VectorIndex(SentenceTransformersEmbedder())
-    index.build(service, graph_fingerprint(ROOT / "graph"))
+    index = VectorIndex(SentenceTransformersEmbedder(profile))
+    index.build(service, f"{graph_fingerprint(ROOT / 'graph')}:{profile.model_name}")
     for case, brief in BRIEFS.items():
-        result = retrieve(brief, service, index)
+        result = retrieve(brief, service, index, profile=profile)
         print(f"\n=== {case}: {brief}")
+        print("  -- raw top-20 sims (ungated — calibration reads THIS band)")
+        for node_id, sim in index.query(brief, 20):
+            print(f"    {sim:.3f}  {node_id}")
         print("  -- anchors")
         for scored in result.anchors:
             print(f"    {scored.score:.3f}  {scored.node_id}  (sim {scored.semantic_sim:.3f})")

@@ -32,16 +32,25 @@ read_when:
     thresholds. Accent-sensitivity ruled out. **The 2×2 grid was NOT run** (no
     point stressing an embedder that fails unpolluted). MiniLM stays
     DEFAULT_PROFILE.
-  - **DECISION NEEDED (next session): which lever next?** Options, cheapest
-    first: (a) e5-large gate test — same harness, one profile entry away, ~20 min
-    incl. 2.2 GB download; risk: the failure mode (compressed band + French
-    banking semantics) may be family-wide; (b) bge-m3 (the W2 spec's other
-    recorded candidate); (c) accept MiniLM + go straight at the candidate-list
-    levers (TOP_N scaling arm measured alone on the grid, hybrid BM25 — lexical
-    signal would catch S2's homonyms but NOT S3's semantic leap); (d) rethink
-    node_document (label+aliases+description may be too diffuse for e5-style
-    passage embedding — would need its own mini-bench). The grid harness is ready
-    whichever way.
+  - **DECISION TAKEN (2026-06-12, after web research): test Qwen3-Embedding-0.6B**
+    (family leads MTEB incl. French; instruction-aware query side = the lever
+    aimed at e5's S3 semantic-leap failure). Profile + per-profile ST kwargs
+    (macOS eager-attention/left-padding workarounds) committed; 147 hermetic
+    tests.
+  - **Qwen3-0.6B N=0 gate: PASSED (2026-06-12).** Band is healthy (MiniLM-like,
+    4-7x wider than e5). Calibrated by transposition + one §4.ii iteration
+    (tau_keep 0.26: S5's 2-hop traceability trap landed at 0.266). Result:
+    per-case SUPERSET of MiniLM — S3 6/6 (MiniLM 5/6), S6 vocabulary bridge 3/7
+    (MiniLM 0/7), mean recall 95 % vs 89 %, smaller maps (39.7 vs 44.5),
+    precision 17 % vs 13 %. The instruction prefix measurably fixes the e5
+    failure mode (S5: con-ai-act rank 1 vs 17; S3: con-pci-dss rank 8 = direct
+    anchor).
+  - **NEXT: the 2×2 distractor grid (minilm/qwen3 × TOP_N fixed/scaled)** —
+    `./scripts/retrieval-eval --grid` (qwen3 rows slower than MiniLM: 0.6B params;
+    expect ~30-60 min total). Criterion unchanged (per-cell trap death, spec §6).
+    If the best qwen3 cell HOLDS → exit contract: DEFAULT_PROFILE flips to QWEN3,
+    TOP_N policy per the winning arm, L4/L5 updated, lots 1-4 unblocked. The e5
+    profile stays in config for reproducibility of the rejection.
 
 - **W3 lot 0 DONE — distractor stress bench, verdict: SWAP EMBEDDER** (branch
   `w3-distractor-bench`, subagent-driven from `docs/archive/2026-06-11-distractor-stress-bench.md`,

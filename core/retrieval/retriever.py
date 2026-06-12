@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from core.graph.models import Edge
 from core.graph.service import GraphService
 from core.retrieval import config
+from core.retrieval.config import RetrievalProfile
 from core.retrieval.index import VectorIndex
 
 # Tiebreak priority for equal-scoring anchors: primary architectural subjects rank first.
@@ -30,11 +31,7 @@ class ScoredNode:
     semantic_sim: float | None = None
     anchor_id: str | None = None
     path: tuple[Edge, ...] = ()
-
-    @property
-    def expansion_only(self) -> bool:
-        """Reached structurally, near-invisible textually (T3 material)."""
-        return bool(self.path) and (self.semantic_sim or 0.0) < config.TAU_NOISE
+    expansion_only: bool = False  # reached structurally, near-invisible textually (T3)
 
 
 @dataclass
@@ -55,6 +52,7 @@ def retrieve(
     *,
     domains: Sequence[str] = (),
     excluded_domains: Sequence[str] = (),
+    profile: RetrievalProfile = config.DEFAULT_PROFILE,
 ) -> RetrievalResult:
     """Hybrid retrieval: semantic anchors + domain boost + bounded expansion.
 
@@ -62,10 +60,10 @@ def retrieve(
     `excluded_domains` only filter the expansion layer — anchors are never dropped
     (the user literally named them).
     """
-    sims = dict(index.query(text, config.TOP_N))
+    sims = dict(index.query(text, profile.top_n(len(service.all_nodes()))))
     wanted = set(domains)
     boosted = {
-        node_id: sim + config.ALPHA * len(set(service.get_node(node_id).domains) & wanted)
+        node_id: sim + profile.alpha * len(set(service.get_node(node_id).domains) & wanted)
         for node_id, sim in sims.items()
     }
     anchor_ids = [
@@ -78,7 +76,7 @@ def retrieve(
                 kv[0],
             ),
         )
-        if score >= config.TAU_ANCHOR
+        if score >= profile.tau_anchor
     ][: config.TOP_K]
     anchors = [
         ScoredNode(
@@ -96,11 +94,11 @@ def retrieve(
             domain_scores[domain] = domain_scores.get(domain, 0.0) + anchor.score
     top = max(domain_scores.values(), default=0.0)
     derived = sorted(
-        (d for d, s in domain_scores.items() if s >= config.DOMAIN_FRACTION * top),
+        (d for d, s in domain_scores.items() if s >= profile.domain_fraction * top),
         key=lambda d: (-domain_scores[d], d),
     )
 
-    expanded = _expand(anchors, service, sims, set(excluded_domains), set(domains))
+    expanded = _expand(anchors, service, sims, set(excluded_domains), set(domains), profile)
     return RetrievalResult(anchors, expanded, domain_scores, derived)
 
 
@@ -109,7 +107,8 @@ def _expand(
     service: GraphService,
     sims: dict[str, float],
     excluded: set[str],
-    confirmed: set[str] = frozenset(),
+    confirmed: set[str],
+    profile: RetrievalProfile,
 ) -> list[ScoredNode]:
     anchor_ids = {anchor.node_id for anchor in anchors}
     best: dict[str, ScoredNode] = {}
@@ -122,8 +121,8 @@ def _expand(
             # exclusion drops a node only if no user-confirmed domain rescues it
             if node_domains & excluded and not (node_domains & confirmed):
                 continue
-            score = anchor.score * config.DECAY ** len(path)
-            if score < config.TAU_KEEP:
+            score = anchor.score * profile.decay ** len(path)
+            if score < profile.tau_keep:
                 continue
             if node_id not in best or score > best[node_id].score:
                 best[node_id] = ScoredNode(
@@ -133,5 +132,6 @@ def _expand(
                     semantic_sim=sims.get(node_id),
                     anchor_id=anchor.node_id,
                     path=tuple(path),
+                    expansion_only=(sims.get(node_id) or 0.0) < profile.tau_noise,
                 )
     return sorted(best.values(), key=lambda scored: (-scored.score, scored.node_id))

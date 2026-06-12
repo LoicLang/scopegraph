@@ -80,7 +80,7 @@ def test_domain_boost_adds_alpha_per_shared_domain() -> None:
     boosted = retrieve(
         "le canal et le traitement central", service, index, domains=["monetique"]
     )
-    expected = anchor_score(plain, "sys-moteur") + config.ALPHA
+    expected = anchor_score(plain, "sys-moteur") + config.DEFAULT_PROFILE.alpha
     assert anchor_score(boosted, "sys-moteur") == pytest.approx(expected)
     assert boosted.anchors[0].node_id == "sys-moteur"  # boost reorders the tie
 
@@ -99,12 +99,12 @@ def test_expansion_carries_provenance_and_decay() -> None:
     by_id = {s.node_id: s for s in result.expanded}
 
     moteur = by_id["sys-moteur"]
-    assert moteur.score == pytest.approx(config.DECAY)  # anchor score 1.0 · DECAY^1
+    assert moteur.score == pytest.approx(config.DEFAULT_PROFILE.decay)  # anchor score 1.0 · DECAY^1
     assert moteur.anchor_id == "sys-canal"
     assert [edge.type for edge in moteur.path] == [EdgeType.DEPENDS_ON]
 
     terminal = by_id["sys-terminal"]
-    assert terminal.score == pytest.approx(config.DECAY**2)
+    assert terminal.score == pytest.approx(config.DEFAULT_PROFILE.decay**2)
     assert len(terminal.path) == 2
     assert terminal.expansion_only  # zero textual similarity, pure structure
 
@@ -174,3 +174,26 @@ def test_anchor_tie_break_prefers_system_over_feature() -> None:
     index.build(service)
     result = retrieve("refondre l'espace client", service, index)
     assert [s.node_id for s in result.anchors] == ["sys-espace-client", "feat-espace-client"]
+
+
+def test_profile_top_n_caps_the_candidate_pool():
+    from dataclasses import replace
+
+    from core.retrieval.config import MINILM
+
+    service, index = make_index(["canal", "central"])
+    starved = replace(MINILM, top_n_fixed=1, tau_anchor=0.0)
+    result = retrieve("canal et traitement central", service, index, profile=starved)
+    assert len(result.anchors) == 1  # only one candidate ever reached the scorer
+
+
+def test_expansion_only_threshold_comes_from_the_profile():
+    from dataclasses import replace
+
+    from core.retrieval.config import MINILM
+
+    service, index = make_index(["canal"])
+    strict = replace(MINILM, tau_noise=2.0)  # every expanded node is textually invisible
+    result = retrieve("améliorer notre canal mobile", service, index, profile=strict)
+    assert result.expanded, "scenario must expand for the assertion to mean anything"
+    assert all(scored.expansion_only for scored in result.expanded)

@@ -112,9 +112,28 @@ spec `2026-06-11-distractor-stress-bench-design.md`).** Verdict: **SWAP EMBEDDER
 - Note: the pool deliberately contains near-twins of seed components (e.g. a second
   fictional authorization engine) — that is what a real ecosystem at scale looks
   like, and the test is honest because ground-truth nodes remain uniquely identified.
+- **Interpretation refinement (2026-06-12, raised by Loïc, anchor inspection at
+  N=2000).** The stolen anchors are NOT all junk — three distinct phenomena:
+  (a) *legitimate substitution*: S3's thieves are a fictional cashback engine + its
+  refonte project + its 500 € cap — in the merged universe, surfacing them would be
+  correct scoping. Seed-only ground truth counts them as noise, so **mean recall
+  understates real performance**; treat the 89→54 % drop as a lower bound.
+  (b) *genuine trap death*: the governance chains (`dec-gel-evolutions-monetique`,
+  `con-pci-dss`, carence 48h, double validation) have no functional substitutes and
+  simply vanish — the product's core promise fails at scale. This is the real signal,
+  and the per-case verdict criterion (already chosen for L5 reasons) captures exactly
+  it, so the SWAP verdict stands unchanged.
+  (c) *homonym noise*: S2 loses support anchors to "Référentiel des Bénéficiaires
+  Effectifs" (LCB-FT concept) on a payee-beneficiary brief — same words, different
+  business object; dense text similarity cannot disambiguate. Lexical/hybrid signals
+  are the targeted fix for this class.
 - **Action (spec's recorded escalation): swap the embedder to multilingual-e5 and
   re-run this sweep BEFORE building W3 lots 1–4.** Constants stay untouched until the
-  new embedder's sweep is read (L1 doctrine still applies).
+  new embedder's sweep is read (L1 doctrine still applies). Candidate levers beyond
+  the swap, in test order: scale TOP_N with graph size (20 candidates = 28 % of a
+  72-node graph but 1 % of 2072 — recall-side capacity, not precision tuning), hybrid
+  BM25 + dense for the homonym class, reranker last (W2 spec's recorded no-go unless
+  forced).
 
 ## L5 — Methodology traps in our own bench
 

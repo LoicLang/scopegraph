@@ -9,22 +9,55 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color: #1c2733; }
-  main { display: grid; grid-template-columns: minmax(320px, 2fr) 3fr; height: 100vh; }
+  main { display: grid; grid-template-columns: minmax(300px, 2fr) 3fr minmax(280px, 2fr); height: 100vh; }
   #chat { display: flex; flex-direction: column; border-right: 1px solid #d8dee5; background: #fff; }
   #chat h1 { font-size: 1.1rem; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d8dee5; }
   #messages { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
   .bot, .user { max-width: 85%; padding: 8px 12px; border-radius: 10px; line-height: 1.35; }
   .bot { background: #eef2f6; align-self: flex-start; }
   .user { background: #1d6fd1; color: #fff; align-self: flex-end; }
+  .card { border: 1px solid #d8dee5; border-left: 4px solid #2e9e6b; border-radius: 8px;
+          padding: 8px 12px; font-size: 0.85rem; background: #fbfcfd; align-self: stretch; }
+  .card .kind { font-size: 0.7rem; text-transform: uppercase; color: #5d6b7a; }
+  .card .actions { margin-top: 6px; display: flex; gap: 6px; }
+  .card .actions button { padding: 4px 10px; font-size: 0.8rem; }
+  .card .actions .reject { background: #d15c4f; }
+  .card .actions .edit { background: #5d6b7a; }
+  #chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 18px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: #e8f0fa;
+          border: 1px solid #b9d2ef; border-radius: 999px; padding: 2px 10px; font-size: 0.78rem; }
+  .chip button { background: none; border: 0; color: #5d6b7a; cursor: pointer; padding: 0 2px; font-size: 0.85rem; }
   form { display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid #d8dee5; }
   input { flex: 1; padding: 9px 12px; border: 1px solid #c4ccd4; border-radius: 8px; font-size: 0.95rem; }
   button { padding: 9px 16px; border: 0; border-radius: 8px; background: #1d6fd1; color: #fff; cursor: pointer; }
-  #mappane { position: relative; }
-  #cy { position: absolute; inset: 0; }
+  #mappane { position: relative; display: flex; flex-direction: column; }
+  #cy { flex: 1; position: relative; }
   #detail { position: absolute; left: 12px; bottom: 12px; right: 12px; background: #ffffffe6;
             border: 1px solid #d8dee5; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;
-            min-height: 1.2em; }
+            min-height: 1.2em; z-index: 5; }
   #empty { position: absolute; inset: 0; display: grid; place-items: center; color: #8a97a5; }
+  #gatestrip { background: #fdf3dd; border-top: 1px solid #ecd9a8; color: #7a5d18;
+               font-size: 0.78rem; padding: 6px 12px; }
+  #rejected { border-top: 1px solid #d8dee5; background: #fff; font-size: 0.85rem; max-height: 30vh; overflow-y: auto; }
+  #rejected summary { padding: 8px 12px; cursor: pointer; color: #5d6b7a; }
+  #rejected .row { display: flex; justify-content: space-between; align-items: center;
+                   gap: 8px; padding: 4px 12px; border-top: 1px solid #eef2f6; }
+  #rejected .row button { padding: 3px 10px; font-size: 0.78rem; background: #5d6b7a; }
+  #edb { border-left: 1px solid #d8dee5; background: #fff; overflow-y: auto; }
+  #edb h2 { font-size: 1rem; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d8dee5;
+            display: flex; justify-content: space-between; align-items: center; }
+  #edb .badge { font-size: 0.72rem; font-weight: normal; background: #fdf3dd; color: #7a5d18;
+                border: 1px solid #ecd9a8; border-radius: 999px; padding: 2px 10px; }
+  #edb .badge.done { background: #e3f4ea; color: #1e6e43; border-color: #b5dfc6; }
+  .section { padding: 10px 18px; border-bottom: 1px solid #eef2f6; }
+  .section h3 { margin: 0 0 4px; font-size: 0.82rem; color: #3c4a59; }
+  .section .muted { color: #aab6c2; }
+  .entry { font-size: 0.83rem; margin: 3px 0; line-height: 1.3; }
+  .src { font-size: 0.66rem; text-transform: uppercase; border-radius: 4px; padding: 1px 5px;
+         margin-right: 5px; background: #eef2f6; color: #5d6b7a; vertical-align: middle; }
+  .src.user { background: #e3f4ea; color: #1e6e43; }
+  .src.llm { background: #ece7f8; color: #5b3fa8; }
+  .src.claim { background: #fdeae6; color: #a04335; }
 </style>
 </head>
 <body x-data="app()" x-init="start()">
@@ -32,7 +65,25 @@
   <section id="chat">
     <h1>scopegraph — cadrage contextualisé</h1>
     <div id="messages">
-      <template x-for="m in messages"><div :class="m.role" x-text="m.text"></div></template>
+      <template x-for="m in messages">
+        <div :class="m.role" x-text="m.text"></div>
+      </template>
+      <template x-for="c in cards" :key="c.id">
+        <div class="card">
+          <div class="kind" x-text="c.kind === 'claim' ? 'Affirmation à valider' : 'Élément d\'EDB proposé'"></div>
+          <div x-text="c.text"></div>
+          <div class="actions">
+            <button @click="decide(c.id, 'accept')">Accepter</button>
+            <button class="edit" @click="edit(c)">Modifier</button>
+            <button class="reject" @click="decide(c.id, 'reject')">Refuser</button>
+          </div>
+        </div>
+      </template>
+    </div>
+    <div id="chips" x-show="enrichments.length">
+      <template x-for="(chip, i) in enrichments" :key="chip">
+        <span class="chip"><span x-text="chip"></span><button @click="removeChip(i)" title="Retirer ce terme">×</button></span>
+      </template>
     </div>
     <form @submit.prevent="send()">
       <input x-model="draft" placeholder="Décrivez votre projet…" autocomplete="off">
@@ -43,12 +94,55 @@
     <div id="cy"></div>
     <div id="empty" x-show="!hasMap">La Context Map apparaîtra ici après votre description.</div>
     <div id="detail" x-show="hasMap" x-text="detail"></div>
+    <div id="gatestrip" x-show="gateRejections.length"
+         x-text="`${gateRejections.length} réclamation(s) de l'IA rejetée(s) par le runtime`"></div>
+    <details id="rejected" x-show="Object.keys(rejectedNodes).length">
+      <summary x-text="`Rejetés (${Object.keys(rejectedNodes).length})`"></summary>
+      <template x-for="[id, reason] in Object.entries(rejectedNodes)" :key="id">
+        <div class="row">
+          <span><b x-text="id"></b> — <span x-text="reason"></span></span>
+          <button @click="restore(id)">Restaurer</button>
+        </div>
+      </template>
+    </details>
+  </section>
+  <section id="edb">
+    <h2>Expression de besoin
+      <span class="badge" :class="missing.length === 0 && 'done'"
+            x-text="missing.length ? `${missing.length} section(s) à remplir` : 'complète'"></span>
+    </h2>
+    <template x-for="s in sections" :key="s.id">
+      <div class="section">
+        <h3 x-text="s.title"></h3>
+        <template x-if="!(edb[s.id] || []).length"><div class="entry muted">—</div></template>
+        <template x-for="e in edb[s.id] || []">
+          <div class="entry">
+            <span class="src" :class="srcClass(e.source)" x-text="srcLabel(e.source)"></span><span x-text="e.text"></span>
+          </div>
+        </template>
+      </div>
+    </template>
   </section>
 </main>
 <script>
 const TYPE_COLORS = { system: "#1d6fd1", feature: "#5aa2e8", business_object: "#7c5cd1",
                       project: "#2e9e6b", decision: "#e0a431", constraint: "#d15c4f",
                       risk: "#b33a3a" };
+// EDB template v1 titles (frozen — owner logic stays server-side via missing_sections)
+const EDB_SECTIONS = [
+  { id: "contexte", title: "Contexte & raison d'être" },
+  { id: "besoin", title: "Expression du besoin" },
+  { id: "utilisateurs", title: "Utilisateurs & parties prenantes" },
+  { id: "objectifs", title: "Objectifs & critères de réussite" },
+  { id: "perimetre", title: "Périmètre in / hors périmètre" },
+  { id: "exigences", title: "Exigences fonctionnelles et non-fonctionnelles" },
+  { id: "dependances", title: "Dépendances & systèmes impactés" },
+  { id: "contraintes", title: "Contraintes héritées" },
+  { id: "risques", title: "Risques initiaux" },
+  { id: "jalons", title: "Jalons / échéance cible" },
+  { id: "challenge", title: "Challenge & arbitrages ouverts" },
+  { id: "carte", title: "Context Map" },
+];
 let cy = null;
 
 function renderMap(payload, ui) {
@@ -70,6 +164,8 @@ function renderMap(payload, ui) {
           opacity: 1, width: 38, height: 38, "border-width": 3, "border-color": "#13315c" } },
       { selector: 'node[role = "expanded"]', style: { opacity: 0.9, "border-width": 1,
           "border-style": "dashed", "border-color": "#5d6b7a" } },
+      { selector: 'node[role = "pulled"]', style: { opacity: 1, "border-width": 3,
+          "border-style": "double", "border-color": "#e0a431" } },
       { selector: "edge", style: { width: 1.5, "line-color": "#aab6c2",
           "curve-style": "bezier", "target-arrow-shape": "triangle",
           "target-arrow-color": "#aab6c2", "arrow-scale": 0.8, label: "data(kind)",
@@ -81,14 +177,18 @@ function renderMap(payload, ui) {
     const d = evt.target.data();
     const role = d.role === "anchor" ? `ancre (score ${d.score})`
       : d.role === "expanded" ? `étendu via ${d.via} (${d.hops} saut${d.hops > 1 ? "s" : ""}, score ${d.score})`
+      : d.role === "pulled" ? `ramené via ${d.via} (${d.edge})`
       : "nœud";
-    ui.detail = `${d.label} — ${d.type} — ${role}`;
+    const provenance = d.provenance ? ` — ${d.provenance}` : "";
+    ui.detail = `${d.label} — ${d.type} — ${role}${provenance}`;
   });
 }
 
 function app() {
   return {
     messages: [], draft: "", sessionId: null, detail: "", hasMap: false,
+    sections: EDB_SECTIONS, edb: {}, missing: [], cards: [], enrichments: [],
+    rejectedNodes: {}, gateRejections: [],
     async start() {
       const response = await fetch("/api/session", { method: "POST" });
       this.sessionId = (await response.json()).session_id;
@@ -98,21 +198,58 @@ function app() {
       this.messages.push({ role, text });
       this.$nextTick(() => { const el = document.getElementById("messages"); el.scrollTop = el.scrollHeight; });
     },
+    refresh(data) {  // every endpoint returns the full session payload
+      renderMap(data.map, this);
+      this.edb = data.edb;
+      this.missing = data.missing_sections;
+      this.cards = data.cards;
+      this.enrichments = data.brief?.enrichments ?? [];
+      this.rejectedNodes = data.rejected_nodes;
+      this.gateRejections = data.gate_rejections;
+      return data;
+    },
+    srcLabel(source) {
+      return source === "user" ? "vous" : source === "llm" ? "IA" : "claim";
+    },
+    srcClass(source) {
+      return source.startsWith("claim:") ? "claim" : source;
+    },
+    async call(path, options) {
+      const response = await fetch(`/api/session/${this.sessionId}${path}`, options);
+      if (!response.ok) { this.push("bot", "Erreur — reformulez ou réessayez."); return null; }
+      return this.refresh(await response.json());
+    },
     async send() {
       const text = this.draft.trim();
       if (!text || !this.sessionId) return;
       this.push("user", text);
       this.draft = "";
-      const response = await fetch(`/api/session/${this.sessionId}/message`, {
+      const data = await this.call("/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
-      if (!response.ok) { this.push("bot", "Erreur — reformulez ou réessayez."); return; }
-      const data = await response.json();
-      renderMap(data.map, this);
-      this.push("bot", data.question
-        ?? "Carte stable — aucun point de périmètre à clarifier. (La suite — challenge et dossier — arrive en W3/W4.)");
+      if (!data) return;
+      if (data.message) this.push("bot", data.message);
+      if (data.question) this.push("bot", data.question);
+      if (!data.message && !data.question) this.push("bot", "Carte stable — rien à clarifier pour l'instant.");
+    },
+    async decide(pid, decision, editedText = null) {
+      await this.call(`/proposal/${pid}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision, edited_text: editedText }),
+      });
+    },
+    edit(card) {
+      const text = prompt("Modifier avant d'accepter :", card.text);
+      if (text !== null && text.trim()) this.decide(card.id, "accept", text.trim());
+    },
+    async removeChip(index) {
+      await this.call(`/enrichment/${index}`, { method: "DELETE" });
+    },
+    async restore(nodeId) {
+      await this.call(`/restore/${nodeId}`, { method: "POST" });
     },
   };
 }

@@ -1,0 +1,532 @@
+
+==================== CELL minilm × top-n fixed ====================
+
+--- distractors N=0 (72 nodes, top_n 20) ---
+  S1 BNPL mobile                 recall 9/9  map  55/72  missing: -
+  S2 Benef entreprise            recall 8/8  map  50/72  missing: -
+  S3 Cash-back                   recall 5/6  map  58/72  missing: obj-transaction-carte
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  33/72  missing: -
+  S5 IA reclamations             recall 7/7  map  38/72  missing: -
+  S6 Onboarding digital          recall 0/7  map  19/72  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  36/72  missing: -
+  S8 VI pros                     recall 8/8  map  50/72  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  61/72  missing: -
+  S10 Oppositions digitales      recall 5/5  map  53/72  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  36/72  missing: -
+==> recall 89% | map 44.5 | precision 13%
+
+--- distractors N=500 (572 nodes, top_n 20) ---
+  realism: distractors [q1 0.22 med 0.30 q3 0.37 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  69/572  anchor-intrusion 3/8  pollution 23%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  61/572  anchor-intrusion 6/8  pollution 59%  missing: -
+  S3 Cash-back                   recall 0/6  map  50/572  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  50/572  anchor-intrusion 3/8  pollution 44%  missing: -
+  S5 IA reclamations             recall 0/7  map  44/572  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  52/572  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  70/572  anchor-intrusion 5/8  pollution 51%  missing: -
+  S8 VI pros                     recall 8/8  map  42/572  anchor-intrusion 6/8  pollution 62%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  96/572  anchor-intrusion 5/8  pollution 64%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  91/572  anchor-intrusion 5/8  pollution 62%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  59/572  anchor-intrusion 4/8  pollution 47%  missing: -
+==> recall 72% | map 62.2 | precision 8%
+
+--- distractors N=1000 (1072 nodes, top_n 20) ---
+  realism: distractors [q1 0.22 med 0.30 q3 0.37 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  65/1072  anchor-intrusion 4/8  pollution 29%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  66/1072  anchor-intrusion 6/8  pollution 62%  missing: -
+  S3 Cash-back                   recall 0/6  map  41/1072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  58/1072  anchor-intrusion 3/8  pollution 52%  missing: -
+  S5 IA reclamations             recall 0/7  map  73/1072  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  72/1072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  93/1072  anchor-intrusion 7/8  pollution 69%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 0/8  map  61/1072  anchor-intrusion 8/8  pollution 100%  missing: con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    trap: enterprise double validation + LCB-FT via gateway
+  S9 Self-service plafonds carte recall 5/5  map 119/1072  anchor-intrusion 6/8  pollution 82%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  89/1072  anchor-intrusion 5/8  pollution 61%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  51/1072  anchor-intrusion 5/8  pollution 75%  missing: -
+==> recall 60% | map 71.6 | precision 5%
+
+--- distractors N=2000 (2072 nodes, top_n 20) ---
+  realism: distractors [q1 0.19 med 0.27 q3 0.35 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  62/2072  anchor-intrusion 5/8  pollution 39%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 2/8  map  71/2072  anchor-intrusion 7/8  pollution 73%  missing: con-carence-beneficiaire-48h, con-sca-ajout-beneficiaire, con-verif-sanctions-creation, dec-ecriture-via-api-benef, proj-refonte-parcours-beneficiaire, risk-doublons-beneficiaires
+    trap: inheritance via business object + CANCELLED project as warning
+  S3 Cash-back                   recall 0/6  map  28/2072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  46/2072  anchor-intrusion 4/8  pollution 65%  missing: -
+  S5 IA reclamations             recall 0/7  map  69/2072  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  39/2072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map 100/2072  anchor-intrusion 7/8  pollution 71%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 0/8  map  32/2072  anchor-intrusion 8/8  pollution 100%  missing: con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    trap: enterprise double validation + LCB-FT via gateway
+  S9 Self-service plafonds carte recall 5/5  map 145/2072  anchor-intrusion 6/8  pollution 86%  missing: -
+  S10 Oppositions digitales      recall 5/5  map 117/2072  anchor-intrusion 6/8  pollution 71%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  55/2072  anchor-intrusion 6/8  pollution 82%  missing: -
+==> recall 54% | map 69.5 | precision 5%
+
+recall N=0 89% -> N=2000 54% (drop 36%)
+VERDICT: TRAPS DIE — read the autopsy, then spec §5 annotation before escalating
+  S1 BNPL mobile: lost dec-releases-tpe-trimestrielles
+    brief: Ajouter une option de paiement en 3 fois dans l'app mobile.
+    thief [cross-domain] con-dbel-version-os-minimale-mobile (sim 0.518) — Support des deux dernières versions majeures des OS mobiles ['banque-en-ligne']
+    thief [cross-domain] obj-dmon-token-paiement (sim 0.509) — Token de paiement ['monetique']
+    thief [cross-domain] feat-dbel-souscription-livret-epargne (sim 0.491) — Souscription d'un livret d'épargne en ligne ['banque-en-ligne']
+    thief [cross-domain] con-dpin-conformite-dsp2-initiation (sim 0.469) — Consentement explicite requis pour l'initiation par tiers ['paiement-instantane', 'dsp2-open-banking']
+    thief [cross-domain] feat-dref-envoi-sms-transactionnel (sim 0.461) — Envoi de SMS transactionnel ['referentiel-client']
+  S2 Benef entreprise: lost con-carence-beneficiaire-48h, con-sca-ajout-beneficiaire, con-verif-sanctions-creation, dec-ecriture-via-api-benef, proj-refonte-parcours-beneficiaire, risk-doublons-beneficiaires
+    brief: Permettre aux clients entreprise de creer des beneficiaires depuis leur portail.
+    thief [same-domain] sys-dlcb-portail-justification (sim 0.653) — Portail Client de Justification des Opérations ['lcb-ft']
+    thief [same-domain] sys-dlcb-ref-benef-effectifs (sim 0.628) — Référentiel des Bénéficiaires Effectifs ['lcb-ft']
+    thief [cross-domain] feat-dpin-auto-completion-beneficiaire (sim 0.622) — Auto-complétion bénéficiaire ['paiement-instantane']
+    thief [same-domain] proj-ddsp-portail-client-ob (sim 0.618) — Portail client de gestion des consentements ['dsp2-open-banking']
+    thief [same-domain] proj-dbel-portail-investisseur (sim 0.612) — Lancement du portail investisseur particulier ['banque-en-ligne']
+    thief [same-domain] sys-dpin-gestionnaire-mandats (sim 0.607) — Gestionnaire de mandats de paiement ['paiement-instantane', 'dsp2-open-banking']
+    thief [same-domain] feat-dref-activation-acces-client (sim 0.600) — Activation des accès client post-ouverture ['referentiel-client']
+  S3 Cash-back: lost con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, sys-moteur-autorisation, sys-scoring-fraude
+    brief: Proposer un programme de cash-back lors des paiements chez les commercants partenaires.
+    thief [same-domain] feat-dmon-loyalty-cashback (sim 0.717) — Calcul et versement du cashback ['monetique']
+    thief [same-domain] proj-dmon-loyalty-cashback-refonte (sim 0.673) — Refonte moteur cashback ['monetique']
+    thief [same-domain] dec-dmon-loyalty-calcul-temps-reel (sim 0.673) — Calcul du cashback en temps quasi réel ['monetique']
+    thief [same-domain] con-dmon-loyalty-plafond-cashback (sim 0.657) — Plafond annuel de cashback par porteur à 500 € ['monetique']
+    thief [same-domain] feat-dtpe-chargeback360-reception-demande (sim 0.645) — Réception des demandes de chargeback ['tpe-acceptation']
+    thief [cross-domain] feat-dcre-remboursement-relais (sim 0.640) — Remboursement du prêt relais à la vente ['credit']
+    thief [same-domain] feat-dmon-chargeback-remboursement-porteur (sim 0.634) — Remboursement porteur ['monetique']
+    thief [same-domain] sys-dtpe-chargeback360 (sim 0.631) — Chargeback360 ['tpe-acceptation']
+  S5 IA reclamations: lost con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    brief: Mettre en place un assistant IA qui redige les reponses aux reclamations clients.
+    thief [same-domain] sys-dref-referentiel-agences (sim 0.647) — Référentiel des agences et conseillers ['referentiel-client']
+    thief [same-domain] obj-dref-portefeuille-conseiller (sim 0.611) — Portefeuille conseiller ['referentiel-client']
+    thief [cross-domain] sys-dbel-tableau-de-bord-conseillers (sim 0.590) — Tableau de bord conseillers ['banque-en-ligne']
+    thief [cross-domain] sys-ddsp-aisp-agregateur (sim 0.566) — Agrégateur de comptes AISP ['dsp2-open-banking']
+    thief [cross-domain] feat-dpin-consultation-mandats (sim 0.558) — Consultation des mandats actifs ['paiement-instantane']
+    thief [same-domain] sys-dpin-superviseur-files (sim 0.554) — Superviseur de files de traitement ['paiement-instantane', 'socle-si']
+    thief [cross-domain] proj-dbel-tableau-bord-conseillers-v3 (sim 0.554) — Tableau de bord conseillers v3 ['banque-en-ligne']
+    thief [same-domain] sys-dref-gestion-alertes-conformite (sim 0.553) — Gestionnaire d'alertes conformité client ['referentiel-client']
+  S7 Fraude temps reel: lost dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    brief: Ameliorer la detection de fraude en temps reel sur les paiements par carte.
+    thief [same-domain] sys-dmon-fraudar (sim 0.789) — Fraudar — Détection de fraude carte ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dmon-fraudar-scoring-temps-reel (sim 0.744) — Scoring de fraude en temps réel ['monetique']
+    thief [same-domain] sys-dcre-prevention-fraude-credit (sim 0.730) — Plateforme de prévention fraude crédit FRAUDCRED ['credit', 'lcb-ft']
+    thief [same-domain] risk-dmon-fraude-prepayee (sim 0.704) — Utilisation frauduleuse des cartes prépayées ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dmon-pgw-paiement-recurrent (sim 0.691) — Gestion du paiement récurrent ['monetique']
+    thief [same-domain] proj-dmon-fraude-ml-v2 (sim 0.680) — Nouveau modèle ML de détection de fraude ['monetique', 'lcb-ft']
+    thief [cross-domain] sys-dmon-cardreport (sim 0.680) — CardReport — Reporting réglementaire carte ['monetique']
+  S8 VI pros: lost con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    brief: Ouvrir l'emission de virements instantanes aux clients professionnels.
+    thief [same-domain] proj-dpin-integration-mandats (sim 0.658) — Intégration des mandats d'initiation ['paiement-instantane', 'dsp2-open-banking']
+    thief [same-domain] feat-dpin-reception-ordre-inst (sim 0.623) — Réception d'ordre instantané ['paiement-instantane']
+    thief [same-domain] dec-dpin-notification-obligatoire (sim 0.623) — Notification client obligatoire pour tout virement instantané ['paiement-instantane']
+    thief [same-domain] feat-dpin-activation-compte-inst (sim 0.620) — Activation compte au virement instantané ['paiement-instantane']
+    thief [same-domain] proj-dpin-pilote-virement-programmable (sim 0.611) — Pilote virement programmable ['paiement-instantane']
+    thief [cross-domain] feat-dbel-creation-virement-permanent (sim 0.603) — Création d'un virement permanent ['banque-en-ligne']
+    thief [same-domain] sys-dpin-superviseur-files (sim 0.595) — Superviseur de files de traitement ['paiement-instantane', 'socle-si']
+    thief [same-domain] dec-dpin-frais-instantane-opt-in (sim 0.586) — Frais sur virement instantané en opt-in ['paiement-instantane']
+
+==================== CELL minilm × top-n scaled ====================
+
+--- distractors N=0 (72 nodes, top_n 21) ---
+  S1 BNPL mobile                 recall 9/9  map  55/72  missing: -
+  S2 Benef entreprise            recall 8/8  map  50/72  missing: -
+  S3 Cash-back                   recall 5/6  map  58/72  missing: obj-transaction-carte
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  33/72  missing: -
+  S5 IA reclamations             recall 7/7  map  38/72  missing: -
+  S6 Onboarding digital          recall 0/7  map  19/72  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  36/72  missing: -
+  S8 VI pros                     recall 8/8  map  50/72  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  61/72  missing: -
+  S10 Oppositions digitales      recall 5/5  map  53/72  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  36/72  missing: -
+==> recall 89% | map 44.5 | precision 13%
+
+--- distractors N=500 (572 nodes, top_n 161) ---
+  realism: distractors [q1 0.22 med 0.30 q3 0.37 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  69/572  anchor-intrusion 3/8  pollution 23%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  61/572  anchor-intrusion 6/8  pollution 59%  missing: -
+  S3 Cash-back                   recall 0/6  map  50/572  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  50/572  anchor-intrusion 3/8  pollution 44%  missing: -
+  S5 IA reclamations             recall 0/7  map  44/572  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  52/572  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  70/572  anchor-intrusion 5/8  pollution 51%  missing: -
+  S8 VI pros                     recall 8/8  map  42/572  anchor-intrusion 6/8  pollution 62%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  96/572  anchor-intrusion 5/8  pollution 64%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  91/572  anchor-intrusion 5/8  pollution 62%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  59/572  anchor-intrusion 4/8  pollution 47%  missing: -
+==> recall 72% | map 62.2 | precision 8%
+
+--- distractors N=1000 (1072 nodes, top_n 301) ---
+  realism: distractors [q1 0.22 med 0.30 q3 0.37 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  65/1072  anchor-intrusion 4/8  pollution 29%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  66/1072  anchor-intrusion 6/8  pollution 62%  missing: -
+  S3 Cash-back                   recall 0/6  map  41/1072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  58/1072  anchor-intrusion 3/8  pollution 52%  missing: -
+  S5 IA reclamations             recall 0/7  map  73/1072  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  72/1072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  93/1072  anchor-intrusion 7/8  pollution 69%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 0/8  map  61/1072  anchor-intrusion 8/8  pollution 100%  missing: con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    trap: enterprise double validation + LCB-FT via gateway
+  S9 Self-service plafonds carte recall 5/5  map 119/1072  anchor-intrusion 6/8  pollution 82%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  89/1072  anchor-intrusion 5/8  pollution 61%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  51/1072  anchor-intrusion 5/8  pollution 75%  missing: -
+==> recall 60% | map 71.6 | precision 5%
+
+--- distractors N=2000 (2072 nodes, top_n 581) ---
+  realism: distractors [q1 0.19 med 0.27 q3 0.35 max 0.79] vs seed noise [q1 0.24 med 0.31 q3 0.38 max 0.68]
+  S1 BNPL mobile                 recall 8/9  map  62/2072  anchor-intrusion 5/8  pollution 39%  missing: dec-releases-tpe-trimestrielles
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 2/8  map  71/2072  anchor-intrusion 7/8  pollution 73%  missing: con-carence-beneficiaire-48h, con-sca-ajout-beneficiaire, con-verif-sanctions-creation, dec-ecriture-via-api-benef, proj-refonte-parcours-beneficiaire, risk-doublons-beneficiaires
+    trap: inheritance via business object + CANCELLED project as warning
+  S3 Cash-back                   recall 0/6  map  28/2072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  46/2072  anchor-intrusion 4/8  pollution 65%  missing: -
+  S5 IA reclamations             recall 0/7  map  69/2072  anchor-intrusion 8/8  pollution 100%  missing: con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  39/2072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map 100/2072  anchor-intrusion 7/8  pollution 71%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 0/8  map  32/2072  anchor-intrusion 8/8  pollution 100%  missing: con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    trap: enterprise double validation + LCB-FT via gateway
+  S9 Self-service plafonds carte recall 5/5  map 145/2072  anchor-intrusion 6/8  pollution 86%  missing: -
+  S10 Oppositions digitales      recall 5/5  map 117/2072  anchor-intrusion 6/8  pollution 71%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  55/2072  anchor-intrusion 6/8  pollution 82%  missing: -
+==> recall 54% | map 69.5 | precision 5%
+
+recall N=0 89% -> N=2000 54% (drop 36%)
+VERDICT: TRAPS DIE — read the autopsy, then spec §5 annotation before escalating
+  S1 BNPL mobile: lost dec-releases-tpe-trimestrielles
+    brief: Ajouter une option de paiement en 3 fois dans l'app mobile.
+    thief [cross-domain] con-dbel-version-os-minimale-mobile (sim 0.518) — Support des deux dernières versions majeures des OS mobiles ['banque-en-ligne']
+    thief [cross-domain] obj-dmon-token-paiement (sim 0.509) — Token de paiement ['monetique']
+    thief [cross-domain] feat-dbel-souscription-livret-epargne (sim 0.491) — Souscription d'un livret d'épargne en ligne ['banque-en-ligne']
+    thief [cross-domain] con-dpin-conformite-dsp2-initiation (sim 0.469) — Consentement explicite requis pour l'initiation par tiers ['paiement-instantane', 'dsp2-open-banking']
+    thief [cross-domain] feat-dref-envoi-sms-transactionnel (sim 0.461) — Envoi de SMS transactionnel ['referentiel-client']
+  S2 Benef entreprise: lost con-carence-beneficiaire-48h, con-sca-ajout-beneficiaire, con-verif-sanctions-creation, dec-ecriture-via-api-benef, proj-refonte-parcours-beneficiaire, risk-doublons-beneficiaires
+    brief: Permettre aux clients entreprise de creer des beneficiaires depuis leur portail.
+    thief [same-domain] sys-dlcb-portail-justification (sim 0.653) — Portail Client de Justification des Opérations ['lcb-ft']
+    thief [same-domain] sys-dlcb-ref-benef-effectifs (sim 0.628) — Référentiel des Bénéficiaires Effectifs ['lcb-ft']
+    thief [cross-domain] feat-dpin-auto-completion-beneficiaire (sim 0.622) — Auto-complétion bénéficiaire ['paiement-instantane']
+    thief [same-domain] proj-ddsp-portail-client-ob (sim 0.618) — Portail client de gestion des consentements ['dsp2-open-banking']
+    thief [same-domain] proj-dbel-portail-investisseur (sim 0.612) — Lancement du portail investisseur particulier ['banque-en-ligne']
+    thief [same-domain] sys-dpin-gestionnaire-mandats (sim 0.607) — Gestionnaire de mandats de paiement ['paiement-instantane', 'dsp2-open-banking']
+    thief [same-domain] feat-dref-activation-acces-client (sim 0.600) — Activation des accès client post-ouverture ['referentiel-client']
+  S3 Cash-back: lost con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, sys-moteur-autorisation, sys-scoring-fraude
+    brief: Proposer un programme de cash-back lors des paiements chez les commercants partenaires.
+    thief [same-domain] feat-dmon-loyalty-cashback (sim 0.717) — Calcul et versement du cashback ['monetique']
+    thief [same-domain] proj-dmon-loyalty-cashback-refonte (sim 0.673) — Refonte moteur cashback ['monetique']
+    thief [same-domain] dec-dmon-loyalty-calcul-temps-reel (sim 0.673) — Calcul du cashback en temps quasi réel ['monetique']
+    thief [same-domain] con-dmon-loyalty-plafond-cashback (sim 0.657) — Plafond annuel de cashback par porteur à 500 € ['monetique']
+    thief [same-domain] feat-dtpe-chargeback360-reception-demande (sim 0.645) — Réception des demandes de chargeback ['tpe-acceptation']
+    thief [cross-domain] feat-dcre-remboursement-relais (sim 0.640) — Remboursement du prêt relais à la vente ['credit']
+    thief [same-domain] feat-dmon-chargeback-remboursement-porteur (sim 0.634) — Remboursement porteur ['monetique']
+    thief [same-domain] sys-dtpe-chargeback360 (sim 0.631) — Chargeback360 ['tpe-acceptation']
+  S5 IA reclamations: lost con-ai-act, con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    brief: Mettre en place un assistant IA qui redige les reponses aux reclamations clients.
+    thief [same-domain] sys-dref-referentiel-agences (sim 0.647) — Référentiel des agences et conseillers ['referentiel-client']
+    thief [same-domain] obj-dref-portefeuille-conseiller (sim 0.611) — Portefeuille conseiller ['referentiel-client']
+    thief [cross-domain] sys-dbel-tableau-de-bord-conseillers (sim 0.590) — Tableau de bord conseillers ['banque-en-ligne']
+    thief [cross-domain] sys-ddsp-aisp-agregateur (sim 0.566) — Agrégateur de comptes AISP ['dsp2-open-banking']
+    thief [cross-domain] feat-dpin-consultation-mandats (sim 0.558) — Consultation des mandats actifs ['paiement-instantane']
+    thief [same-domain] sys-dpin-superviseur-files (sim 0.554) — Superviseur de files de traitement ['paiement-instantane', 'socle-si']
+    thief [cross-domain] proj-dbel-tableau-bord-conseillers-v3 (sim 0.554) — Tableau de bord conseillers v3 ['banque-en-ligne']
+    thief [same-domain] sys-dref-gestion-alertes-conformite (sim 0.553) — Gestionnaire d'alertes conformité client ['referentiel-client']
+  S7 Fraude temps reel: lost dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    brief: Ameliorer la detection de fraude en temps reel sur les paiements par carte.
+    thief [same-domain] sys-dmon-fraudar (sim 0.789) — Fraudar — Détection de fraude carte ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dmon-fraudar-scoring-temps-reel (sim 0.744) — Scoring de fraude en temps réel ['monetique']
+    thief [same-domain] sys-dcre-prevention-fraude-credit (sim 0.730) — Plateforme de prévention fraude crédit FRAUDCRED ['credit', 'lcb-ft']
+    thief [same-domain] risk-dmon-fraude-prepayee (sim 0.704) — Utilisation frauduleuse des cartes prépayées ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dmon-pgw-paiement-recurrent (sim 0.691) — Gestion du paiement récurrent ['monetique']
+    thief [same-domain] proj-dmon-fraude-ml-v2 (sim 0.680) — Nouveau modèle ML de détection de fraude ['monetique', 'lcb-ft']
+    thief [cross-domain] sys-dmon-cardreport (sim 0.680) — CardReport — Reporting réglementaire carte ['monetique']
+  S8 VI pros: lost con-lcb-ft-screening, con-plafonds-virement-ip, dec-double-validation-entreprise, dec-scoring-unique, feat-ip-emission, obj-virement-instantane, risk-contournement-plafonds-ip, sys-passerelle-ip
+    brief: Ouvrir l'emission de virements instantanes aux clients professionnels.
+    thief [same-domain] proj-dpin-integration-mandats (sim 0.658) — Intégration des mandats d'initiation ['paiement-instantane', 'dsp2-open-banking']
+    thief [same-domain] feat-dpin-reception-ordre-inst (sim 0.623) — Réception d'ordre instantané ['paiement-instantane']
+    thief [same-domain] dec-dpin-notification-obligatoire (sim 0.623) — Notification client obligatoire pour tout virement instantané ['paiement-instantane']
+    thief [same-domain] feat-dpin-activation-compte-inst (sim 0.620) — Activation compte au virement instantané ['paiement-instantane']
+    thief [same-domain] proj-dpin-pilote-virement-programmable (sim 0.611) — Pilote virement programmable ['paiement-instantane']
+    thief [cross-domain] feat-dbel-creation-virement-permanent (sim 0.603) — Création d'un virement permanent ['banque-en-ligne']
+    thief [same-domain] sys-dpin-superviseur-files (sim 0.595) — Superviseur de files de traitement ['paiement-instantane', 'socle-si']
+    thief [same-domain] dec-dpin-frais-instantane-opt-in (sim 0.586) — Frais sur virement instantané en opt-in ['paiement-instantane']
+
+==================== CELL qwen3 × top-n fixed ====================
+
+--- distractors N=0 (72 nodes, top_n 20) ---
+  S1 BNPL mobile                 recall 9/9  map  63/72  missing: -
+  S2 Benef entreprise            recall 8/8  map  34/72  missing: -
+  S3 Cash-back                   recall 6/6  map  40/72  missing: -
+  S4 Plafonds IP premium         recall 7/7  map  35/72  missing: -
+  S5 IA reclamations             recall 7/7  map  38/72  missing: -
+  S6 Onboarding digital          recall 3/7  map  31/72  missing: feat-ref-creation-client, obj-dossier-client-kyc, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  31/72  missing: -
+  S8 VI pros                     recall 8/8  map  23/72  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  59/72  missing: -
+  S10 Oppositions digitales      recall 5/5  map  52/72  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  31/72  missing: -
+==> recall 95% | map 39.7 | precision 17%
+
+--- distractors N=500 (572 nodes, top_n 20) ---
+  realism: distractors [q1 0.30 med 0.34 q3 0.38 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  60/572  anchor-intrusion 6/8  pollution 42%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  35/572  anchor-intrusion 1/8  pollution 11%  missing: -
+  S3 Cash-back                   recall 2/6  map  49/572  anchor-intrusion 7/8  pollution 78%  missing: con-pci-dss, dec-gel-evolutions-monetique, obj-transaction-carte, sys-moteur-autorisation
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  35/572  anchor-intrusion 0/8  pollution 0%  missing: -
+  S5 IA reclamations             recall 1/7  map  48/572  anchor-intrusion 7/8  pollution 81%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 3/7  map  63/572  anchor-intrusion 6/8  pollution 73%  missing: feat-ref-creation-client, obj-dossier-client-kyc, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  79/572  anchor-intrusion 6/8  pollution 63%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  57/572  anchor-intrusion 3/8  pollution 70%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  63/572  anchor-intrusion 5/8  pollution 48%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  76/572  anchor-intrusion 4/8  pollution 49%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  37/572  anchor-intrusion 6/8  pollution 73%  missing: -
+==> recall 75% | map 54.7 | precision 10%
+
+--- distractors N=1000 (1072 nodes, top_n 20) ---
+  realism: distractors [q1 0.30 med 0.34 q3 0.38 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  68/1072  anchor-intrusion 6/8  pollution 49%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  35/1072  anchor-intrusion 1/8  pollution 11%  missing: -
+  S3 Cash-back                   recall 0/6  map  49/1072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  53/1072  anchor-intrusion 3/8  pollution 51%  missing: -
+  S5 IA reclamations             recall 1/7  map  62/1072  anchor-intrusion 7/8  pollution 85%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 1/7  map  78/1072  anchor-intrusion 7/8  pollution 83%  missing: dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  99/1072  anchor-intrusion 6/8  pollution 71%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  45/1072  anchor-intrusion 4/8  pollution 62%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  63/1072  anchor-intrusion 6/8  pollution 67%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  62/1072  anchor-intrusion 4/8  pollution 37%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  49/1072  anchor-intrusion 6/8  pollution 80%  missing: -
+==> recall 69% | map 60.3 | precision 8%
+
+--- distractors N=2000 (2072 nodes, top_n 20) ---
+  realism: distractors [q1 0.28 med 0.33 q3 0.37 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  67/2072  anchor-intrusion 6/8  pollution 48%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  33/2072  anchor-intrusion 2/8  pollution 6%  missing: -
+  S3 Cash-back                   recall 0/6  map  48/2072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  40/2072  anchor-intrusion 5/8  pollution 60%  missing: -
+  S5 IA reclamations             recall 1/7  map  56/2072  anchor-intrusion 7/8  pollution 84%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  70/2072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map 109/2072  anchor-intrusion 6/8  pollution 73%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  63/2072  anchor-intrusion 6/8  pollution 76%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  53/2072  anchor-intrusion 6/8  pollution 60%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  63/2072  anchor-intrusion 5/8  pollution 59%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  60/2072  anchor-intrusion 6/8  pollution 83%  missing: -
+==> recall 68% | map 60.2 | precision 8%
+
+recall N=0 95% -> N=2000 68% (drop 27%)
+VERDICT: TRAPS DIE — read the autopsy, then spec §5 annotation before escalating
+  S1 BNPL mobile: lost con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    brief: Ajouter une option de paiement en 3 fois dans l'app mobile.
+    thief [cross-domain] feat-dmon-cardportal-gestion-options (sim 0.530) — Activation et désactivation d'options ['monetique']
+    thief [same-domain] proj-dtpe-paiement-fractionne-tpe (sim 0.521) — Lancement du paiement fractionné en caisse ['tpe-acceptation']
+    thief [same-domain] sys-dmon-emvconfig (sim 0.521) — EMVConfig — Paramétrage EMV et NFC ['monetique', 'tpe-acceptation']
+    thief [cross-domain] feat-dmon-emvconfig-parametres-nfc (sim 0.515) — Paramétrage sans contact NFC ['monetique']
+    thief [cross-domain] feat-dmon-pgw-paiement-recurrent (sim 0.513) — Gestion du paiement récurrent ['monetique']
+    thief [cross-domain] sys-dmon-cardprovision (sim 0.513) — CardProvision — Provisionnement mobile ['monetique']
+  S3 Cash-back: lost con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    brief: Proposer un programme de cash-back lors des paiements chez les commercants partenaires.
+    thief [same-domain] sys-dtpe-chargeback360 (sim 0.580) — Chargeback360 ['tpe-acceptation']
+    thief [same-domain] dec-dmon-loyalty-calcul-temps-reel (sim 0.567) — Calcul du cashback en temps quasi réel ['monetique']
+    thief [same-domain] feat-dmon-loyalty-cashback (sim 0.563) — Calcul et versement du cashback ['monetique']
+    thief [same-domain] proj-dmon-loyalty-cashback-refonte (sim 0.545) — Refonte moteur cashback ['monetique']
+    thief [same-domain] sys-dmon-chargeback (sim 0.540) — ChargeBack — Gestion des impayés et litiges ['monetique']
+    thief [same-domain] con-dmon-loyalty-plafond-cashback (sim 0.539) — Plafond annuel de cashback par porteur à 500 € ['monetique']
+    thief [same-domain] sys-dmon-loyalty (sim 0.529) — LoyaltyCard — Programme de fidélité carte ['monetique']
+    thief [cross-domain] sys-dbel-service-parrainage-digital (sim 0.527) — Service de parrainage digital ['banque-en-ligne']
+  S5 IA reclamations: lost con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    brief: Mettre en place un assistant IA qui redige les reponses aux reclamations clients.
+    thief [cross-domain] feat-dbel-traitement-verbatim-client (sim 0.553) — Traitement automatique des verbatims clients ['banque-en-ligne']
+    thief [cross-domain] sys-dbel-plateforme-satisfaction-client (sim 0.514) — Plateforme de satisfaction client ['banque-en-ligne']
+    thief [same-domain] sys-dref-moteur-qualite-donnees (sim 0.510) — Moteur de qualité des données client ['referentiel-client']
+    thief [cross-domain] con-dlcb-surete-modele-nlp (sim 0.500) — Validation humaine obligatoire des suggestions NLP avant clôture de cas ['lcb-ft']
+    thief [cross-domain] sys-dedi-personnalisation-releves (sim 0.498) — Moteur de Personnalisation des Relevés ['editique-reporting']
+    thief [same-domain] sys-dref-gestion-alertes-conformite (sim 0.498) — Gestionnaire d'alertes conformité client ['referentiel-client']
+    thief [cross-domain] proj-dbel-chatbot-support-v1 (sim 0.496) — Déploiement du chatbot de support client ['banque-en-ligne']
+  S6 Onboarding digital: lost con-verif-sanctions-creation, dec-reutilisation-sca, proj-programme-dsp2
+    brief: Refondre le parcours d'entree en relation 100% digital.
+    thief [same-domain] proj-dref-onboarding-digital-v2 (sim 0.573) — Refonte du parcours d'onboarding digital ['referentiel-client']
+    thief [same-domain] sys-dref-onboarding-digital (sim 0.525) — Parcours d'onboarding client digital ['referentiel-client']
+    thief [cross-domain] proj-dbel-programme-parrainage-2024 (sim 0.497) — Programme de parrainage digital 2024 ['banque-en-ligne']
+    thief [cross-domain] risk-dedi-indisponibilite-coffre-fort (sim 0.494) — Indisponibilité du coffre-fort numérique client ['editique-reporting']
+    thief [same-domain] proj-dlcb-edd-digitalisation (sim 0.494) — Digitalisation du processus EDD ['lcb-ft']
+    thief [cross-domain] dec-dbel-design-system-commun (sim 0.481) — Adoption d'un design system commun web et mobile ['banque-en-ligne']
+    thief [cross-domain] sys-dedi-demat-client (sim 0.479) — Plateforme de Dématérialisation Client ['editique-reporting']
+    thief [cross-domain] proj-dbel-deploiement-coffre-fort (sim 0.478) — Déploiement du coffre-fort numérique ['banque-en-ligne']
+  S7 Fraude temps reel: lost dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    brief: Ameliorer la detection de fraude en temps reel sur les paiements par carte.
+    thief [same-domain] sys-dmon-fraudar (sim 0.670) — Fraudar — Détection de fraude carte ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dtpe-secugate-detection-intrusion (sim 0.648) — Détection des intrusions réseau ['tpe-acceptation']
+    thief [cross-domain] feat-dmon-fraudar-scoring-temps-reel (sim 0.636) — Scoring de fraude en temps réel ['monetique']
+    thief [cross-domain] proj-ddsp-detection-fraude-ob (sim 0.621) — Détection de fraude Open Banking ['dsp2-open-banking']
+    thief [cross-domain] feat-dmon-cardauth-autorisation-temps-reel (sim 0.611) — Autorisation carte temps réel ['monetique']
+    thief [cross-domain] feat-dpin-deduplication-messages (sim 0.604) — Déduplication des messages ['paiement-instantane']
+
+==================== CELL qwen3 × top-n scaled ====================
+
+--- distractors N=0 (72 nodes, top_n 21) ---
+  S1 BNPL mobile                 recall 9/9  map  63/72  missing: -
+  S2 Benef entreprise            recall 8/8  map  34/72  missing: -
+  S3 Cash-back                   recall 6/6  map  40/72  missing: -
+  S4 Plafonds IP premium         recall 7/7  map  35/72  missing: -
+  S5 IA reclamations             recall 7/7  map  38/72  missing: -
+  S6 Onboarding digital          recall 3/7  map  31/72  missing: feat-ref-creation-client, obj-dossier-client-kyc, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 8/8  map  31/72  missing: -
+  S8 VI pros                     recall 8/8  map  23/72  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  59/72  missing: -
+  S10 Oppositions digitales      recall 5/5  map  52/72  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  31/72  missing: -
+==> recall 95% | map 39.7 | precision 17%
+
+--- distractors N=500 (572 nodes, top_n 161) ---
+  realism: distractors [q1 0.30 med 0.34 q3 0.38 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  60/572  anchor-intrusion 6/8  pollution 42%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  35/572  anchor-intrusion 1/8  pollution 11%  missing: -
+  S3 Cash-back                   recall 2/6  map  49/572  anchor-intrusion 7/8  pollution 78%  missing: con-pci-dss, dec-gel-evolutions-monetique, obj-transaction-carte, sys-moteur-autorisation
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  35/572  anchor-intrusion 0/8  pollution 0%  missing: -
+  S5 IA reclamations             recall 1/7  map  48/572  anchor-intrusion 7/8  pollution 81%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 3/7  map  63/572  anchor-intrusion 6/8  pollution 73%  missing: feat-ref-creation-client, obj-dossier-client-kyc, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  79/572  anchor-intrusion 6/8  pollution 63%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  57/572  anchor-intrusion 3/8  pollution 70%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  63/572  anchor-intrusion 5/8  pollution 48%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  76/572  anchor-intrusion 4/8  pollution 49%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  37/572  anchor-intrusion 6/8  pollution 73%  missing: -
+==> recall 75% | map 54.7 | precision 10%
+
+--- distractors N=1000 (1072 nodes, top_n 301) ---
+  realism: distractors [q1 0.30 med 0.34 q3 0.38 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  68/1072  anchor-intrusion 6/8  pollution 49%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  35/1072  anchor-intrusion 1/8  pollution 11%  missing: -
+  S3 Cash-back                   recall 0/6  map  49/1072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  53/1072  anchor-intrusion 3/8  pollution 51%  missing: -
+  S5 IA reclamations             recall 1/7  map  62/1072  anchor-intrusion 7/8  pollution 85%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 1/7  map  78/1072  anchor-intrusion 7/8  pollution 83%  missing: dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map  99/1072  anchor-intrusion 6/8  pollution 71%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  45/1072  anchor-intrusion 4/8  pollution 62%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  63/1072  anchor-intrusion 6/8  pollution 67%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  62/1072  anchor-intrusion 4/8  pollution 37%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  49/1072  anchor-intrusion 6/8  pollution 80%  missing: -
+==> recall 69% | map 60.3 | precision 8%
+
+--- distractors N=2000 (2072 nodes, top_n 581) ---
+  realism: distractors [q1 0.28 med 0.33 q3 0.37 max 0.67] vs seed noise [q1 0.32 med 0.37 q3 0.41 max 0.62]
+  S1 BNPL mobile                 recall 5/9  map  67/2072  anchor-intrusion 6/8  pollution 48%  missing: con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    trap: TPE @2 hops (zero textual sim) + buried scoring decision
+  S2 Benef entreprise            recall 8/8  map  33/2072  anchor-intrusion 2/8  pollution 6%  missing: -
+  S3 Cash-back                   recall 0/6  map  48/2072  anchor-intrusion 8/8  pollution 100%  missing: con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    trap: dated governance freeze + scope collision
+  S4 Plafonds IP premium         recall 7/7  map  40/2072  anchor-intrusion 5/8  pollution 60%  missing: -
+  S5 IA reclamations             recall 1/7  map  56/2072  anchor-intrusion 7/8  pollution 84%  missing: con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    trap: AI Act + 2-hop traceability; 'reclamations' absent from graph
+  S6 Onboarding digital          recall 0/7  map  70/2072  anchor-intrusion 8/8  pollution 100%  missing: con-verif-sanctions-creation, dec-reutilisation-sca, feat-ref-creation-client, obj-dossier-client-kyc, proj-programme-dsp2, risk-indispo-service-sanctions, risk-kyc-obsolete
+    trap: VOCABULARY BRIDGE: 'entree en relation' != 'creation de client' for MiniLM (0% recall single-turn on 2026-06-11; recovers to 5/7 after one T1 answer)
+  S7 Fraude temps reel           recall 6/8  map 109/2072  anchor-intrusion 6/8  pollution 73%  missing: dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    trap: SUPERSEDED decision must surface as history
+  S8 VI pros                     recall 8/8  map  63/2072  anchor-intrusion 6/8  pollution 76%  missing: -
+  S9 Self-service plafonds carte recall 5/5  map  53/2072  anchor-intrusion 6/8  pollution 60%  missing: -
+  S10 Oppositions digitales      recall 5/5  map  63/2072  anchor-intrusion 5/8  pollution 59%  missing: -
+  S11 Archivage alertes fraude   recall 3/3  map  60/2072  anchor-intrusion 6/8  pollution 83%  missing: -
+==> recall 68% | map 60.2 | precision 8%
+
+recall N=0 95% -> N=2000 68% (drop 27%)
+VERDICT: TRAPS DIE — read the autopsy, then spec §5 annotation before escalating
+  S1 BNPL mobile: lost con-credit-conso-kyc, dec-releases-tpe-trimestrielles, obj-contrat-credit, sys-moteur-credit
+    brief: Ajouter une option de paiement en 3 fois dans l'app mobile.
+    thief [cross-domain] feat-dmon-cardportal-gestion-options (sim 0.530) — Activation et désactivation d'options ['monetique']
+    thief [same-domain] proj-dtpe-paiement-fractionne-tpe (sim 0.521) — Lancement du paiement fractionné en caisse ['tpe-acceptation']
+    thief [same-domain] sys-dmon-emvconfig (sim 0.521) — EMVConfig — Paramétrage EMV et NFC ['monetique', 'tpe-acceptation']
+    thief [cross-domain] feat-dmon-emvconfig-parametres-nfc (sim 0.515) — Paramétrage sans contact NFC ['monetique']
+    thief [cross-domain] feat-dmon-pgw-paiement-recurrent (sim 0.513) — Gestion du paiement récurrent ['monetique']
+    thief [cross-domain] sys-dmon-cardprovision (sim 0.513) — CardProvision — Provisionnement mobile ['monetique']
+  S3 Cash-back: lost con-pci-dss, dec-gel-evolutions-monetique, dec-scoring-unique, obj-transaction-carte, sys-moteur-autorisation, sys-scoring-fraude
+    brief: Proposer un programme de cash-back lors des paiements chez les commercants partenaires.
+    thief [same-domain] sys-dtpe-chargeback360 (sim 0.580) — Chargeback360 ['tpe-acceptation']
+    thief [same-domain] dec-dmon-loyalty-calcul-temps-reel (sim 0.567) — Calcul du cashback en temps quasi réel ['monetique']
+    thief [same-domain] feat-dmon-loyalty-cashback (sim 0.563) — Calcul et versement du cashback ['monetique']
+    thief [same-domain] proj-dmon-loyalty-cashback-refonte (sim 0.545) — Refonte moteur cashback ['monetique']
+    thief [same-domain] sys-dmon-chargeback (sim 0.540) — ChargeBack — Gestion des impayés et litiges ['monetique']
+    thief [same-domain] con-dmon-loyalty-plafond-cashback (sim 0.539) — Plafond annuel de cashback par porteur à 500 € ['monetique']
+    thief [same-domain] sys-dmon-loyalty (sim 0.529) — LoyaltyCard — Programme de fidélité carte ['monetique']
+    thief [cross-domain] sys-dbel-service-parrainage-digital (sim 0.527) — Service de parrainage digital ['banque-en-ligne']
+  S5 IA reclamations: lost con-rgpd-conservation, con-standard-api-interne, con-tracabilite-consultations, feat-ref-exposition, risk-kyc-obsolete, sys-referentiel-client
+    brief: Mettre en place un assistant IA qui redige les reponses aux reclamations clients.
+    thief [cross-domain] feat-dbel-traitement-verbatim-client (sim 0.553) — Traitement automatique des verbatims clients ['banque-en-ligne']
+    thief [cross-domain] sys-dbel-plateforme-satisfaction-client (sim 0.514) — Plateforme de satisfaction client ['banque-en-ligne']
+    thief [same-domain] sys-dref-moteur-qualite-donnees (sim 0.510) — Moteur de qualité des données client ['referentiel-client']
+    thief [cross-domain] con-dlcb-surete-modele-nlp (sim 0.500) — Validation humaine obligatoire des suggestions NLP avant clôture de cas ['lcb-ft']
+    thief [cross-domain] sys-dedi-personnalisation-releves (sim 0.498) — Moteur de Personnalisation des Relevés ['editique-reporting']
+    thief [same-domain] sys-dref-gestion-alertes-conformite (sim 0.498) — Gestionnaire d'alertes conformité client ['referentiel-client']
+    thief [cross-domain] proj-dbel-chatbot-support-v1 (sim 0.496) — Déploiement du chatbot de support client ['banque-en-ligne']
+  S6 Onboarding digital: lost con-verif-sanctions-creation, dec-reutilisation-sca, proj-programme-dsp2
+    brief: Refondre le parcours d'entree en relation 100% digital.
+    thief [same-domain] proj-dref-onboarding-digital-v2 (sim 0.573) — Refonte du parcours d'onboarding digital ['referentiel-client']
+    thief [same-domain] sys-dref-onboarding-digital (sim 0.525) — Parcours d'onboarding client digital ['referentiel-client']
+    thief [cross-domain] proj-dbel-programme-parrainage-2024 (sim 0.497) — Programme de parrainage digital 2024 ['banque-en-ligne']
+    thief [cross-domain] risk-dedi-indisponibilite-coffre-fort (sim 0.494) — Indisponibilité du coffre-fort numérique client ['editique-reporting']
+    thief [same-domain] proj-dlcb-edd-digitalisation (sim 0.494) — Digitalisation du processus EDD ['lcb-ft']
+    thief [cross-domain] dec-dbel-design-system-commun (sim 0.481) — Adoption d'un design system commun web et mobile ['banque-en-ligne']
+    thief [cross-domain] sys-dedi-demat-client (sim 0.479) — Plateforme de Dématérialisation Client ['editique-reporting']
+    thief [cross-domain] proj-dbel-deploiement-coffre-fort (sim 0.478) — Déploiement du coffre-fort numérique ['banque-en-ligne']
+  S7 Fraude temps reel: lost dec-scoring-par-canal-2021, proj-refonte-scoring-fraude
+    brief: Ameliorer la detection de fraude en temps reel sur les paiements par carte.
+    thief [same-domain] sys-dmon-fraudar (sim 0.670) — Fraudar — Détection de fraude carte ['monetique', 'lcb-ft']
+    thief [cross-domain] feat-dtpe-secugate-detection-intrusion (sim 0.648) — Détection des intrusions réseau ['tpe-acceptation']
+    thief [cross-domain] feat-dmon-fraudar-scoring-temps-reel (sim 0.636) — Scoring de fraude en temps réel ['monetique']
+    thief [cross-domain] proj-ddsp-detection-fraude-ob (sim 0.621) — Détection de fraude Open Banking ['dsp2-open-banking']
+    thief [cross-domain] feat-dmon-cardauth-autorisation-temps-reel (sim 0.611) — Autorisation carte temps réel ['monetique']
+    thief [cross-domain] feat-dpin-deduplication-messages (sim 0.604) — Déduplication des messages ['paiement-instantane']
+
+===== GRID SUMMARY =====
+  minilm × top-n fixed         TRAPS DIE  recall 89% -> 54%
+  minilm × top-n scaled        TRAPS DIE  recall 89% -> 54%
+  qwen3 × top-n fixed          TRAPS DIE  recall 95% -> 68%
+  qwen3 × top-n scaled         TRAPS DIE  recall 95% -> 68%

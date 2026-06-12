@@ -12,7 +12,7 @@ Usage:
     ./scripts/retrieval-eval --sweep                # recall/size/precision across threshold grids
     ./scripts/retrieval-eval --distractors N        # merge N pool distractors before running
     ./scripts/retrieval-eval --distractor-sweep     # run at N=0,500,1000,2000 and print verdict
-    ./scripts/retrieval-eval --embedder {minilm,e5} # select profile (default: DEFAULT_PROFILE)
+    ./scripts/retrieval-eval --embedder NAME        # any PROFILES key (default: DEFAULT_PROFILE)
     ./scripts/retrieval-eval --top-n {fixed,scaled} # override profile TOP_N policy
     ./scripts/retrieval-eval --grid                 # run 2x2 grid (embedder x top-n) as full sweeps
 """

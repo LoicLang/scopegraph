@@ -9,8 +9,10 @@ read_when:
 # Known limits (measured 2026-06-11, end of W2)
 
 Source of every number: `./scripts/retrieval-eval` (11 fictional scoping scenarios, real
-MiniLM, ground truth hand-derived from the seed's DEPENDS_ON/CONSTRAINS/SUPERSEDES edges).
-Re-run the bench after any change and update this file.
+models, ground truth hand-derived from the seed's DEPENDS_ON/CONSTRAINS/SUPERSEDES edges).
+L1–L3 numbers are the W2 MiniLM baseline — reproduce them with `--embedder minilm` (the
+script defaults to DEFAULT_PROFILE, qwen3 since 2026-06-12). Re-run the bench after any
+change and update this file.
 
 ## L1 — Retrieval precision is structurally low, and thresholds cannot buy it back
 

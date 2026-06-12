@@ -105,9 +105,10 @@ E5_BASE = RetrievalProfile(
 # Query side carries a task instruction (Qwen3 is instruction-aware; English on
 # purpose — its training instructions were English): measured to fix the e5
 # failure mode (S3: con-pci-dss ranks 8th = direct anchor, obj-transaction-carte
-# 5th; S5: con-ai-act ranks 1st vs 17th under e5). decay 0.8 / tau_keep 0.27
-# reproduce W2's expansion geometry (2-hop survives from ~0.45 anchors, dies from
-# the weakest, drop ≈ the same fraction of the usable spread).
+# 5th; S5: con-ai-act ranks 1st vs 17th under e5). decay 0.8 / tau_keep 0.26
+# (post-§4.ii-iteration value, see the field comment) reproduce W2's expansion
+# geometry: 2-hop survives from ~0.41+ anchors, dies from the weakest, drop ≈ the
+# same fraction of the usable spread.
 QWEN3 = RetrievalProfile(
     name="qwen3",
     model_name="Qwen/Qwen3-Embedding-0.6B",

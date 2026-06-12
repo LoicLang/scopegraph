@@ -9,7 +9,12 @@ read_when:
 # Embedder swap + TOP_N scaling (W3 lot 0bis) — Design Spec
 
 Date: 2026-06-12
-Status: validated in brainstorming session (this doc is the build contract for W3 lot 0bis)
+Status: EXECUTED 2026-06-12 — outcome diverges from §1's e5 path: e5-base was
+REJECTED at the §4.iii gate (ranking failure), Qwen3-Embedding-0.6B was substituted
+through the same funnel (web research → profile → §4 calibration → gate → grid) and
+adopted as DEFAULT_PROFILE after the grid + mandatory thief annotation (anchor
+saturation + bench bias, not embedder weakness). Numbers and annotation: known-limits
+L4/L5 · BUILD-ORDER. The TOP_N-scaled arm proved a single-turn no-op (L5).
 Upstream: known-limits **L4** (distractor bench verdict: SWAP EMBEDDER) · distractor bench
 spec `2026-06-11-distractor-stress-bench-design.md` (the sweep harness this reuses) · W2
 spec (recorded escalation: multilingual-e5; recorded no-go: reranker unless forced) ·

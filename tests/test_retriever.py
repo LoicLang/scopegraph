@@ -187,6 +187,18 @@ def test_profile_top_n_caps_the_candidate_pool():
     assert len(result.anchors) == 1  # only one candidate ever reached the scorer
 
 
+def test_coverage_policy_sizes_the_pool_from_the_graph():
+    from dataclasses import replace
+
+    from core.retrieval.config import MINILM
+
+    service, index = make_index(["canal", "central"])
+    covering = replace(MINILM, top_n_policy="coverage", top_n_floor=1, top_n_fraction=0.3,
+                       tau_anchor=0.0)
+    result = retrieve("canal et traitement central", service, index, profile=covering)
+    assert len(result.anchors) == 2  # ceil(0.3 * 4 nodes) = 2 candidates reach the scorer
+
+
 def test_expansion_only_threshold_comes_from_the_profile():
     """Y sits at intermediate sim ≈ 0.707 (shares one of the query's two fragments):
     visible under MiniLM's tau_noise=0.25, invisible under a strict profile."""
@@ -237,6 +249,6 @@ def test_expansion_only_threshold_comes_from_the_profile():
     lax_y = next(s for s in lax_result.expanded if s.node_id == Y_ID)
     strict_y = next(s for s in strict_result.expanded if s.node_id == Y_ID)
 
-    assert lax_y.semantic_sim is not None and 0.25 < lax_y.semantic_sim < 1.0  # setup is honest
+    assert lax_y.semantic_sim is not None and lax.tau_noise < lax_y.semantic_sim < 1.0  # setup is honest
     assert not lax_y.expansion_only  # 0.707 ≥ tau_noise 0.25 → textually visible
     assert strict_y.expansion_only  # 0.707 < tau_noise 2.0 → invisible under the strict profile

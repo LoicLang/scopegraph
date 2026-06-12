@@ -58,7 +58,7 @@ def test_no_tie_when_gap_is_wide() -> None:
 def pivot_node() -> ScoredNode:
     return ScoredNode(
         "sys-terminal", 0.49, domains=("tpe-acceptation",), semantic_sim=0.0,
-        anchor_id="sys-a", path=(EDGE, EDGE),
+        anchor_id="sys-a", path=(EDGE, EDGE), expansion_only=True,
     )
 
 
@@ -100,7 +100,7 @@ def test_precedence_weak_then_tie_then_pivot() -> None:
 def test_pivot_skips_nodes_already_justified_by_a_known_domain() -> None:
     bridge = ScoredNode(
         "sys-pont", 0.49, domains=("credit", "tpe-acceptation"), semantic_sim=0.0,
-        anchor_id="sys-a", path=(EDGE,),
+        anchor_id="sys-a", path=(EDGE,), expansion_only=True,
     )
     result = make_result(
         anchors=[strong_anchor()], expanded=[bridge],

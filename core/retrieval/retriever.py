@@ -31,7 +31,8 @@ class ScoredNode:
     semantic_sim: float | None = None
     anchor_id: str | None = None
     path: tuple[Edge, ...] = ()
-    expansion_only: bool = False  # reached structurally, near-invisible textually (T3)
+    expansion_only: bool = False  # reached structurally, near-invisible textually (T3);
+    # set by _expand — anyone constructing ScoredNode by hand must set it deliberately
 
 
 @dataclass

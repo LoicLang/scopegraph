@@ -64,9 +64,11 @@ def test_prefixed_applies_prefix():
     assert prefixed("query: ", ["plafonds", "fraude"]) == ["query: plafonds", "query: fraude"]
 
 
-def test_prefixed_empty_prefix_is_identity():
+def test_prefixed_empty_prefix_copies_unchanged():
     texts = ["plafonds"]
-    assert prefixed("", texts) is texts
+    result = prefixed("", texts)
+    assert result == texts
+    assert result is not texts  # never alias: callers must not reach the input via the result
 
 
 def test_fake_embedder_queries_and_passages_are_identical():
@@ -74,3 +76,31 @@ def test_fake_embedder_queries_and_passages_are_identical():
     [q] = emb.embed_queries(["projet app mobile"])
     [p] = emb.embed_passages(["projet app mobile"])
     assert q == p
+
+
+def test_st_embedder_routes_prefixes_per_method(monkeypatch):
+    import sys
+    import types
+
+    from core.retrieval.config import E5_BASE
+
+    captured: list[list[str]] = []
+
+    class _RecordingModel:
+        def __init__(self, model_name):
+            pass
+
+        def encode(self, texts, normalize_embeddings):
+            captured.append(list(texts))
+            return [[1.0, 0.0] for _ in texts]
+
+    fake_module = types.ModuleType("sentence_transformers")
+    fake_module.SentenceTransformer = _RecordingModel
+    monkeypatch.setitem(sys.modules, "sentence_transformers", fake_module)
+
+    from core.retrieval.st_embedder import SentenceTransformersEmbedder
+
+    embedder = SentenceTransformersEmbedder(E5_BASE)
+    embedder.embed_queries(["plafonds"])
+    embedder.embed_passages(["plafonds"])
+    assert captured == [["query: plafonds"], ["passage: plafonds"]]

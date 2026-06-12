@@ -16,7 +16,7 @@ class Embedder(Protocol):
 
 def prefixed(prefix: str, texts: list[str]) -> list[str]:
     """e5-style prefix application — pure, so it tests without a model download."""
-    return [prefix + text for text in texts] if prefix else texts
+    return [prefix + text for text in texts]
 
 
 class FakeEmbedder:

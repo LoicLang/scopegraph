@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT))
 
 from core.benchdata.scenarios import SCENARIOS  # noqa: E402
 from core.graph.service import GraphService  # noqa: E402
+from core.llm.factory import load_dotenv  # noqa: E402
 from core.llm.json_contract import JsonContractError, complete_with_retry  # noqa: E402
 from core.llm.prompts import load_prompt  # noqa: E402
 from core.retrieval.index import VectorIndex  # noqa: E402
@@ -46,10 +47,11 @@ PROMPT_FILES = ("challenge_triage", "challenge_claims")
 
 
 def make_bench_provider(name: str):
+    load_dotenv()  # keys may live in the project-root .env (gitignored)
     env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY"}[name]
     api_key = os.environ.get(env_var)
     if not api_key:
-        sys.exit(f"missing {env_var} — export it or pick the other --provider")
+        sys.exit(f"missing {env_var} — set it in .env, export it, or pick the other --provider")
     if name == "deepseek":
         from core.llm.deepseek import DeepSeekProvider
 

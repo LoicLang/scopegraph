@@ -155,6 +155,9 @@ export MISTRAL_API_KEY=...               # DEEPSEEK_API_KEY for deepseek
 .venv/bin/uvicorn --factory web.app:create_app
 ```
 
+API keys (and `SCOPEGRAPH_LLM_PROVIDER`) may also live in a project-root `.env`
+(gitignored, `KEY=VALUE` lines) — the real environment always wins over the file.
+
 ---
 
 ## Roadmap

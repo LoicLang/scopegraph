@@ -102,6 +102,33 @@ def test_deepseek_calls_openai_compatible_endpoint(monkeypatch):
     assert captured["messages"][0] == {"role": "system", "content": "sys"}
 
 
+def test_load_dotenv_fills_missing_vars_without_overriding(monkeypatch, tmp_path):
+    from core.llm.factory import load_dotenv
+
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "# clés locales\nMISTRAL_API_KEY=from-file\n"
+        'DEEPSEEK_API_KEY="quoted"\n\nexport EXTRA=ok\nmalformed line\n'
+    )
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.setenv("EXTRA", "already-set")
+    load_dotenv(env_file)
+    import os
+
+    assert os.environ["MISTRAL_API_KEY"] == "from-file"
+    assert os.environ["DEEPSEEK_API_KEY"] == "quoted"
+    assert os.environ["EXTRA"] == "already-set"  # real env always wins
+    monkeypatch.delenv("MISTRAL_API_KEY")
+    monkeypatch.delenv("DEEPSEEK_API_KEY")
+
+
+def test_load_dotenv_missing_file_is_a_noop(tmp_path):
+    from core.llm.factory import load_dotenv
+
+    load_dotenv(tmp_path / "absent.env")  # must not raise
+
+
 def test_factory_resolves_provider_from_env(monkeypatch):
     from core.llm.factory import make_provider
 

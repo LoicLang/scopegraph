@@ -15,8 +15,9 @@ don't improvise around it.
 
 ```bash
 pip install -e ".[embeddings,llm]"
-export MISTRAL_API_KEY=...           # demo default provider
-export SCOPEGRAPH_LLM_PROVIDER=mistral
+# keys can live in the project-root .env (gitignored) instead of exports:
+#   MISTRAL_API_KEY=...
+#   SCOPEGRAPH_LLM_PROVIDER=mistral
 uvicorn --factory web.app:create_app
 # open http://127.0.0.1:8000
 ```

@@ -58,22 +58,38 @@ MINILM = RetrievalProfile(
     decay=0.7,
 )
 
-# PROVISIONAL thresholds — band-transposition guesses pending §4.ii calibration
-# (spec 2026-06-12): replace every value below from retrieval-smoke output, then
-# delete this comment. decay is the known trouble spot: on a ~0.7-floor band a
-# multiplicative 0.7² collapses 2-hop scores below noise; 0.9 is a stopgap and the
-# calibration may impose a different form.
+# Calibrated 2026-06-12 from retrieval-smoke --embedder e5 (spec §4.ii, band
+# transposition from the W2 MiniLM percentiles). The e5 band is ~7x narrower than
+# MiniLM's (top-median spread 0.026-0.069 vs 0.18-0.45; whole graph in 0.73-0.86):
+# - tau_anchor 0.78 sits under every healthy case's rank-8 sim (0.787-0.819) and
+#   above the vague case's q3 (cas-6: 0.771) — same recall-first shape as 0.35/W2.
+# - decay stays MULTIPLICATIVE on purpose: the band is nearly constant, so
+#   multiplicative ≈ subtractive; 0.98 gives ~0.016/hop, the W2-equivalent fraction
+#   (~68% of the top-median spread over 2 hops). No form change needed.
+# - tau_weak 0.797 splits the vague brief (cas-6 top 0.794) from the healthy tops
+#   (0.800-0.858). KNOWN-FRAGILE: 0.006 of margin — T1 discriminability is
+#   intrinsically weak in a compressed band; recorded for known-limits.
+# - alpha 0.02 ≈ the same fraction of the usable spread as MiniLM's 0.15.
+#
+# N=0 GATE VERDICT (2026-06-12, spec §4.iii): FAILED — S1 loses
+# dec-releases-tpe-trimestrielles (sys-logiciel-tpe misses the 8th anchor slot by
+# 0.001 sim), S3 loses the governance freeze (dec-gel-evolutions-monetique ranks
+# 72/72 — e5 does not connect cash-back briefs to the monetique cluster at all),
+# S5 loses con-ai-act (rank 17, crowded out of TOP_K). The §4.ii single iteration
+# (tau_keep 0.75→0.74, decay 0.98→0.985) changed NOTHING: the misses are anchor-
+# RANKING failures, not threshold failures. This profile is kept for reproducibility;
+# do NOT flip DEFAULT_PROFILE to it. Next step is a recorded decision (BUILD-ORDER).
 E5_BASE = RetrievalProfile(
     name="e5",
     model_name="intfloat/multilingual-e5-base",
-    tau_anchor=0.82,
-    tau_keep=0.76,
-    tau_weak=0.86,
-    tau_noise=0.78,
-    alpha=0.06,
+    tau_anchor=0.78,
+    tau_keep=0.74,
+    tau_weak=0.797,
+    tau_noise=0.77,
+    alpha=0.02,
     delta=0.15,
     domain_fraction=0.5,
-    decay=0.9,
+    decay=0.985,
     query_prefix="query: ",
     passage_prefix="passage: ",
 )

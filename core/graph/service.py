@@ -52,6 +52,10 @@ class GraphService:
     def all_nodes(self) -> list[Node]:
         return list(self._nodes.values())
 
+    def known_domains(self) -> frozenset[str]:
+        """Domain slugs in use across the graph (each validated against domains.yaml at load)."""
+        return frozenset(d for node in self._nodes.values() for d in node.domains)
+
     def all_edges(self) -> list[Edge]:
         return list(self._edges)
 

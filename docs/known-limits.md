@@ -135,6 +135,45 @@ spec `2026-06-11-distractor-stress-bench-design.md`).** Verdict: **SWAP EMBEDDER
   BM25 + dense for the homonym class, reranker last (W2 spec's recorded no-go unless
   forced).
 
+**MEASURED (2026-06-12, W3 lot 0bis — spec `2026-06-12-embedder-swap-design.md`,
+grid log `/tmp` session artifact, summary in BUILD-ORDER).** Outcome: **e5-base
+REJECTED at the N=0 gate · Qwen3-Embedding-0.6B adopted (DEFAULT_PROFILE).**
+
+- **e5-base never reached the grid**: its similarity band is ~7x narrower than
+  MiniLM's (whole graph in 0.73–0.86, top–median spread 0.026–0.069), and its
+  *ranking* fails outright — on the cash-back brief, `dec-gel-evolutions-monetique`
+  ranks 72/72 (dead last). Anchor-ranking failures, not thresholds: the single
+  allowed calibration iteration changed nothing. Profile kept in config for
+  reproducibility.
+- **Qwen3-0.6B (instruction-aware query side) passes the N=0 gate as a strict
+  per-case superset of MiniLM**: mean 95 % vs 89 %, S3 6/6 (MiniLM 5/6), S6
+  vocabulary bridge 3/7 (MiniLM 0/7), smaller maps (39.7 vs 44.5), precision 17 %
+  vs 13 %. The task instruction measurably fixes e5's failure mode (S5:
+  `con-ai-act` rank 1 vs 17).
+- **2×2 grid (minilm/qwen3 × TOP_N fixed/scaled), per-cell criterion**: every cell
+  fails the strict criterion, but the curves differ in kind — MiniLM 89→54 % still
+  falling at N=2000; **qwen3 95→75→69→68 %, converging** (1 pt between N=1000 and
+  N=2000). Realism check valid everywhere.
+- **TOP_N scaling is a proven single-turn no-op** (fixed and scaled cells are
+  byte-identical per case, both embedders): with no confirmed domains there is no
+  boost, so anchors = top-8 of the raw ranking regardless of candidate-list size.
+  The lever only matters multi-turn, where ALPHA can promote same-domain
+  candidates — measure it there (multi-turn polluted sweep, recorded follow-up).
+- **Thief annotation (spec §5, mandatory on failure — read 2026-06-12)**: qwen3's
+  residual deaths are NOT embedder weakness. (a) *Legitimate substitution
+  dominates*: S6's thieves include `proj-dref-onboarding-digital-v2` — literally
+  the same project as the brief; S3's are the fictional cashback engine + its
+  500 € cap; S1's the "paiement fractionné en caisse" project (a real scope
+  collision); S7's the Fraudar near-twin. In the merged universe these are
+  correct scoping answers — real recall sits well above 68 %. (b) *Genuine
+  deaths concentrate on deep seed governance chains* (PCI-DSS + monetique freeze
+  on S3, RGPD/traçabilité on S5, credit/KYC chain on S1): **anchor saturation**
+  — 8 anchor slots cannot hold both a legitimate twin cluster and the seed
+  cluster — plus 2-hop depth. Targets: the W3 challenge layer (justification
+  pressure), the multi-turn recovery net, and a possible anchor-capacity (TOP_K)
+  chantier. (c) *The homonym class is closed*: S2 holds 8/8 at N=2000 under
+  qwen3 — the BM25-hybrid escalation loses its motivating case.
+
 ## L5 — Methodology traps in our own bench
 
 - **Aggregate recall hides critical-case death**: an 84 % average looked fine while the
@@ -145,18 +184,22 @@ spec `2026-06-11-distractor-stress-bench-design.md`).** Verdict: **SWAP EMBEDDER
 - The hermetic suite's FakeEmbedder produces exact ties real embeddings never produce
   (origin of the type-priority tie-break, W2 spec §3) — quality conclusions only ever
   come from the real-model bench, never from the hermetic tests.
-- **Distractor-recall design bias (noted 2026-06-12, raised by Loïc — status: noted,
-  no action decided).** Generating plausible same-domain distractors statistically
-  guarantees that some are *genuinely relevant* to the eval briefs (extreme case: the
-  monetique shard invented a fictional cashback ecosystem while an eval case is
-  cash-back — its nodes are correct scoping answers, counted as misses). So the
-  polluted-sweep recall is systematically biased LOW; only the per-case trap-death
-  criterion is immune (the L4 anchor inspection details the three thief classes:
-  legitimate substitution / wrong instance / homonym). Options if a corrected number
-  is ever needed: (a) hand-annotate the thieves' relevance on the sweep logs (~1 h,
-  gives a corrected recall); (b) exclude brief-twin themes at generation — rejected
-  by default, it would soften the test. Re-evaluate after the e5 sweep: if traps
-  survive there, the biased mean stops mattering for any decision.
+- **Distractor-recall design bias (noted 2026-06-12, raised by Loïc — status:
+  CONFIRMED by the lot-0bis annotation, 2026-06-12 evening).** Generating plausible
+  same-domain distractors statistically guarantees that some are *genuinely
+  relevant* to the eval briefs (extreme case: the monetique shard invented a
+  fictional cashback ecosystem while an eval case is cash-back — its nodes are
+  correct scoping answers, counted as misses). So the polluted-sweep recall is
+  systematically biased LOW; only the per-case trap-death criterion is immune.
+  The qwen3 autopsy annotation (L4) made the bias concrete: substitution dominates
+  the residual misses (an onboarding brief losing nodes to a fictional *onboarding
+  project* is the bench punishing a correct answer). Read polluted-sweep recalls
+  as lower bounds, decisions only ever from the per-case criterion + annotation.
+- **A 2×2 grid arm can be a no-op by construction**: the TOP_N-scaled arm produced
+  byte-identical results because the single-turn bench has no confirmed domains,
+  hence no boost, hence anchors = top-8 of the raw ranking at any list size. Check
+  a lever's activation conditions against the harness BEFORE burning a grid row
+  on it (the lever is real, but only the multi-turn bench can see it).
 
 ## L6 — Map readability (UI debt, W3 polish list)
 

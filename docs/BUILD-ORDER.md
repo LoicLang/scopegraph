@@ -10,47 +10,32 @@ read_when:
 
 ## Current state (2026-06-12, end of session 2)
 
-- **W3 lot 0bis IN PROGRESS — embedder swap: code DONE, e5-base REJECTED at the
-  N=0 gate** (branch `w3-embedder-swap`, spec
-  `docs/specs/2026-06-12-embedder-swap-design.md`, plan
-  `docs/plans/2026-06-12-embedder-swap.md`, subagent-driven):
-  - Code (tasks 1-8) done: asymmetric Embedder Protocol (`embed_queries`/
-    `embed_passages`, e5 prefixes inside the embedder), `RetrievalProfile` per
-    embedder (MiniLM frozen + regression-locked), profile threaded through
-    retrieve/triggers/session, fingerprint covers prefixes, bench flags
-    `--embedder`/`--top-n`/`--grid` + per-trap anchor autopsy (thief lineup),
-    smoke prints the full-graph raw band. 143 hermetic tests, ruff clean.
-  - **Calibration measured (spec §4.ii-iii): e5-base FAILS the N=0 gate.** Band is
-    ~7x narrower than MiniLM (whole graph in 0.73-0.86, top-median spread
-    0.026-0.069). Calibrated by band transposition (profile committed for
-    reproducibility); mean recall 85 % ≥ 84 % BUT per-case: S1 loses
-    dec-releases-tpe-trimestrielles (hub misses the 8th anchor slot by 0.001 sim),
-    S3 loses the governance freeze (dec-gel-evolutions-monetique ranks **72/72**
-    on the cash-back brief — e5 simply does not map cash-back to the monetique
-    cluster), S5 loses con-ai-act (rank 17, crowded out of TOP_K). The single
-    allowed §4.ii iteration changed nothing: anchor-RANKING failures, not
-    thresholds. Accent-sensitivity ruled out. **The 2×2 grid was NOT run** (no
-    point stressing an embedder that fails unpolluted). MiniLM stays
-    DEFAULT_PROFILE.
-  - **DECISION TAKEN (2026-06-12, after web research): test Qwen3-Embedding-0.6B**
-    (family leads MTEB incl. French; instruction-aware query side = the lever
-    aimed at e5's S3 semantic-leap failure). Profile + per-profile ST kwargs
-    (macOS eager-attention/left-padding workarounds) committed; 147 hermetic
-    tests.
-  - **Qwen3-0.6B N=0 gate: PASSED (2026-06-12).** Band is healthy (MiniLM-like,
-    4-7x wider than e5). Calibrated by transposition + one §4.ii iteration
-    (tau_keep 0.26: S5's 2-hop traceability trap landed at 0.266). Result:
-    per-case SUPERSET of MiniLM — S3 6/6 (MiniLM 5/6), S6 vocabulary bridge 3/7
-    (MiniLM 0/7), mean recall 95 % vs 89 %, smaller maps (39.7 vs 44.5),
-    precision 17 % vs 13 %. The instruction prefix measurably fixes the e5
-    failure mode (S5: con-ai-act rank 1 vs 17; S3: con-pci-dss rank 8 = direct
-    anchor).
-  - **NEXT: the 2×2 distractor grid (minilm/qwen3 × TOP_N fixed/scaled)** —
-    `./scripts/retrieval-eval --grid` (qwen3 rows slower than MiniLM: 0.6B params;
-    expect ~30-60 min total). Criterion unchanged (per-cell trap death, spec §6).
-    If the best qwen3 cell HOLDS → exit contract: DEFAULT_PROFILE flips to QWEN3,
-    TOP_N policy per the winning arm, L4/L5 updated, lots 1-4 unblocked. The e5
-    profile stays in config for reproducibility of the rejection.
+- **W3 lot 0bis DONE — embedder swap: e5-base rejected, Qwen3-Embedding-0.6B
+  adopted as DEFAULT_PROFILE** (branch `w3-embedder-swap`, ready to merge; spec
+  `docs/specs/2026-06-12-embedder-swap-design.md`, plan archived to
+  `docs/archive/2026-06-12-embedder-swap.md`, subagent-driven + inline
+  calibration; full numbers + thief annotation in known-limits **L4**, methodology
+  lessons in **L5**):
+  - Code: asymmetric Embedder Protocol (query/passage prefixes inside the
+    embedder), per-embedder `RetrievalProfile` (MiniLM frozen + regression-locked,
+    e5 kept for reproducibility of its rejection, qwen3 instruction-aware +
+    macOS ST kwargs), profile threaded through retrieve/triggers/session, bench
+    flags `--embedder`/`--top-n`/`--grid` + per-trap anchor autopsy, smoke prints
+    the full-graph raw band. 147 hermetic tests, ruff clean.
+  - Measured: e5-base failed the N=0 gate (ranking, not thresholds — cash-back
+    brief ranks the monetique freeze 72/72). Qwen3 passed it as a strict per-case
+    superset of MiniLM (95 % vs 89 %), then on the 2×2 grid degrades 95→68 % at
+    N=2000 with a **converging** curve (MiniLM: 89→54 %, still falling). No cell
+    passes the strict per-cell criterion; the thief annotation shows the qwen3
+    residual is legitimate substitution (bench bias, L5) + **anchor saturation**
+    on deep governance chains — an anchor-capacity/challenge-layer problem, not
+    an embedder problem. Homonym class (S2) closed by qwen3 → the BM25-hybrid
+    escalation loses its motivating case. TOP_N scaling proved a single-turn
+    no-op (L5) — its real test is the multi-turn polluted sweep.
+  - Recorded follow-ups (not blockers): multi-turn polluted sweep (measures the
+    MAPPING recovery net + the real TOP_N effect) · anchor-capacity rethink
+    (TOP_K vs twin clusters) — both naturally re-measured after the challenge
+    layer exists.
 
 - **W3 lot 0 DONE — distractor stress bench, verdict: SWAP EMBEDDER** (branch
   `w3-distractor-bench`, subagent-driven from `docs/archive/2026-06-11-distractor-stress-bench.md`,
@@ -113,22 +98,9 @@ W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
 (89 % recall, 13 % precision, no threshold fix possible) — **the challenge layer IS the
 precision stage**. Scope, ordered by measured impact:
 
-0. **Embedder swap + TOP_N scaling (NEW lot 0 — forced by the distractor bench
-   verdict; decided 2026-06-12 after the L4 anchor inspection).** Two levers, one
-   measurement: (a) swap MiniLM → `multilingual-e5` (the W2 spec's recorded
-   escalation; retrieval-trained, `query:`/`passage:` prefixes) behind the existing
-   Embedder Protocol; (b) scale the candidate pool with graph size (TOP_N=20 was 28 %
-   of 72 nodes but 1 % of 2072 — S2's true anchors are *outside the list*, not
-   mis-scored; recall-side capacity, NOT precision tuning, L1 doctrine intact).
-   Bench: `--distractor-sweep` over the **2×2 grid** (MiniLM/e5 × TOP_N fixed/scaled),
-   criterion unchanged (per-case trap death, spec §1), then re-read TAU_* against the
-   new similarity distribution and update known-limits L4. Conditional follow-ups, only
-   if traps still die: hybrid BM25+dense rank fusion (targets the L4 homonym class,
-   e.g. "bénéficiaires effectifs" vs payee), reranker last (W2 no-go unless forced).
-   Later, with e5 in place: a multi-turn polluted sweep to measure the MAPPING loop's
-   recovery net (domain boost + T1) — the single-turn bench understates the product.
-   Do this BEFORE lots 1-4 — W3 must not build on an embedder that loses 6/11 trap
-   cases under realistic pollution.
+0. **DONE (2026-06-12) — embedder swap: Qwen3-0.6B adopted** (see Current state;
+   e5 rejected at the gate, TOP_N scaling a single-turn no-op, BM25 escalation
+   dropped with the homonym class). Lots 1-4 are unblocked.
 1. `LLMProvider` Protocol + Mistral (default) / DeepSeek (dev) / Mock (hermetic), JSON
    contract with one schema-reminder retry (MVP spec §2).
 2. **CHALLENGING + grounding gate + propose/validate ledger** — the LLM reads the
@@ -153,8 +125,8 @@ what the W3 demo must show end-to-end.
 
 ## Scale milestone (split, 2026-06-11 discussion)
 
-The noise-robustness half is DONE (distractor bench, 2026-06-12 — verdict and curve in
-known-limits L4; re-run after the embedder swap). The *realistic-volume* half (messy
+The noise-robustness half is DONE (distractor bench 2026-06-12, re-run post-swap with
+qwen3 the same day — both curves in known-limits L4). The *realistic-volume* half (messy
 real-world graph structure, not plausible noise) still needs ecosystem-foundry output;
 couple that final validation to the foundry kickoff, after W4. Hand-growing the demo
 seed stays rejected (fictional-entities rule, curation cost, artificial coherence).

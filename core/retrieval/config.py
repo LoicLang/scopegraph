@@ -99,22 +99,26 @@ E5_BASE = RetrievalProfile(
     passage_prefix="passage: ",
 )
 
-# PROVISIONAL thresholds — pending §4.ii calibration on the qwen3 smoke band (the
-# raw-band block does not depend on them). Query side carries a task instruction
-# (Qwen3 is instruction-aware; English on purpose — its training instructions were
-# English): this is the lever aimed at the e5 failure mode (S3: no semantic path
-# from a cash-back brief to the monetique cluster). Passages stay bare per the card.
+# Calibrated 2026-06-12 from retrieval-smoke --embedder qwen3 (spec §4.ii, band
+# transposition from the W2 MiniLM percentiles). The band is HEALTHY — MiniLM-like:
+# tops 0.43-0.73, top-median spread 0.09-0.31 (4-7x wider than e5's 0.026-0.069).
+# Query side carries a task instruction (Qwen3 is instruction-aware; English on
+# purpose — its training instructions were English): measured to fix the e5
+# failure mode (S3: con-pci-dss ranks 8th = direct anchor, obj-transaction-carte
+# 5th; S5: con-ai-act ranks 1st vs 17th under e5). decay 0.8 / tau_keep 0.27
+# reproduce W2's expansion geometry (2-hop survives from ~0.45 anchors, dies from
+# the weakest, drop ≈ the same fraction of the usable spread).
 QWEN3 = RetrievalProfile(
     name="qwen3",
     model_name="Qwen/Qwen3-Embedding-0.6B",
-    tau_anchor=0.5,
-    tau_keep=0.4,
-    tau_weak=0.6,
-    tau_noise=0.45,
-    alpha=0.05,
+    tau_anchor=0.37,
+    tau_keep=0.26,  # §4.ii iteration: S5's 2-hop traceability trap lands at 0.415·0.8² ≈ 0.266
+    tau_weak=0.45,
+    tau_noise=0.30,
+    alpha=0.08,
     delta=0.15,
     domain_fraction=0.5,
-    decay=0.9,
+    decay=0.8,
     query_prefix=(
         "Instruct: Given a French banking-IT project brief, retrieve the systems, "
         "features, business objects, constraints, decisions, risks and projects "

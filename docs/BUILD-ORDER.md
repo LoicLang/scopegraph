@@ -71,13 +71,22 @@ W3 is where retrieval quality becomes judgeable: W2's layer-2 bench (2026-06-11,
 (89 % recall, 13 % precision, no threshold fix possible) — **the challenge layer IS the
 precision stage**. Scope, ordered by measured impact:
 
-0. **Embedder swap (NEW lot 0 — forced by the distractor bench verdict, see L4).**
-   Swap MiniLM → `multilingual-e5` (the W2 spec's recorded escalation) behind the
-   existing Embedder Protocol, re-run `./scripts/retrieval-eval --distractor-sweep`,
-   re-read constants against the new similarity distribution (TAU_* were calibrated on
-   MiniLM's band), update known-limits L4 with the new curve. Gate: the per-case
-   criterion of the distractor spec §1. Do this BEFORE lots 1-4 — W3 must not build on
-   an embedder that loses 6/11 trap cases under realistic pollution.
+0. **Embedder swap + TOP_N scaling (NEW lot 0 — forced by the distractor bench
+   verdict; decided 2026-06-12 after the L4 anchor inspection).** Two levers, one
+   measurement: (a) swap MiniLM → `multilingual-e5` (the W2 spec's recorded
+   escalation; retrieval-trained, `query:`/`passage:` prefixes) behind the existing
+   Embedder Protocol; (b) scale the candidate pool with graph size (TOP_N=20 was 28 %
+   of 72 nodes but 1 % of 2072 — S2's true anchors are *outside the list*, not
+   mis-scored; recall-side capacity, NOT precision tuning, L1 doctrine intact).
+   Bench: `--distractor-sweep` over the **2×2 grid** (MiniLM/e5 × TOP_N fixed/scaled),
+   criterion unchanged (per-case trap death, spec §1), then re-read TAU_* against the
+   new similarity distribution and update known-limits L4. Conditional follow-ups, only
+   if traps still die: hybrid BM25+dense rank fusion (targets the L4 homonym class,
+   e.g. "bénéficiaires effectifs" vs payee), reranker last (W2 no-go unless forced).
+   Later, with e5 in place: a multi-turn polluted sweep to measure the MAPPING loop's
+   recovery net (domain boost + T1) — the single-turn bench understates the product.
+   Do this BEFORE lots 1-4 — W3 must not build on an embedder that loses 6/11 trap
+   cases under realistic pollution.
 1. `LLMProvider` Protocol + Mistral (default) / DeepSeek (dev) / Mock (hermetic), JSON
    contract with one schema-reminder retry (MVP spec §2).
 2. **CHALLENGING + grounding gate + propose/validate ledger** — the LLM reads the

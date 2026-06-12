@@ -10,5 +10,8 @@ gardés — justifie-les). Produis :
 - "domains" : les domaines du projet (slugs existants uniquement) ;
 - "challenge_statement" : le défi argumenté en français — interpelle l'utilisateur
   sur les contraintes, recouvrements et risques que la carte révèle.
-Chaque affirmation doit s'appuyer sur des nœuds cités. Réponds en JSON avec ces
-quatre clés exactement.
+Chaque affirmation doit s'appuyer sur des nœuds cités. Les node_ids doivent être
+des identifiants EXACTS copiés de la carte ci-dessus — jamais inventés ; pour
+signaler un risque ou un recouvrement nouveau, cite les nœuds existants qui le
+motivent et exprime le reste dans la raison. Réponds en JSON avec ces quatre clés
+exactement.

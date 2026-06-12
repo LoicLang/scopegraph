@@ -297,3 +297,28 @@ the response cache:**
   reasons — lever 1 (recall-first instruction + edge-based benefit of the doubt)
   targets the shared failure mode, not a model quirk. Iterate prompts on deepseek
   (cheapest), confirm on the other two via cache-keyed re-runs.
+
+**Levers 1+2 MEASURED (2026-06-12 evening, prompt-only — recall-first triage rules +
+SUPERSEDES-as-history + exact-ids claims):**
+
+| model | final recall | map | precision | (before levers) |
+|---|---|---|---|---|
+| deepseek-v4-flash | **90 %** | 17.1 | 38 % | 76 % / 11.5 / 53 % |
+| mistral-small-latest | **91 %** | 31.5 | 23 % | 75 % / 21.2 / 35 % |
+| grok-4.3 | **86 %** | 13.3 | 51 % | 68 % / 7.6 / 66 % |
+
+- +10–18 recall points on every model for ~6 precision points — the failure mode was
+  the prompt, not the models. **S3 cash-back passes 6/6 on all three** (gel kept);
+  S7 SUPERSEDED kept by all three. The structural lever (governance unrejectable in
+  gate A) is NOT needed — closed.
+- Side effect caught and fixed in the same pass: the generous triage made deepseek
+  *fabricate* node ids in claims (`proj-cashback`) to propose new risks — gate B
+  rejected all 8 visibly (working as designed); the claims prompt now demands exact
+  ids copied from the map and routes novel risks through the reason text. 0 rejected
+  claims across all three models after the fix.
+- Remaining misses are NOT triage: S6 is retrieval-bound (raw 3/7, the L2 vocabulary
+  bridge — multi-turn recovery is the lever), S1's TPE chain still dies on
+  mistral (3/9; deepseek 7/9, grok 6/9), the cancelled-project warning (S2) splits
+  the models. Best operating points: deepseek 90 %/38 % balanced, grok 86 %/51 %
+  precision-lean, mistral 91 %/23 % recall-lean (demo default keeps the woven-question
+  quality argument, not the triage numbers).

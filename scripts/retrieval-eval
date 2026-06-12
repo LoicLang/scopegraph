@@ -296,10 +296,15 @@ def distractor_sweep(embedder: SentenceTransformersEmbedder, profile: RetrievalP
     return CellResult(holds=verdict_bool, base_recall=runs[0].recall, worst_recall=runs[max(SWEEP_POINTS)].recall)
 
 
+# Grid rows: the frozen baseline + the gate-passing candidate (e5 was rejected at
+# the N=0 gate, 2026-06-12 — kept in PROFILES for reproducibility, not re-stressed).
+GRID_EMBEDDERS = ("minilm", "qwen3")
+
+
 def run_grid() -> None:
     """Spec §5: the four cells, each a full sweep; one embedder load per row."""
     outcomes: dict[str, CellResult | None] = {}
-    for embedder_name in ("minilm", "e5"):
+    for embedder_name in GRID_EMBEDDERS:
         # one load per row: --top-n resolution only changes top_n_policy, never embedding identity
         embedder = SentenceTransformersEmbedder(PROFILES[embedder_name])
         for top_n in ("fixed", "scaled"):

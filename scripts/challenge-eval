@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""End-to-end challenge bench: scenarios through retrieve → triage → pull → claims
+with a REAL model (never in CI). Measures what the two-phase challenge does to the
+hand-derived expected sets: per-stage recall (raw retrieval → post-LLM-keeps →
+post-pull), final map size/precision, and which expected nodes the LLM itself
+rejected (lost_by_llm — the L4-residual question).
+
+Usage:
+    pip install -e ".[embeddings,llm]"
+    DEEPSEEK_API_KEY=... ./scripts/challenge-eval --provider deepseek
+    ./scripts/challenge-eval --provider mistral --n 0 2000   # MISTRAL_API_KEY
+    ./scripts/challenge-eval --no-cache                      # bypass .bench-cache/
+
+Responses are cached on disk (.bench-cache/) keyed by scenario, N, provider, model,
+prompt hashes and the rendered subgraph — a re-run after any prompt change re-calls.
+"""
+
+import argparse
+import datetime
+import hashlib
+import json
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from core.benchdata.scenarios import SCENARIOS  # noqa: E402
+from core.graph.service import GraphService  # noqa: E402
+from core.llm.json_contract import JsonContractError, complete_with_retry  # noqa: E402
+from core.llm.prompts import load_prompt  # noqa: E402
+from core.retrieval.index import VectorIndex  # noqa: E402
+from core.retrieval.retriever import retrieve  # noqa: E402
+from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
+from core.runtime.challenge import (  # noqa: E402
+    gate_claims,
+    gate_triage,
+    pull_governance,
+    render_stabilized,
+    render_subgraph,
+)
+
+CACHE_DIR = ROOT / ".bench-cache"
+PROMPT_FILES = ("challenge_triage", "challenge_claims")
+
+
+def make_bench_provider(name: str):
+    env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY"}[name]
+    api_key = os.environ.get(env_var)
+    if not api_key:
+        sys.exit(f"missing {env_var} — export it or pick the other --provider")
+    if name == "deepseek":
+        from core.llm.deepseek import DeepSeekProvider
+
+        return DeepSeekProvider(api_key=api_key)
+    from core.llm.mistral import MistralProvider
+
+    return MistralProvider(api_key=api_key)
+
+
+def cache_key(scenario_name: str, n: int, provider_name: str, model: str,
+              subgraph_text: str) -> str:
+    prompt_hashes = "|".join(
+        hashlib.sha256(load_prompt(p).encode()).hexdigest() for p in PROMPT_FILES
+    )
+    raw = f"{scenario_name}|{n}|{provider_name}|{model}|{prompt_hashes}|{subgraph_text}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def build_service(n: int) -> GraphService:
+    if n == 0:
+        return GraphService.from_dir(ROOT / "graph")
+    return GraphService.from_dirs(ROOT / "graph", ROOT / "graph-distractors", n)
+
+
+def run_challenge(provider, service, result, *, use_cache: bool, key_parts) -> dict:
+    """The SAME code path the session uses, without the interview around it."""
+    submitted = {s.node_id for s in [*result.anchors, *result.expanded]}
+    triage_user = render_subgraph(result, service)
+    key = cache_key(*key_parts, subgraph_text=triage_user)
+    cache_file = CACHE_DIR / f"{key}.json"
+    cached = json.loads(cache_file.read_text()) if use_cache and cache_file.is_file() else None
+    if cached is not None:
+        out1, out2 = cached["triage"], cached["claims"]
+        keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
+        pulled = pull_governance(service, set(keeps), set(rejects))
+    else:
+        out1 = complete_with_retry(provider, load_prompt("challenge_triage"),
+                                   triage_user, required_keys=("verdicts",))
+        keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
+        pulled = pull_governance(service, set(keeps), set(rejects))
+        out2 = complete_with_retry(provider, load_prompt("challenge_claims"),
+                                   render_stabilized(keeps, pulled, service),
+                                   required_keys=("pulled_justifications", "claims",
+                                                  "domains", "challenge_statement"))
+        CACHE_DIR.mkdir(exist_ok=True)
+        cache_file.write_text(json.dumps({"triage": out1, "claims": out2}))
+    map_ids = set(keeps) | {p.node_id for p in pulled}
+    valid, rejected_claims = gate_claims(out2, map_ids, service)
+    return {
+        "submitted": submitted, "keeps": set(keeps), "rejects": dict(rejects),
+        "dropped": dropped, "map_ids": map_ids, "valid_claims": valid,
+        "rejected_claims": rejected_claims, "cached": cached is not None,
+    }
+
+
+def main() -> None:
+    sys.stdout.reconfigure(line_buffering=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provider", choices=["deepseek", "mistral"], default="deepseek")
+    parser.add_argument("--n", type=int, nargs="+", default=[0], metavar="N",
+                        help="distractor counts to run (e.g. --n 0 2000)")
+    parser.add_argument("--no-cache", action="store_true", help="bypass .bench-cache/")
+    args = parser.parse_args()
+
+    provider = make_bench_provider(args.provider)
+    print(f"provider: {args.provider}  model: {provider.model}"
+          f"  date: {datetime.date.today().isoformat()}  cache: {not args.no_cache}")
+    embedder = SentenceTransformersEmbedder()
+
+    alive_by_n: dict[int, dict[str, set[str]]] = {}  # N -> scenario -> expected in final map
+    for n in args.n:
+        service = build_service(n)
+        index = VectorIndex(embedder)
+        index.build(service)
+        print(f"\n--- distractors N={n} ({len(service.all_nodes())} nodes) ---")
+        raw_recalls, keep_recalls, final_recalls, sizes, precisions = [], [], [], [], []
+        for name, brief, expected, trap in SCENARIOS:
+            result = retrieve(brief, service, index)
+            try:
+                run = run_challenge(provider, service, result, use_cache=not args.no_cache,
+                                    key_parts=(name, n, args.provider, provider.model))
+            except JsonContractError as exc:
+                print(f"  {name:30s} CHALLENGE FAILED: {exc}")
+                continue
+            raw = expected & run["submitted"]
+            kept = expected & run["keeps"]
+            final = expected & run["map_ids"]
+            lost_by_llm = sorted(expected & set(run["rejects"]))
+            raw_recalls.append(len(raw) / len(expected))
+            keep_recalls.append(len(kept) / len(expected))
+            final_recalls.append(len(final) / len(expected))
+            sizes.append(len(run["map_ids"]))
+            precisions.append(len(final) / max(len(run["map_ids"]), 1))
+            tag = " [cache]" if run["cached"] else ""
+            print(f"  {name:30s} raw {len(raw)}/{len(expected)}"
+                  f" -> keeps {len(kept)}/{len(expected)}"
+                  f" -> +pull {len(final)}/{len(expected)}"
+                  f"  map {len(run['map_ids']):3d}"
+                  f"  claims {len(run['valid_claims'])}v/{len(run['rejected_claims'])}r{tag}")
+            if lost_by_llm:
+                reasons = "; ".join(f"{i}: {run['rejects'][i]}" for i in lost_by_llm)
+                print(f"    lost_by_llm: {reasons}")
+                print(f"    trap: {trap}")
+            alive_by_n.setdefault(n, {})[name] = final
+        count = max(len(final_recalls), 1)
+        print(f"==> raw {sum(raw_recalls) / count:.0%}"
+              f" | keeps {sum(keep_recalls) / count:.0%}"
+              f" | final {sum(final_recalls) / count:.0%}"
+              f" | map {sum(sizes) / count:.1f}"
+              f" | precision {sum(precisions) / count:.0%}")
+
+    # Per-case trap criterion vs the first N (retrieval-eval's survival rule).
+    base_n = args.n[0]
+    if len(args.n) > 1 and base_n in alive_by_n:
+        dead = {
+            name: sorted(alive_by_n[base_n][name] - alive_by_n[worst_n].get(name, set()))
+            for worst_n in args.n[1:] if worst_n in alive_by_n
+            for name in alive_by_n[base_n]
+            if alive_by_n[base_n][name] - alive_by_n[worst_n].get(name, set())
+        }
+        if not dead:
+            print(f"\nVERDICT: HOLDS — every expected node alive at N={base_n}"
+                  " survives at higher N")
+        else:
+            print("\nVERDICT: TRAPS DIE — autopsy (lost_by_llm lines above):")
+            for name, nodes in sorted(dead.items()):
+                print(f"  {name}: lost {', '.join(nodes)}")
+
+
+if __name__ == "__main__":
+    main()

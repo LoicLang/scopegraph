@@ -37,7 +37,7 @@ def test_top_n_coverage_scales_with_floor():
 
 def test_registry_and_default():
     assert PROFILES == {"minilm": MINILM, "e5": E5_BASE, "qwen3": QWEN3}
-    assert DEFAULT_PROFILE is MINILM  # flipped only by the exit contract (spec §1)
+    assert DEFAULT_PROFILE is QWEN3  # exit contract applied 2026-06-12 (grid + annotation)
 
 
 def test_qwen3_profile_instruction_and_mac_workarounds():

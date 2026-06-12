@@ -130,7 +130,11 @@ QWEN3 = RetrievalProfile(
 )
 
 PROFILES: dict[str, RetrievalProfile] = {p.name: p for p in (MINILM, E5_BASE, QWEN3)}
-DEFAULT_PROFILE = MINILM  # flipped to E5_BASE only by the exit contract (spec §1)
+# Exit contract applied 2026-06-12 (grid + thief annotation, BUILD-ORDER): qwen3
+# dominates MiniLM on every measure (N=0 superset, 68% vs 54% at N=2000, curve
+# converging, homonym class closed). TOP_N stays "fixed": the scaled arm is a
+# proven single-turn no-op (no domain boost → anchors = top-8 of the raw ranking).
+DEFAULT_PROFILE = QWEN3
 
 # Structural knobs — band-independent, shared by every profile.
 TOP_K = 8  # max anchors

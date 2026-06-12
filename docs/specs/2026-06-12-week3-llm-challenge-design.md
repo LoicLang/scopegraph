@@ -1,24 +1,27 @@
 ---
-summary: validated W3 design — LLM providers (official SDKs), two-phase CHALLENGING with grounding gate + deterministic governance pull, brief enrichment, LLM question selection, end-to-end challenge bench
+summary: validated W3 design — LLM providers (official SDKs), EDB template as the conversation engine, fluid graph-woven interview, two-phase challenge with grounding gate + governance pull, end-to-end challenge bench
 read_when:
-  - implementing any W3 lot (core/llm, CHALLENGING, enrichment, questions, challenge bench)
+  - implementing any W3 lot (core/llm, EDB template, conversation orchestrator, CHALLENGING, challenge bench)
   - questioning a W3 design decision taken on 2026-06-12
   - interpreting challenge-bench numbers or the grounding-gate contract
 ---
 
-# Week 3 — LLM layer (providers + challenge + enrichment + questions) — Design Spec
+# Week 3 — LLM layer (providers + EDB conversation + challenge) — Design Spec
 
 Date: 2026-06-12
 Status: validated in brainstorming session (this doc is the build contract for W3)
-Upstream: MVP spec §2-3/§6 (states, LLM contract, error handling) · known-limits
-**L1/L2/L3/L6** (the limits this chantier answers) and **L4-residual** (anchor
-saturation on deep governance chains, measured 2026-06-12 — the pull in §4 is its
-direct answer) · BUILD-ORDER W3 lots 1-4 · AGENTS.md hard rules 1/2/4/6.
+Upstream: MVP spec §2-3/§5/§6 (states, dossier sections, LLM contract, error handling) ·
+known-limits **L1/L2/L3/L6** (the limits this chantier answers) and **L4-residual**
+(anchor saturation on deep governance chains, measured 2026-06-12 — the pull in §5 is
+its direct answer) · BUILD-ORDER W3 lots 1-4 · AGENTS.md hard rules 1/2/4/6.
 
-W3 is where retrieval quality becomes judgeable: the recall-first net (qwen3, 95 %
-at N=0, 68 % converging under 2000 distractors) now meets the layer that turns an
-over-complete map into a justified, cited, challengeable scoping. Every LLM output
-crosses a deterministic gate; the LLM never mutates state (hard rule 1).
+**The product experience this spec builds (north star for every lot):** the user
+describes a need and then simply talks to someone who *knows the company*. No
+graph-question block, no linear form: one fluid conversation in which every question
+is justified by something — a graph ambiguity or a missing section of the **EDB**
+(expression de besoin, the project's first framing document) — and graph knowledge is
+woven INTO the EDB questions. The EDB builds itself visibly while they talk. That
+woven, grounded conversation IS the challenge.
 
 ---
 
@@ -26,154 +29,186 @@ crosses a deterministic gate; the LLM never mutates state (hard rule 1).
 
 | Topic | Decision | Rationale |
 |---|---|---|
-| Scope | **One spec, five lots** (providers · CHALLENGING · enrichment · questions · bench+demo), executed in order, each demo-able. | The open points are coupled (the challenge schema dictates the provider contract; enrichment reuses the chip/ledger UI patterns). Two specs would cite each other in circles. |
-| SDKs | **Official SDKs**: `mistralai` (Mistral, demo default) and `openai` (DeepSeek's documented client — dev/bench workhorse). `MockProvider` for CI. SDK imports confined to `core/llm/` (AGENTS.md rule). | Provider-maintained transport (auth, timeouts, backoff, typed errors); follows API evolutions; the FDE-Mistral narrative reads better on the official SDK. Content-level retry stays OURS (transport vs content retries are complementary, not conflicting). Rejected: raw httpx (re-writing tested plumbing), litellm (heavy third-party abstraction for 2 providers). |
-| Challenge shape | **Filter + deterministic governance pull, two-message flow** (§4). LLM tool-use graph navigation: **parked** (recorded idea, not W3 — costly round-trips, less deterministic demo, brushes hard rule 1). | A pure filter cannot resurrect what retrieval never brought — and the measured L4 residual is exactly that (governance chains losing their anchors to twin clusters at N=2000 while staying 1 hop from surviving nodes). The pull is bounded, deterministic, provenance-carrying, hermetically testable. Two messages so the resurrected governance gets a real justification and a place in the challenge text (one message would bolt it on silently after the LLM spoke). Cost: +1 API call (~cents) + 2-3 s. |
-| Enrichment gating | **Auto-applied, visible, revocable**: proposed additions go straight into the retrieval query AND render as "ajouté par l'IA" chips; one click removes the addition and re-runs retrieval. | Zero friction (retrieval is free), total transparency (never a hidden rewrite — MVP wording), revocation preserves user control. Rejected: pre-validation (a click per turn for vocabulary, not claims), routing through the challenge ledger (a search synonym is not an assertion about the ecosystem). |
-| Validation granularity | **Two tiers.** Map pruning applies as a bloc: the map switches to the justified set; rejects stay visible in a collapsible panel with their reason, each restorable by click. **Claims** (links, inherited constraints, risks) go one-by-one through the propose/validate ledger. Proposed `domains[]` render as accept/reject chips. | ~40 keep/reject micro-decisions per session is the L6 fatigue all over again; claims are the substance of W4 write-back (`verified: true` presumes real per-claim human validation), so they keep item-level consent. |
-| Measurement | **Full end-to-end challenge bench with a real LLM** (Loïc's call, over the no-LLM pull-only bench): 11 scenarios × N=0/2000, DeepSeek default, temperature 0, model version recorded, disk cache keyed (scenario, N, provider, prompt-hash) so re-runs only pay for what changed. Output reports recall **per stage** — raw retrieval → post-pull → post-LLM-keeps — plus final-map precision and the per-case trap criterion + thief autopsy (inherited). | Measures the actual product, not a proxy; the per-stage split keeps mechanism attribution inside the real bench (lot-0bis lesson: an unmeasured lever can be a silent no-op). Cost control via DeepSeek + cache. Out of CI like every real-model bench. |
-| Demo | Scripted cash-back case end-to-end (§8). | The buried monetique freeze coming back WITH its challenge sentence is the product's founding argument. |
+| Scope | **One spec, five lots** (providers · EDB template + conversation orchestrator · CHALLENGING · bench · demo), executed in order, each demo-able. | The open points are coupled (the challenge schema dictates the provider contract; the EDB template frames the challenge prompts; the orchestrator consumes both). |
+| SDKs | **Official SDKs**: `mistralai` (Mistral, demo default) and `openai` (DeepSeek's documented client — dev/bench workhorse). `MockProvider` for CI. SDK imports confined to `core/llm/`. | Provider-maintained transport (auth, backoff, typed errors); follows API evolutions; the FDE-Mistral narrative reads better on the official SDK. Content-level retry stays OURS (transport vs content retries are complementary). Rejected: raw httpx (re-writing tested plumbing), litellm (heavy abstraction for 2 providers). |
+| EDB as conversation engine | **A versioned EDB template is runtime state**: 12 sections with owners and fill status; the conversation is driven by it (decided 2026-06-12 evening, Loïc: the user must feel they are talking to someone who knows the company, never filling a form). | The document format is the LLM's thinking frame from the first turn — W3 ends with a partially filled, coherent EDB instead of floating claims to re-map in W4. Completeness becomes checkable ("2 sections manquantes") instead of hoped-for. |
+| Conversation shape | **One mixed question pool, one question per turn**: graph-ambiguity triggers (T1/T2/T3, unchanged, priority) ∪ missing-EDB-section gaps. Graph knowledge is woven into EDB questions. Free-text answers can fill several sections at once via gated extraction. The state machine survives internally (hard rule 1) but is invisible UX. | Kills the "bloc graphe puis questionnaire linéaire" failure mode explicitly rejected by Loïc. The pivot questions (T3) ARE perimeter questions — the two pools were always one. |
+| Challenge shape | **Filter + deterministic governance pull, two-message flow** (§5). Claims carry their target EDB section. LLM tool-use graph navigation: **parked** (recorded idea, not W3). | A pure filter cannot resurrect what retrieval never brought — the measured L4 residual is exactly that. Two messages so resurrected governance gets a real justification and a place in the challenge text. Claims land as conversation cards when the map stabilizes, not as an end-of-flow wall. |
+| Enrichment gating | **Auto-applied, visible, revocable** chips ("ajouté par l'IA"); removal re-runs retrieval. | Zero friction, total transparency, user control preserved. |
+| Validation granularity | **Two tiers**: map pruning as a bloc (rejects in a collapsible, restorable panel); claims and extracted EDB-field updates one-by-one (accept/édit/reject — they are the substance of the document and of W4 write-back); domains as chips. | ~40 keep/reject micro-decisions is the L6 fatigue; per-claim consent is what `verified: true` presumes. |
+| Measurement | **Full end-to-end challenge bench with a real LLM** (Loïc's call): 11 scenarios × N=0/2000, DeepSeek default, temperature 0, model version recorded, disk cache keyed (scenario, N, provider, model, prompt-hash). Per-stage recall: raw retrieval → post-pull → post-LLM-keeps. | Measures the actual product; the per-stage split keeps mechanism attribution (lot-0bis lesson: an unmeasured lever can be a silent no-op). Out of CI. |
+| W3/W4 boundary | W3 ends with the EDB **existing, visibly filling, structurally complete-checkable**. W4: final rendering/export (.md), write-back, three-arm eval. | Protects W3 size; rendering is cheap once fields are structured. |
 
-## 2. Lot 1 — `core/llm/`
+## 2. The EDB template (v1 — `core/dossier/template.py`)
 
-- **Protocol**: `LLMProvider` with one method — `complete_json(system: str, user: str) -> dict`. Temperature 0 everywhere (bench reproducibility, demo stability).
-- **Implementations**: `MistralProvider` (SDK `mistralai`, default `mistral-small-latest`, demo) · `DeepSeekProvider` (SDK `openai`, base_url DeepSeek, default `deepseek-chat`, dev + bench) · `MockProvider` (FIFO queue of scripted dict responses + call log; a test touching a real provider is a bug — hard rule 4).
-- **JSON contract** (MVP §6): shared helper around the Protocol — parse; on invalid JSON or schema mismatch, ONE retry with the schema restated; then a clean French user-facing error. Transport retries (429, network) belong to the SDKs; content retries to us.
-- **Config**: provider choice + model + keys via env (`SCOPEGRAPH_LLM_PROVIDER`, `MISTRAL_API_KEY`, `DEEPSEEK_API_KEY`), `.env` gitignored. Provider down → clear message, session state lives in the runtime, resumable (MVP §6).
-- **Prompts**: externalized in `prompts/*.txt` (doctrine), written in French (their output is French product text), named per use: `challenge_triage.txt`, `challenge_claims.txt`, `enrich_brief.txt`, `pick_question.txt`.
+Sections, frozen field ids, owner mix (sources: standard French expression-de-besoins
++ note-de-cadrage structures, merged 2026-06-12; links in the brainstorm log):
 
-## 3. Schemas (the provider-facing contracts)
+| id | Section (FR) | Filled by |
+|---|---|---|
+| `contexte` | Contexte & raison d'être | user + graph (node refs) |
+| `besoin` | Expression du besoin | user, challenged by graph (overlaps) |
+| `utilisateurs` | Utilisateurs & parties prenantes (+ sponsor) | user + graph |
+| `objectifs` | Objectifs & critères de réussite | user |
+| `perimetre` | Périmètre in / hors périmètre | user + graph (T3 pivots land here) |
+| `exigences` | Exigences (fonctionnelles / non-fonctionnelles) | user + graph (inherited constraints → NF) |
+| `dependances` | Dépendances & systèmes impactés | graph (validated claims) |
+| `contraintes` | Contraintes héritées | graph (validated claims) |
+| `risques` | Risques initiaux | graph + user |
+| `jalons` | Jalons / échéance cible | user + graph (dated decisions) |
+| `challenge` | Challenge & arbitrages ouverts | LLM (challenge statement + open items) |
+| `carte` | Context Map | runtime |
 
-Phase-1 triage output:
+Each section holds: status (`empty | partial | filled`), entries (each with source:
+`user | claim:<id> | llm`, text FR, node refs where applicable), and a one-line FR
+prompt-hint used by the orchestrator. The template is versioned (`EDB_TEMPLATE_V1`);
+the session serializes its EDB state. Deterministic completeness check =
+runtime code, no LLM.
 
-```json
-{"verdicts": [{"node_id": "...", "verdict": "keep|reject", "reason": "français, 1 phrase"}]}
-```
+## 3. Lot 1 — `core/llm/`
 
-Phase-2 challenge output:
+- **Protocol**: `LLMProvider.complete_json(system: str, user: str) -> dict`,
+  temperature 0 everywhere.
+- **Implementations**: `MistralProvider` (SDK `mistralai`, default
+  `mistral-small-latest`) · `DeepSeekProvider` (SDK `openai`, DeepSeek base_url,
+  default `deepseek-chat`) · `MockProvider` (FIFO scripted responses + call log).
+- **JSON contract** (MVP §6): shared helper — parse; on invalid JSON/schema, ONE
+  retry with the schema restated; then a clean French user-facing error. Transport
+  retries belong to the SDKs, content retries to us.
+- **Config**: `SCOPEGRAPH_LLM_PROVIDER`, `MISTRAL_API_KEY`, `DEEPSEEK_API_KEY`
+  via env/`.env` (gitignored). Provider down → clear message, resumable session.
+- **Prompts**: externalized `prompts/*.txt`, written in French: `enrich_brief.txt`,
+  `pick_question.txt`, `extract_fields.txt`, `challenge_triage.txt`,
+  `challenge_claims.txt`.
+
+## 4. Lot 2 — Conversation orchestrator (answers L2, L3, and the form-feeling)
+
+Runs every turn, deterministic skeleton (hard rule 1):
+
+1. **Enrichment** (pre-retrieval): one `enrich_brief` call proposes ≤4 additions
+   (synonyms/business objects); auto-applied to the retrieval query only, rendered
+   as removable chips, logged in the brief. Failure → skip, discreet notice, never
+   blocking.
+2. **Retrieval re-runs** (free) → map updates.
+3. **Field extraction**: one `extract_fields` call reads the user's last free-text
+   message and proposes EDB entries (`{section_id, text, node_refs?}` list). Gate:
+   section ids must exist; entries land as *pending* cards the user accepts/edits/
+   rejects (same ledger pattern as claims). The user talks freely; the document
+   catches what they said.
+4. **Question selection**: the runtime builds ONE candidate pool —
+   graph-ambiguity candidates (T1/T2/T3, precedence and asked-log unchanged,
+   priority over gaps) ∪ EDB gap candidates (empty/partial sections, template
+   order). One `pick_question` call receives the pool with graph context per
+   candidate and returns `{candidate_id, question_fr}` — the question must weave
+   the graph into the section ("Pour le périmètre : l'acceptation en magasin passe
+   par les TPE, gelés jusqu'à fin T3 — in ou out ?"). Gate: candidate_id must be
+   in the pool, else template fallback. W2 templates remain the permanent fallback
+   (provider down, invalid JSON twice). Per-trigger LLM roles: T3 = real selection
+   among ALL qualifying pivots (the L3 fix); T2 = rephrase the two tied domains
+   with French labels; T1 = rephrase "précisez" with the brief's words.
+5. **Question cap** per session unchanged; when the pool is empty (no ambiguity,
+   EDB filled), the conversation naturally lands on the challenge summary and W4's
+   exit.
+
+UX consequence: there is no visible phase boundary anywhere — questions about the
+business and questions about the graph interleave by pertinence.
+
+## 5. Lot 3 — CHALLENGING (the claims moment, woven not walled)
+
+Trigger: the map stabilizes (no graph-ambiguity trigger fires — the W2 exit
+condition). The state machine moves MAPPING → CHALLENGING internally; the
+conversation just continues.
+
+1. **Message 1 — triage**: brief + Q&A + over-complete subgraph (per node: id,
+   type, title, description, domains; edges; expansion provenance) →
+   `{"verdicts": [{"node_id", "verdict": "keep|reject", "reason"}]}`. **Gate A**:
+   verdicts on unknown ids dropped + surfaced; missing nodes default to keep
+   (recall-first: the LLM must argue to remove).
+2. **Governance pull (runtime, deterministic — the L4-residual answer)**: from the
+   kept set, 1 hop along CONSTRAINS/SUPERSEDES + adjacent `decision`/`risk` nodes,
+   excluding rejected nodes, capped `PULL_CAP = 10` (structural constant);
+   provenance carried ("ramené via sys-moteur-autorisation ← CONSTRAINS").
+   Hermetically testable, no LLM.
+3. **Message 2 — challenge**: stabilized map (keeps + pulled) →
 
 ```json
 {
   "pulled_justifications": [{"node_id": "...", "reason": "français"}],
   "claims": [{"kind": "depends_on|constraint_applies|risk|overlap",
-               "node_ids": ["..."], "reason": "français"}],
-  "domains": ["slug", "..."],
-  "challenge_statement": "français, le défi argumenté"
+               "node_ids": ["..."], "target_section": "dependances|contraintes|risques|perimetre|jalons",
+               "reason": "français"}],
+  "domains": ["slug"],
+  "challenge_statement": "français — le défi argumenté"
 }
 ```
 
-Enrichment output: `{"additions": [{"text": "...", "kind": "synonym|business_object"}]}` (≤4 per turn).
-Question-selection output: `{"node_id"|"domain": "...", "question": "français avec l'enjeu"}`.
+   **Gate B**: claim node_ids ∈ stabilized map; `kind` compatible with TOPOLOGY
+   between the cited node types (overlap/risk cite without implying an edge);
+   `target_section` must be one of the claim-writable sections — exactly the enum
+   above (`dependances`, `contraintes`, `risques`, `perimetre`, `jalons`); domains
+   filtered against the vocabulary; unjustified pulled nodes keep their structural
+   label. Every
+   rejection rendered with its reason — never silent (hard rule 2).
+4. **Claims as conversation cards**: each accepted claim writes its entry into its
+   target EDB section (source `claim:<id>`); the challenge_statement lands in the
+   `challenge` section and as an assistant message. The conversation then resumes
+   on remaining EDB gaps (§4.4) — no wall, no phase screen.
+5. **Parked**: LLM tool-use navigation (`neighbors(node)` during challenge) —
+   revisit after W4 if the pull proves too rigid.
 
-## 4. Lot 2 — CHALLENGING (runtime + UI)
+## 6. UI (extends the W2 page)
 
-1. **Transition**: MAPPING → CHALLENGING automatically when the loop stabilizes (no
-   trigger fires, or question cap reached) — the W2 exit condition, now with a next
-   state. UI affordance to reopen MAPPING (a brief edit reopens it anyway).
-2. **Message 1 — triage**: brief + Q&A + the over-complete subgraph (per node: id,
-   type, title, description, domains; plus the edge list among submitted nodes and
-   expansion provenance) → phase-1 verdicts. **Gate A**: any verdict whose node_id
-   is not in the submitted set is dropped and surfaced; missing nodes default to
-   keep (recall-first: the LLM must argue to remove, never silently lose).
-3. **Governance pull (runtime, deterministic — the L4-residual answer)**: from the
-   kept set, 1 hop along **CONSTRAINS and SUPERSEDES edges, plus adjacent
-   `decision`/`risk` nodes**, excluding rejected nodes; capped at `PULL_CAP = 10`
-   (constant in `core/retrieval/config.py`, structural); each pulled node carries
-   provenance ("ramené via sys-moteur-autorisation ← CONSTRAINS"). Pure graph
-   traversal: hermetically testable, no LLM.
-4. **Message 2 — challenge**: stabilized map (keeps + pulled) → phase-2 output.
-   **Gate B**: every claim's node_ids must exist in the stabilized map; `kind`
-   must map to an edge type legal per TOPOLOGY between the cited node types
-   (overlap/risk claims cite nodes without implying an edge); `domains` filtered
-   against the controlled vocabulary; pulled nodes lacking a justification keep
-   the structural provenance label. Every rejection is rendered in the UI with its
-   reason — never silent (hard rule 2).
-5. **Ledger**: claims land as pending proposals; the user accepts/rejects each.
-   Accepted claims + accepted domains + the kept map are the CHALLENGING output
-   (and the substance of W4 write-back). The ledger is runtime state, serialized
-   with the session.
-6. **UI** (extends the W2 page): map animates to the justified set · "Rejetés (N)"
-   collapsible panel, reason shown, "restaurer" per node · claims as cards with
-   accepter/refuser · domain chips · the challenge statement rendered as the
-   assistant's message. Gate rejections appear in a distinct "réclamations de
-   l'IA rejetées par le runtime" strip — it is a demo feature.
-7. **Parked (recorded, not built)**: LLM tool-use navigation (`neighbors(node)` on
-   demand during the challenge) — revisit after W4 if the pull proves too rigid.
+Three panes now: chat · Context Map · **EDB en construction** (the 12 sections,
+filling live, completeness badge "2 sections manquantes"). Plus: enrichment chips
+on the brief · "Rejetés (N)" collapsible restorable panel on the map · claim and
+extracted-field cards inline in the chat (accepter / éditer / refuser) · domain
+chips · a distinct strip for gate-rejected LLM output (demo feature). Map shrink
+animation at challenge time answers L6.
 
-## 5. Lot 3 — Brief enrichment (answers L2)
+## 7. Lot 4 — Challenge bench (the W3 measurement)
 
-Before each retrieval run (initial brief + every answer), one `enrich_brief` call
-proposes ≤4 additions (synonyms, business objects — e.g. « entrée en relation » →
-« création de client », « dossier KYC »). Additions are appended to the retrieval
-query text only (the user's own words stay untouched), rendered as removable chips,
-and logged in the brief (`enrichments[]`, serialized). Removing a chip re-runs
-retrieval without it. Provider down or invalid JSON twice → skip enrichment for the
-turn, discreet UI notice, never blocking (enrichment is sugar, not a dependency).
+New script `scripts/challenge-eval` (real models, out of CI): scenario ground truth
+factored into one shared importable module (single source with `retrieval-eval`).
+For each of the 11 scenarios × N ∈ {0, 2000}: retrieval (DEFAULT_PROFILE) → full
+two-message challenge with a real provider (default DeepSeek, temperature 0,
+`--provider mistral` available). Reports per scenario and mean: recall at three
+stages — **raw retrieval → post-pull → post-LLM-keeps** — final-map size and
+precision, per-case trap criterion, autopsy including the new failure class
+(expected nodes the LLM itself rejected). Disk cache under `.bench-cache/`
+(gitignored) keyed (scenario, N, provider, model, prompt-hash); model name+version
+in the output header. Exploratory first run (no pre-committed gate): the pull must
+recover governance traps at N=2000, the post-LLM map must hold recall while
+shrinking (L1). Numbers land in known-limits L4/L1 + BUILD-ORDER.
 
-## 6. Lot 4 — LLM question selection (answers L3 + the L6 slug exposure)
+## 8. Lot 5 — Demo script (W3 exit)
 
-The runtime keeps deciding WHETHER to ask (T1/T2/T3 triggers, precedence, asked-log,
-cap — all unchanged). What the LLM adds depends on the trigger:
-
-- **T3 (pivot)** — the real L3 fix: the runtime collects ALL qualifying pivot
-  candidates (every expansion-only node in an unknown domain, grouped by domain
-  with their expansion mass) instead of taking the first by score; one
-  `pick_question` call chooses the candidate that matters and phrases the question
-  with the stakes ("Le gel des évolutions monétiques est actif jusqu'à fin T3 —
-  ce projet doit-il aboutir avant ?").
-- **T2 (domain tie)** — candidates are exactly the two tied domains; the LLM only
-  rephrases with French labels and what distinguishes them (no selection needed).
-- **T1 (weak brief)** — no candidates; the LLM only rephrases the "précisez"
-  template using the brief's own words.
-
-The W2 templates remain the permanent fallback (provider down, invalid JSON twice,
-or — gated — the LLM picks an id outside the candidate list).
-
-## 7. Lot 5a — Challenge bench (the W3 measurement)
-
-New script `scripts/challenge-eval` (real models, out of CI):
-
-- Scenario ground truth factored out of `retrieval-eval` into a shared importable
-  module (single source for both benches).
-- For each of the 11 scenarios × N ∈ {0, 2000}: run retrieval (DEFAULT_PROFILE),
-  then the full two-message challenge with a real provider (default DeepSeek,
-  temperature 0; `--provider mistral` available).
-- Reports per scenario and mean: recall of expected nodes at three stages — **raw
-  retrieval → post-pull → post-LLM-keeps** — plus final-map size and precision, and
-  the per-case trap criterion with the thief/reject autopsy (which expected nodes
-  did the LLM itself reject — a new failure class worth watching).
-- **Disk cache** keyed (scenario, N, provider, model, prompt-hash) under
-  `.bench-cache/` (gitignored): a re-run after a prompt edit only re-pays the
-  affected calls. Model name + version logged in the output header.
-- Success reading (not a pre-committed gate this time — exploratory first run):
-  the pull must recover governance traps at N=2000 (the L4 residual), and the
-  post-LLM map must hold recall while shrinking (precision is W3's whole point —
-  L1). Numbers land in known-limits L4/L1 and BUILD-ORDER, as always.
-
-## 8. Lot 5b — Demo script (W3 exit)
-
-Scripted run (clean 72-node seed, Mistral): cash-back brief → enrichment chips
-appear → map refines → one LLM-phrased trigger question with stakes → CHALLENGING:
-map shrinks with reasons, rejected panel, **the monetique freeze pulled back with
-its justification and challenged in the statement**, claims accepted via ledger →
-challenge statement rendered. This is the W3 "more convincing demo" increment
-(north star).
+Scripted run (clean seed, Mistral): cash-back brief → enrichment chips → map
+refines → a woven question (graph context + perimeter section) → free answer that
+fills two EDB sections at once (extraction cards) → challenge: map shrinks with
+reasons, **the monetique freeze pulled back, justified, challenged in the
+statement**, claims accepted → EDB panel showing graph sections filled, user
+sections progressing, completeness badge. The "talking to someone who knows the
+company" feeling is the demo's success criterion (north star).
 
 ## 9. Testing & error handling
 
-- Hermetic suite (hard rule 4): gates A/B, pull traversal + cap + provenance,
-  ledger transitions, enrichment chip lifecycle, question fallback, JSON-retry
-  helper, state transitions — all with MockProvider scripted responses.
-  FakeEmbedder unchanged. No network, no keys, no model downloads.
-- Error handling: MVP §6 verbatim (one schema-reminder retry → clean French error;
-  provider down → resumable session; ungrounded → visible rejection).
-- `ruff` clean; French/English split per hard rule 6 (prompts and all LLM-facing
-  output text French; code English).
+- Hermetic (hard rule 4): gates A/B, pull traversal/cap/provenance, EDB template
+  state machine (statuses, entry sources, completeness), orchestrator pool
+  building + precedence + fallbacks, extraction gating, ledger transitions,
+  JSON-retry helper — all with MockProvider scripted responses. No network, no
+  keys, no downloads.
+- Error handling: MVP §6 verbatim. Enrichment/extraction failures never block a
+  turn; question selection falls back to templates; challenge failure → clean
+  French error, session resumable.
+- `ruff` clean; language split (hard rule 6): prompts and all LLM-facing output
+  French, code English.
 
 ## Out of scope (explicit)
 
-- SCOPING / DRAFTING / VALIDATED states (W4: dossier, write-back, eval run).
-- LLM tool-use graph navigation (parked, §4.7).
+- EDB rendering/export (.md) and DRAFTING/VALIDATED states — W4, on the filled
+  template.
+- Write-back, three-arm eval run — W4.
+- LLM tool-use graph navigation (parked, §5.5).
 - Multi-turn polluted sweep & anchor-capacity (TOP_K) chantier — recorded
-  follow-ups, naturally re-measured once the challenge layer exists.
-- Streaming, conversation memory beyond the brief, any retrieval constant change.
+  follow-ups.
+- Streaming, conversation memory beyond brief+EDB, retrieval constant changes.

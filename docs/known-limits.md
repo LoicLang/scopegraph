@@ -145,6 +145,18 @@ spec `2026-06-11-distractor-stress-bench-design.md`).** Verdict: **SWAP EMBEDDER
 - The hermetic suite's FakeEmbedder produces exact ties real embeddings never produce
   (origin of the type-priority tie-break, W2 spec §3) — quality conclusions only ever
   come from the real-model bench, never from the hermetic tests.
+- **Distractor-recall design bias (noted 2026-06-12, raised by Loïc — status: noted,
+  no action decided).** Generating plausible same-domain distractors statistically
+  guarantees that some are *genuinely relevant* to the eval briefs (extreme case: the
+  monetique shard invented a fictional cashback ecosystem while an eval case is
+  cash-back — its nodes are correct scoping answers, counted as misses). So the
+  polluted-sweep recall is systematically biased LOW; only the per-case trap-death
+  criterion is immune (the L4 anchor inspection details the three thief classes:
+  legitimate substitution / wrong instance / homonym). Options if a corrected number
+  is ever needed: (a) hand-annotate the thieves' relevance on the sweep logs (~1 h,
+  gives a corrected recall); (b) exclude brief-twin themes at generation — rejected
+  by default, it would soften the test. Re-evaluate after the e5 sweep: if traps
+  survive there, the biased mean stops mattering for any decision.
 
 ## L6 — Map readability (UI debt, W3 polish list)
 

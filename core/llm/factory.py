@@ -1,4 +1,4 @@
-"""Provider resolution from env (SCOPEGRAPH_LLM_PROVIDER: mistral|deepseek|mock|none).
+"""Provider resolution from env (SCOPEGRAPH_LLM_PROVIDER: mistral|deepseek|grok|mock|none).
 
 API keys may live in a project-root .env (gitignored) — loaded lazily, never
 overriding the real environment. No python-dotenv dependency: KEY=VALUE lines,
@@ -41,4 +41,8 @@ def make_provider() -> LLMProvider | None:
         from core.llm.deepseek import DeepSeekProvider
 
         return DeepSeekProvider(api_key=os.environ["DEEPSEEK_API_KEY"])
+    if name == "grok":
+        from core.llm.grok import GrokProvider
+
+        return GrokProvider(api_key=os.environ["GROK_API_KEY"])
     raise ValueError(f"unknown SCOPEGRAPH_LLM_PROVIDER: {name}")

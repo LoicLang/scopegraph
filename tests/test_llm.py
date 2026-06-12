@@ -102,6 +102,51 @@ def test_deepseek_calls_openai_compatible_endpoint(monkeypatch):
     assert captured["messages"][0] == {"role": "system", "content": "sys"}
 
 
+def test_grok_calls_xai_endpoint(monkeypatch):
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class _Completions:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            msg = types.SimpleNamespace(content='{"ok": true}')
+            return types.SimpleNamespace(choices=[types.SimpleNamespace(message=msg)])
+
+    class _Client:
+        def __init__(self, api_key, base_url):
+            captured["base_url"] = base_url
+            self.chat = types.SimpleNamespace(completions=_Completions())
+
+    fake = types.ModuleType("openai")
+    fake.OpenAI = _Client
+    monkeypatch.setitem(sys.modules, "openai", fake)
+
+    from core.llm.grok import GrokProvider
+
+    out = GrokProvider(api_key="k").complete_json("sys", "user")
+    assert out == {"ok": True}
+    assert captured["base_url"] == "https://api.x.ai/v1"
+    assert captured["temperature"] == 0
+    assert captured["response_format"] == {"type": "json_object"}
+
+
+def test_factory_resolves_grok(monkeypatch):
+    import sys
+    import types
+
+    fake = types.ModuleType("openai")
+    fake.OpenAI = lambda api_key, base_url: types.SimpleNamespace(chat=None)
+    monkeypatch.setitem(sys.modules, "openai", fake)
+
+    from core.llm.factory import make_provider
+
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "grok")
+    monkeypatch.setenv("GROK_API_KEY", "k")
+    assert type(make_provider()).__name__ == "GrokProvider"
+
+
 def test_load_dotenv_fills_missing_vars_without_overriding(monkeypatch, tmp_path):
     from core.llm.factory import load_dotenv
 

@@ -48,7 +48,8 @@ PROMPT_FILES = ("challenge_triage", "challenge_claims")
 
 def make_bench_provider(name: str):
     load_dotenv()  # keys may live in the project-root .env (gitignored)
-    env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY"}[name]
+    env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY",
+               "grok": "GROK_API_KEY"}[name]
     api_key = os.environ.get(env_var)
     if not api_key:
         sys.exit(f"missing {env_var} — set it in .env, export it, or pick the other --provider")
@@ -56,6 +57,10 @@ def make_bench_provider(name: str):
         from core.llm.deepseek import DeepSeekProvider
 
         return DeepSeekProvider(api_key=api_key)
+    if name == "grok":
+        from core.llm.grok import GrokProvider
+
+        return GrokProvider(api_key=api_key)
     from core.llm.mistral import MistralProvider
 
     return MistralProvider(api_key=api_key)
@@ -110,7 +115,8 @@ def run_challenge(provider, service, result, *, use_cache: bool, key_parts) -> d
 def main() -> None:
     sys.stdout.reconfigure(line_buffering=True)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", choices=["deepseek", "mistral"], default="deepseek")
+    parser.add_argument("--provider", choices=["deepseek", "mistral", "grok"],
+                        default="deepseek")
     parser.add_argument("--n", type=int, nargs="+", default=[0], metavar="N",
                         help="distractor counts to run (e.g. --n 0 2000)")
     parser.add_argument("--no-cache", action="store_true", help="bypass .bench-cache/")

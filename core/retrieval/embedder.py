@@ -9,7 +9,14 @@ _HASH_OFFSET = DIM // 2  # hash vectors live in the upper half, fragments in the
 
 
 class Embedder(Protocol):
-    def embed(self, texts: list[str]) -> list[list[float]]: ...
+    def embed_queries(self, texts: list[str]) -> list[list[float]]: ...
+
+    def embed_passages(self, texts: list[str]) -> list[list[float]]: ...
+
+
+def prefixed(prefix: str, texts: list[str]) -> list[str]:
+    """e5-style prefix application — pure, so it tests without a model download."""
+    return [prefix + text for text in texts] if prefix else texts
 
 
 class FakeEmbedder:
@@ -25,7 +32,10 @@ class FakeEmbedder:
         if len(self._fragments) > _HASH_OFFSET:
             raise ValueError(f"FakeEmbedder supports at most {_HASH_OFFSET} fragments")
 
-    def embed(self, texts: list[str]) -> list[list[float]]:
+    def embed_queries(self, texts: list[str]) -> list[list[float]]:
+        return [self._embed_one(text) for text in texts]
+
+    def embed_passages(self, texts: list[str]) -> list[list[float]]:
         return [self._embed_one(text) for text in texts]
 
     def _embed_one(self, text: str) -> list[float]:

@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from core.retrieval.embedder import DIM, FakeEmbedder
+from core.retrieval.embedder import DIM, FakeEmbedder, prefixed
 
 
 def cosine(a: list[float], b: list[float]) -> float:
@@ -12,14 +12,14 @@ def cosine(a: list[float], b: list[float]) -> float:
 
 def test_vectors_are_unit_norm() -> None:
     emb = FakeEmbedder(["app mobile"])
-    for vector in emb.embed(["projet dans l'app mobile", "texte sans fragment"]):
+    for vector in emb.embed_queries(["projet dans l'app mobile", "texte sans fragment"]):
         assert math.sqrt(sum(v * v for v in vector)) == pytest.approx(1.0)
         assert len(vector) == DIM
 
 
 def test_shared_fragment_gives_high_similarity() -> None:
     emb = FakeEmbedder(["app mobile"])
-    [a, b, c] = emb.embed(
+    [a, b, c] = emb.embed_queries(
         ["projet dans l'App Mobile", "Application — app mobile bancaire", "moteur de crédit"]
     )
     assert cosine(a, b) == pytest.approx(1.0)
@@ -28,15 +28,15 @@ def test_shared_fragment_gives_high_similarity() -> None:
 
 def test_two_fragments_give_partial_overlap() -> None:
     emb = FakeEmbedder(["app mobile", "crédit"])
-    [both, one] = emb.embed(["app mobile et crédit", "le crédit conso"])
+    [both, one] = emb.embed_queries(["app mobile et crédit", "le crédit conso"])
     assert cosine(both, one) == pytest.approx(1 / math.sqrt(2))
 
 
 def test_unknown_texts_are_deterministic_and_distinct() -> None:
     emb = FakeEmbedder()
-    [v1] = emb.embed(["texte inconnu"])
-    [v2] = emb.embed(["texte inconnu"])
-    [v3] = emb.embed(["autre texte"])
+    [v1] = emb.embed_queries(["texte inconnu"])
+    [v2] = emb.embed_queries(["texte inconnu"])
+    [v3] = emb.embed_queries(["autre texte"])
     assert v1 == v2
     assert v1 != v3
 
@@ -58,3 +58,19 @@ def test_missing_package_raises_clear_error(monkeypatch: pytest.MonkeyPatch) -> 
     monkeypatch.setitem(sys.modules, "sentence_transformers", None)
     with pytest.raises(RuntimeError, match="sentence-transformers"):
         SentenceTransformersEmbedder()
+
+
+def test_prefixed_applies_prefix():
+    assert prefixed("query: ", ["plafonds", "fraude"]) == ["query: plafonds", "query: fraude"]
+
+
+def test_prefixed_empty_prefix_is_identity():
+    texts = ["plafonds"]
+    assert prefixed("", texts) is texts
+
+
+def test_fake_embedder_queries_and_passages_are_identical():
+    emb = FakeEmbedder(["app mobile"])
+    [q] = emb.embed_queries(["projet app mobile"])
+    [p] = emb.embed_passages(["projet app mobile"])
+    assert q == p

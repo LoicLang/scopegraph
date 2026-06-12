@@ -1,0 +1,92 @@
+"""Per-turn LLM steps (W3 spec §4). Every step degrades deterministically:
+no provider, or a failed JSON contract, never blocks a turn (hard rule: the
+templates and the gates are the product's floor, the LLM is the polish)."""
+
+from core.dossier.template import EdbState
+from core.graph.service import GraphService
+from core.llm.json_contract import JsonContractError, complete_with_retry
+from core.llm.prompts import load_prompt
+from core.llm.provider import LLMProvider
+from core.runtime.brief import ProjectBrief
+from core.runtime.pool import Candidate
+from core.runtime.questions import gap_question, render_question
+
+MAX_ENRICHMENTS_PER_TURN = 4
+
+
+def enrich_brief(provider: LLMProvider | None, brief: ProjectBrief) -> None:
+    """Adds ≤4 revocable vocabulary chips to the retrieval query (spec §4.1)."""
+    if provider is None:
+        return
+    try:
+        out = complete_with_retry(
+            provider, load_prompt("enrich_brief"), brief.text(),
+            required_keys=("additions",),
+        )
+    except JsonContractError:
+        return  # enrichment is sugar — never blocking, the UI shows a discreet notice
+    for addition in out["additions"][:MAX_ENRICHMENTS_PER_TURN]:
+        text = str(addition.get("text", "")).strip()
+        if text and text not in brief.enrichments:
+            brief.enrichments.append(text)
+
+
+def extract_fields(
+    provider: LLMProvider | None, answer: str, edb: EdbState
+) -> tuple[list[dict], list[str]]:
+    """Proposes EDB entries from a free answer; returns (gated entries, dropped ids)."""
+    if provider is None:
+        return [], []
+    allowed = set(edb.sections)
+    system = load_prompt("extract_fields").replace("{sections}", ", ".join(sorted(allowed)))
+    try:
+        out = complete_with_retry(provider, system, answer, required_keys=("entries",))
+    except JsonContractError:
+        return [], []
+    entries, dropped = [], []
+    for raw in out["entries"]:
+        section_id = raw.get("section_id", "")
+        if section_id in allowed and raw.get("text"):
+            entries.append({"section_id": section_id, "text": raw["text"],
+                            "node_refs": list(raw.get("node_refs", []))})
+        else:
+            dropped.append(section_id)
+    return entries, dropped
+
+
+def _template_question(candidate: Candidate, service: GraphService | None) -> str:
+    if candidate.kind == "edb_gap":
+        return gap_question(candidate.section_id)
+    return render_question(candidate.trigger, service)
+
+
+def _candidate_context(candidate: Candidate, service: GraphService | None) -> str:
+    if candidate.kind == "edb_gap":
+        return f"[{candidate.key}] section EDB manquante — piste : {gap_question(candidate.section_id)}"
+    return f"[{candidate.key}] ambiguïté graphe ({candidate.kind}) — gabarit : {_template_question(candidate, service)}"
+
+
+def pick_question(
+    provider: LLMProvider | None,
+    pool: list[Candidate],
+    service: GraphService | None,
+) -> tuple[Candidate, str]:
+    """LLM choice gated to the pool; templates are the permanent fallback (spec §4.4)."""
+    assert pool, "pick_question requires a non-empty pool"
+    fallback = (pool[0], _template_question(pool[0], service))
+    if provider is None:
+        return fallback
+    user = "\n".join(_candidate_context(c, service) for c in pool)
+    try:
+        out = complete_with_retry(
+            provider, load_prompt("pick_question"), user,
+            required_keys=("candidate_key", "question"),
+        )
+    except JsonContractError:
+        return fallback
+    by_key = {c.key: c for c in pool}
+    candidate = by_key.get(str(out["candidate_key"]))
+    question = str(out["question"]).strip()
+    if candidate is None or not question:
+        return fallback  # gated: an id outside the pool is an LLM error, not a crash
+    return candidate, question

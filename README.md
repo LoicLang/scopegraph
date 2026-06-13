@@ -177,21 +177,36 @@ first — the graph grows through usage.
 
 ---
 
-## Measured, not claimed
+## How it's tested
 
-Quality is benched against real models, never asserted. Two out-of-CI harnesses replay
-over a disk cache so re-runs are free; findings live in [docs/known-limits.md](docs/known-limits.md).
+Two layers, by design — because *correctness* and *quality* are different questions.
 
-- **`scripts/challenge-eval`** — the challenge end-to-end over 11 hand-derived scenarios.
-  The challenge layer delivers the precision stage it was designed for: mean map **60 → 11.5
-  nodes**, precision **13% → 53%**, **0 / N ungrounded claims** survive the gate.
-- **`scripts/conversation-eval`** — an LLM *persona* plays a project manager and is scoped
-  by the real session, over the full interview + challenge, across DeepSeek, Mistral and
-  Grok. It earns its keep: it caught a production crash (two models omit a required claim
-  field), a statement dict-leak, and the limits of an LLM judging its own output.
+**The mechanics are proven hermetically.** 234 tests, no API key, no network, no model
+download: `MockProvider` and `FakeEmbedder` stand in for every LLM and embedding call, and
+a test that reaches a real provider is itself a bug. They pin the deterministic core — the
+grounding gates, the governance pull (traversal, cap, provenance), the EDB state machine,
+the propose/validate ledger, the JSON-contract retry, the interview's question selection and
+fallbacks. This is what guarantees the `provider=none` floor — the whole product running on
+templates — always holds. CI runs them on every push.
 
-The honest limits — recall-vs-scale, the vocabulary bridge, retrieval drift under
-conversation — are written down with their evidence, not hidden.
+**The quality is measured against real models, never asserted.** Determinism doesn't make
+the LLM's *judgement* good; only real models can show that. Three out-of-CI harnesses replay
+over a disk cache so re-runs are free, and every finding lands in
+[docs/known-limits.md](docs/known-limits.md) with its evidence and its honest limits.
+
+- **`scripts/retrieval-eval`** — retrieval quality over 11 hand-derived scenarios (recall,
+  map size, precision), with a distractor-stress sweep up to 2000 nodes.
+- **`scripts/challenge-eval`** — the challenge end-to-end. It delivers the precision stage it
+  was designed for: mean map **60 → 11.5 nodes**, precision **13% → 53%**, **0 ungrounded
+  claims** survive the gate.
+- **`scripts/conversation-eval`** — an LLM *persona* plays a project manager and is scoped by
+  the real session across DeepSeek, Mistral and Grok. It earned its keep immediately: it
+  caught a production crash (two models omit a required claim field), a statement dict-leak,
+  and the limits of a model judging its own output.
+
+The conclusions come from the benches, not the hermetic suite: the tests prove the runtime is
+deterministic; the benches say whether the result is any good — recall-vs-scale, the
+vocabulary bridge, retrieval drift under conversation — all written down, none hidden.
 
 ---
 

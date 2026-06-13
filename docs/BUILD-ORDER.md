@@ -137,8 +137,29 @@ calls on day one), and the new L7** (triage rejects governance with plausible
    S3 passes 6/6 everywhere; structural lever closed as unnecessary. Grok provider
    added (`grok-4.3`); model ids verified online (deepseek-v4-flash, mistral-small-
    latest→Small 4). All in known-limits L7.
-2. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough).
-3. Merge decision on `w3-llm-edb`.
+2. ~~Conversation reliability levers 1–3~~ DONE (2026-06-13, from a live Mistral
+   cadrage session — see below). 
+3. The scripted Mistral demo: `docs/demo-w3.md` (cash-back walkthrough).
+4. Merge decision on `w3-llm-edb`.
+
+**Conversation levers 1–3 (2026-06-13, from a real cash-back cadrage session driven
+through the live Mistral app).** Three reliability fixes, all measured live + hermetic:
+- L1 *no silent turn*: past the question cap with EDB gaps remaining, a message
+  acknowledged nothing — now always answers with what's left.
+- L2 *graph-ambiguity-first*: the LLM could detour to a generic EDB-gap question
+  while a graph pivot was pending (the live session opened on « quel problème
+  métier ? » instead of a woven SI question). The runtime now offers ONLY graph
+  candidates when present; live re-test opens on graph questions (passerelle IP →
+  monétique → socle).
+- L3 *chip proliferation*: 16 enrichment chips with near-duplicates in 6 turns →
+  normalized dedup (case + trailing plural) + global cap 8 + no re-enrich on
+  chip-removal reruns. Live re-test: bounded at 8, no exact dups.
+- Still open (observed in the same session, NOT yet done): claim factual fidelity
+  (the statement said the monetique freeze runs « jusqu'en 2026 » when the seed
+  says « à compter du 15 janvier 2026 » — gate B checks cited ids, not wording),
+  LLM interpretation of pivot/tie answers (still W2 yes/no token parsing), and a
+  `conversation-eval` harness (scripted personas → full session → EDB completion /
+  graph-vs-gap question ratio / claim-fidelity metrics) to make levers measurable.
 
 ## Week 3 original scope notes (superseded by the spec above — kept for history)
 

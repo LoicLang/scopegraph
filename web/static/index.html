@@ -9,7 +9,11 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color: #1c2733; }
-  main { display: grid; grid-template-columns: minmax(300px, 2fr) 3fr minmax(280px, 2fr); height: 100vh; }
+  main { display: grid; grid-template-columns: minmax(300px, 2fr) 3fr minmax(280px, 2fr);
+         grid-template-rows: 100vh; height: 100vh; }
+  /* keep each pane inside the viewport row — without this a long challenge statement
+     stretches the grid row and every pane (map included) blows up to content height */
+  main > section { min-height: 0; }
   #chat { display: flex; flex-direction: column; border-right: 1px solid #d8dee5; background: #fff; }
   #chat h1 { font-size: 1.1rem; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d8dee5; }
   #messages { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
@@ -201,6 +205,12 @@ function renderMap(payload, ui) {
     const provenance = d.provenance ? ` — ${d.provenance}` : "";
     ui.detail = `${d.label} — ${d.type} — ${role}${provenance}`;
   });
+  // After a re-render the freshly built canvas can paint blank until it re-measures its
+  // container (seen after the challenge turn) — force a resize + fit once the layout
+  // settles, with a timeout fallback.
+  const refit = () => { try { cy.resize(); cy.fit(undefined, 30); } catch (e) {} };
+  cy.one("layoutstop", refit);
+  setTimeout(refit, 250);
 }
 
 function app() {

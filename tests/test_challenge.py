@@ -6,7 +6,13 @@ import pytest
 
 from core.graph.models import Constraint, Decision, Edge, EdgeType, Risk, System
 from core.graph.service import GraphService
-from core.runtime.challenge import gate_claims, gate_domains, gate_triage, pull_governance
+from core.runtime.challenge import (
+    gate_claims,
+    gate_domains,
+    gate_triage,
+    node_provenance,
+    pull_governance,
+)
 
 
 @pytest.fixture
@@ -106,3 +112,14 @@ def test_gate_claims_filters_domains_against_vocabulary(service):
 
 def test_known_domains_is_the_in_use_vocabulary(service):
     assert service.known_domains() == frozenset({"monetique"})
+
+
+# -- claim provenance (fidelity) ----------------------------------------------
+
+def test_node_provenance_returns_authoritative_text_and_drops_unknown(service):
+    prov = node_provenance(service, ["dec-y", "con-x", "sys-GHOST"])
+    assert [p["node_id"] for p in prov] == ["dec-y", "con-x"]  # ghost id dropped
+    dec = prov[0]
+    assert dec["label"] == "Décision Y"
+    assert dec["type"] == "decision"
+    assert dec["text"] == "Gel des évolutions."  # verbatim from the node, not the LLM

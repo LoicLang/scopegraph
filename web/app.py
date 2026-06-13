@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from core.graph.service import GraphService
 from core.llm.factory import make_provider
 from core.llm.provider import LLMProvider
+from core.runtime.challenge import node_provenance
 from core.retrieval.embedder import Embedder
 from core.retrieval.index import VectorIndex, embedder_id, graph_fingerprint
 from core.retrieval.retriever import RetrievalResult
@@ -57,6 +58,16 @@ def _annotations(session: ScopingSession, result: RetrievalResult) -> dict[str, 
     return annotations
 
 
+def _card_dict(service: GraphService, proposal) -> dict:
+    """Serialize a ledger proposal, hydrating claims with their cited nodes' real text."""
+    ids = proposal.payload.get("node_ids") or proposal.payload.get("node_refs") or []
+    return {
+        "id": proposal.id, "kind": proposal.kind, "text": proposal.text,
+        "payload": proposal.payload, "status": proposal.status,
+        "provenance": node_provenance(service, ids),
+    }
+
+
 def _session_payload(
     service: GraphService,
     session: ScopingSession,
@@ -84,8 +95,7 @@ def _session_payload(
         "edb": session.edb.to_dict(),
         "missing_sections": session.edb.missing_sections(),
         "cards": [
-            {"id": p.id, "kind": p.kind, "text": p.text,
-             "payload": p.payload, "status": p.status}
+            _card_dict(service, p)
             for p in (cards_filter if cards_filter is not None else session.ledger.pending())
         ],
         "rejected_nodes": session.rejected_nodes,

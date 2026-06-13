@@ -134,6 +134,26 @@ def test_proposal_accept_endpoint_applies_to_edb(tmp_path: Path) -> None:
     assert out["edb"]["dependances"]
 
 
+def test_claim_cards_carry_node_provenance(tmp_path: Path) -> None:
+    # Fidelity: each claim card ships the authoritative text of its cited nodes, so the
+    # user verifies the LLM's paraphrase against the seed (the runtime is the source of truth).
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [
+            {"kind": "constraint_applies", "node_ids": ["con-mini"],
+             "target_section": "contraintes", "reason": "la règle s'applique au cash-back"}],
+         "domains": [], "challenge_statement": "Défi."},
+    ])
+    client = mini_client(tmp_path, provider)
+    session_id = client.post("/api/session").json()["session_id"]
+    out = client.post(f"/api/session/{session_id}/message",
+                      json={"text": "refonte du canal"}).json()
+    claim = next(c for c in out["cards"] if c["kind"] == "claim")
+    assert claim["provenance"][0]["node_id"] == "con-mini"
+    assert claim["provenance"][0]["text"] == "Contrainte locale."  # verbatim from the node
+
+
 def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
     # queue: enrich(1 chip) · triage · claims · re-run pick (NO re-enrich — lever 3:
     # removing a chip adds no user words, so the round reruns without a new enrichment)

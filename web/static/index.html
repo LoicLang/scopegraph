@@ -19,6 +19,10 @@
   .card { border: 1px solid #d8dee5; border-left: 4px solid #2e9e6b; border-radius: 8px;
           padding: 8px 12px; font-size: 0.85rem; background: #fbfcfd; align-self: stretch; }
   .card .kind { font-size: 0.7rem; text-transform: uppercase; color: #5d6b7a; }
+  .card .prov { margin-top: 6px; padding: 6px 8px; background: #f1f4f8; border-radius: 6px;
+                font-size: 0.78rem; color: #3c4a59; }
+  .card .prov-h { font-size: 0.68rem; text-transform: uppercase; color: #7a8794; margin-bottom: 2px; }
+  .card .prov-row { line-height: 1.3; margin: 1px 0; }
   .card .actions { margin-top: 6px; display: flex; gap: 6px; }
   .card .actions button { padding: 4px 10px; font-size: 0.8rem; }
   .card .actions .reject { background: #d15c4f; }
@@ -72,6 +76,14 @@
         <div class="card">
           <div class="kind" x-text="c.kind === 'claim' ? 'Affirmation à valider' : 'Élément d\'EDB proposé'"></div>
           <div x-text="c.text"></div>
+          <template x-if="(c.provenance || []).length">
+            <div class="prov">
+              <div class="prov-h">Source (texte du référentiel) :</div>
+              <template x-for="src in c.provenance" :key="src.node_id">
+                <div class="prov-row"><b x-text="src.label || src.node_id"></b><span x-text="' — ' + src.text"></span></div>
+              </template>
+            </div>
+          </template>
           <div class="actions">
             <button @click="decide(c.id, 'accept')">Accepter</button>
             <button class="edit" @click="edit(c)">Modifier</button>

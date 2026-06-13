@@ -6,7 +6,7 @@ The runtime decides; rejections are returned, never swallowed (hard rule 2)."""
 from dataclasses import dataclass
 
 from core.dossier.template import CLAIM_SECTIONS
-from core.graph.service import GraphService
+from core.graph.service import GraphService, UnknownNodeError
 
 PULL_CAP = 10  # structural: max governance nodes pulled back per challenge
 _PULL_EDGE_TYPES = {"CONSTRAINS", "SUPERSEDES"}
@@ -107,6 +107,24 @@ def render_stabilized(
         for p in pulled
     ]
     return "\n".join(lines + _edge_lines(service, ids))
+
+
+def node_provenance(service: GraphService, node_ids: list[str]) -> list[dict]:
+    """Authoritative facts for the cited nodes (claim fidelity, W3 spec §5).
+
+    The runtime is the source of truth: each claim ships its cited nodes' real text
+    so the user verifies the LLM's paraphrase against the seed, not the other way
+    round. Unknown ids are dropped (gate B already rejects out-of-map claims)."""
+    facts: list[dict] = []
+    for node_id in node_ids:
+        try:
+            node = service.get_node(node_id)
+        except UnknownNodeError:
+            continue
+        title = getattr(node, "name", "") or getattr(node, "title", "")
+        text = getattr(node, "description", "") or getattr(node, "statement", "")
+        facts.append({"node_id": node_id, "label": title, "type": node.type, "text": text})
+    return facts
 
 
 def gate_domains(domains: list[str], service: GraphService) -> list[str]:

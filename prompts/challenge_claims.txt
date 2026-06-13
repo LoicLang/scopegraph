@@ -13,5 +13,8 @@ gardés — justifie-les). Produis :
 Chaque affirmation doit s'appuyer sur des nœuds cités. Les node_ids doivent être
 des identifiants EXACTS copiés de la carte ci-dessus — jamais inventés ; pour
 signaler un risque ou un recouvrement nouveau, cite les nœuds existants qui le
-motivent et exprime le reste dans la raison. Réponds en JSON avec ces quatre clés
-exactement.
+motivent et exprime le reste dans la raison. Fidélité aux faits : dans chaque
+raison ET dans le défi, reprends les faits, dates et chiffres EXACTEMENT tels
+qu'ils figurent dans le texte des nœuds cités (ne transforme pas « à compter du
+15 janvier 2026 » en « jusqu'en 2026 ») ; n'affirme rien au-delà de ce que les
+nœuds disent. Réponds en JSON avec ces quatre clés exactement.

@@ -1,0 +1,7 @@
+{
+  "name": "scopegraph-screenshots",
+  "private": true,
+  "type": "module",
+  "description": "Playwright capture of the live scopegraph app for the README.",
+  "dependencies": { "playwright": "^1.48.0" }
+}

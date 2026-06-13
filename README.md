@@ -41,6 +41,40 @@ Full pivot story (from a multi-agent predecessor): [docs/adr/0000-pivot-from-mas
 
 ---
 
+## See it work
+
+Real captures of the live app (Mistral), driven end-to-end by
+[`tools/screenshots/capture.mjs`](tools/screenshots/capture.mjs) — one sentence in, and
+the **Context Map, the interview, and the dossier build themselves**.
+
+<p align="center">
+  <img src="assets/screenshots/01-map-and-interview.png" width="49%" alt="The Context Map populates from one sentence; the interview asks an SI-aware question; AI vocabulary chips appear" />
+  <img src="assets/screenshots/02-edb-extraction.png" width="49%" alt="A free answer is mined into several dossier sections at once, each a proposal to accept" />
+</p>
+
+> **Left:** one sentence ("a cash-back programme at partner merchants"), and the map is
+> already populated — anchors, expansions, and a woven question that mentions the actual
+> systems at stake. **Right:** a free answer is mined into dossier entries on the fly.
+
+<p align="center">
+  <img src="assets/screenshots/03-challenge.png" width="49%" alt="The challenge: claim cards each carrying the authoritative source text of the node they cite" />
+  <img src="assets/screenshots/04-edb-grounded.png" width="49%" alt="The stabilized map plus the dossier filled with grounded, source-backed entries" />
+</p>
+
+> **Left:** the challenge — the map shrinks to what's justified and each claim ships the
+> **authoritative text of the node it cites**. **Right:** the dossier, filled with
+> grounded entries (every `CLAIM` badge is traceable to a real node).
+
+<p align="center">
+  <img src="assets/screenshots/03b-claim-provenance.png" width="62%" alt="A single claim card: the model's reasoning on top, the verbatim graph source below, human validation buttons" />
+</p>
+
+> One claim card: the model's reasoning on top, the **verbatim source from the graph**
+> below — so you check the paraphrase against the truth — and the human in control
+> (*Accepter / Modifier / Refuser*). The runtime rejects anything it can't ground.
+
+---
+
 ## How it works
 
 ```mermaid

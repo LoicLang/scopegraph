@@ -154,12 +154,17 @@ through the live Mistral app).** Three reliability fixes, all measured live + he
 - L3 *chip proliferation*: 16 enrichment chips with near-duplicates in 6 turns →
   normalized dedup (case + trailing plural) + global cap 8 + no re-enrich on
   chip-removal reruns. Live re-test: bounded at 8, no exact dups.
-- Still open (observed in the same session, NOT yet done): claim factual fidelity
-  (the statement said the monetique freeze runs « jusqu'en 2026 » when the seed
-  says « à compter du 15 janvier 2026 » — gate B checks cited ids, not wording),
-  LLM interpretation of pivot/tie answers (still W2 yes/no token parsing), and a
-  `conversation-eval` harness (scripted personas → full session → EDB completion /
-  graph-vs-gap question ratio / claim-fidelity metrics) to make levers measurable.
+- L4 *claim factual fidelity* DONE (2026-06-13): `node_provenance()` attaches each
+  claim's cited nodes' authoritative seed text to the card, the UI renders it under
+  the claim, and the claims prompt forbids transforming facts/dates (« à compter du
+  15 janvier 2026 » → « jusqu'en 2026 ») — live: all 14 claims of a cash-back session
+  carried their sources. Deterministic for claims; the free-prose challenge statement
+  stays prompt-only (best-effort, no structured citations).
+- Still open (observed in the same session, NOT yet done): LLM interpretation of
+  pivot/tie answers (still W2 yes/no token parsing — « uniquement en magasin »
+  confirms/excludes nothing), and a `conversation-eval` harness (scripted personas →
+  full session → EDB completion / graph-vs-gap question ratio / claim-fidelity
+  metrics) to make these levers measurable instead of eyeballed.
 
 ## Week 3 original scope notes (superseded by the spec above — kept for history)
 

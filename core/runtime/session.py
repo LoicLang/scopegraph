@@ -36,6 +36,7 @@ from core.runtime.llm_steps import (
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
+    judge_statement_fidelity,
     pick_question,
 )
 from core.runtime.pool import Candidate, build_pool
@@ -94,6 +95,7 @@ class ScopingSession:
         self.restored: set[str] = set()  # user-restored nodes (provenance for the map)
         self.last_result: RetrievalResult | None = None
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
+        self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
     def handle_message(self, text: str) -> Turn:
@@ -256,10 +258,12 @@ class ScopingSession:
             cards.append(self.ledger.get(pid))
         self.proposed_domains = gate_domains(out2.get("domains", []), self._service)
         statement = str(out2["challenge_statement"])
-        # P2: flag any number in the free-prose statement absent from its sources.
+        # P2: flag any number in the free-prose statement absent from its sources, and
+        # #2: an LLM faithfulness pass for the semantic drift the number guard misses.
         source_texts = [f["text"] for f in node_provenance(self._service, sorted(map_ids))]
         source_texts.append(self.brief.text())
         self.statement_flags = statement_fact_flags(statement, source_texts)
+        self.statement_issues = judge_statement_fidelity(self._provider, statement, source_texts)
         self.edb.add_entry("challenge", EdbEntry(source="llm", text=statement))
         self.challenge_done = True
         return statement, cards

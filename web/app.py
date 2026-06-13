@@ -101,6 +101,7 @@ def _session_payload(
         "rejected_nodes": session.rejected_nodes,
         "gate_rejections": session.gate_rejections,
         "statement_flags": session.statement_flags,
+        "statement_issues": session.statement_issues,
         "pulled": [
             {"id": p.node_id, "via": p.via_id, "edge_type": p.edge_type}
             for p in session.pulled

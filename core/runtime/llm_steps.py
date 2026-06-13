@@ -106,6 +106,25 @@ def interpret_tie_answer(
     return [str(d) for d in out.get("selected", []) if str(d) in domains]
 
 
+def judge_statement_fidelity(
+    provider: LLMProvider | None, statement: str, source_texts: list[str]
+) -> list[str]:
+    """LLM faithfulness pass over the free-prose challenge statement (#2). Returns FR
+    descriptions of assertions that contradict or are unsupported by the sources —
+    catching the semantic drift the deterministic number guard cannot (directional
+    dates). [] without a provider or on failure (never blocking)."""
+    if provider is None:
+        return []
+    sources = "\n".join(f"- {text}" for text in source_texts)
+    user = f"Sources autorisées :\n{sources}\n\nDéfi à vérifier :\n{statement}"
+    try:
+        out = complete_with_retry(provider, load_prompt("judge_statement"), user,
+                                  required_keys=("issues",))
+    except JsonContractError:
+        return []
+    return [str(issue).strip() for issue in out.get("issues", []) if str(issue).strip()]
+
+
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
         return gap_question(candidate.section_id)

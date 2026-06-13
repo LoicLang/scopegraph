@@ -9,6 +9,7 @@ from core.runtime.llm_steps import (
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
+    judge_statement_fidelity,
     pick_question,
 )
 from core.runtime.pool import Candidate
@@ -125,6 +126,30 @@ def test_interpret_tie_gates_selection_to_offered_domains():
 
 def test_interpret_tie_none_provider_returns_none():
     assert interpret_tie_answer(None, "q", "a", ("x", "y")) is None
+
+
+def test_judge_statement_flags_unfaithful_assertions():
+    # #2: the judge catches semantic drift the number guard can't (directional date).
+    provider = MockProvider([{"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]}])
+    issues = judge_statement_fidelity(
+        provider, "Le gel court jusqu'au 15 janvier 2026.",
+        ["Le gel s'applique à compter du 15 janvier 2026."],
+    )
+    assert issues and "inversée" in issues[0]
+
+
+def test_judge_statement_none_provider_returns_empty():
+    assert judge_statement_fidelity(None, "x", ["y"]) == []
+
+
+def test_judge_statement_swallows_contract_failure():
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+    assert judge_statement_fidelity(provider, "x", ["y"]) == []
+
+
+def test_judge_statement_filters_blank_issues():
+    provider = MockProvider([{"issues": ["", "  ", "vrai problème"]}])
+    assert judge_statement_fidelity(provider, "x", ["y"]) == ["vrai problème"]
 
 
 def test_pick_question_none_provider_uses_templates():

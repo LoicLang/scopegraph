@@ -1,0 +1,7 @@
+Tu vérifies la fidélité d'un texte de défi de cadrage par rapport à des sources
+autorisées (le texte exact des éléments du référentiel cités). Relève UNIQUEMENT les
+affirmations du défi qui contredisent une source ou ne s'appuient sur aucune : dates
+inversées (« jusqu'au » vs « à compter du »), chiffres ou pourcentages inventés, faits
+non présents dans les sources. Ignore le style et les reformulations fidèles. Réponds
+en JSON : {"issues": ["<une phrase en français par problème>"]}. Liste vide si le défi
+est fidèle aux sources.

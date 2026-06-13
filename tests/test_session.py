@@ -246,10 +246,25 @@ def test_challenge_flags_unsourced_numbers_in_statement() -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Environ 30% des cas sont à risque."},
+        {"issues": []},  # fidelity judge
     ])
     session = make_challenge_session(provider)
     session.handle_message("refonte du canal")
     assert "30" in session.statement_flags
+
+
+def test_challenge_records_statement_fidelity_issues() -> None:
+    # #2: the LLM fidelity judge surfaces semantic drift (directional date inversion).
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"issues": ["Date inversée par rapport à la source."]},
+    ])
+    session = make_challenge_session(provider)
+    session.handle_message("refonte du canal")
+    assert session.statement_issues and "inversée" in session.statement_issues[0]
 
 
 def make_multi_pivot_session() -> ScopingSession:
@@ -315,7 +330,7 @@ def test_no_provider_session_behaves_like_w2_plus_gap_templates() -> None:
 
 
 def _challenge_provider() -> MockProvider:
-    # queue: enrich · triage(keep all) · claims(one valid claim + statement)
+    # queue: enrich · triage(keep all) · claims(one valid claim + statement) · fidelity judge
     return MockProvider([
         {"additions": []},
         {"verdicts": []},  # gate A defaults everything to keep
@@ -323,6 +338,7 @@ def _challenge_provider() -> MockProvider:
             {"kind": "depends_on", "node_ids": ["sys-canal"],
              "target_section": "dependances", "reason": "le canal porte le besoin"}],
          "domains": [], "challenge_statement": "Défi : le gel bloque T3."},
+        {"issues": []},  # statement faithfulness judge
     ])
 
 

@@ -107,6 +107,17 @@ def test_gate_claims_filters_ids_sections_and_domains(service):
     assert all(r["reason_rejected"] for r in rejected)
 
 
+def test_gate_claims_rejects_a_reasonless_claim(service):
+    # A claim with no justification is ungrounded for display/EDB — reject it visibly
+    # rather than crash the session (a real Grok output omitted "reason").
+    payload = {"claims": [
+        {"kind": "risk", "node_ids": ["risk-z"], "target_section": "risques"},
+    ]}
+    valid, rejected = gate_claims(payload, map_ids={"risk-z"}, service=service)
+    assert valid == []
+    assert rejected[0]["reason_rejected"] == "raison manquante"
+
+
 def test_gate_claims_filters_domains_against_vocabulary(service):
     assert gate_domains(["monetique", "fake-domain"], service) == ["monetique"]
 

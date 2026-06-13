@@ -162,6 +162,8 @@ def gate_claims(
             problem = "cite un nœud hors de la carte stabilisée"
         elif section not in CLAIM_SECTIONS:
             problem = f"section non autorisée : {section}"
+        elif not str(claim.get("reason", "")).strip():
+            problem = "raison manquante"  # ungrounded for the card/EDB text
         if problem:
             rejected.append({**claim, "reason_rejected": problem})
         else:

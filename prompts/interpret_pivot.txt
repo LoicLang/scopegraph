@@ -1,0 +1,8 @@
+Tu analyses la réponse d'un utilisateur à une question de cadrage portant sur le
+domaine « {domain} » du système d'information. Détermine si l'utilisateur INCLUT ce
+domaine dans le périmètre de son projet, l'EXCLUT, ou si sa réponse reste ambiguë.
+Juge le sens, pas les mots : « uniquement en magasin » à propos des terminaux de
+paiement vaut une inclusion ; « ça n'a rien à voir » vaut une exclusion ; « je ne
+sais pas, à vous de me dire » reste ambigu. Réponds en JSON :
+{"verdict": "confirm|exclude|unclear"} où confirm = inclus, exclude = hors périmètre,
+unclear = indéterminé.

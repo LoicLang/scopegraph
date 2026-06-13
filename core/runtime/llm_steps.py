@@ -71,6 +71,41 @@ def extract_fields(
     return entries, dropped
 
 
+def interpret_pivot_answer(
+    provider: LLMProvider | None, question: str, answer: str, domain: str
+) -> str | None:
+    """LLM verdict on a pivot answer: 'confirm' | 'exclude' | 'unclear', or None to
+    fall back to deterministic yes/no parsing (no provider, failure, or junk verdict).
+    The LLM judges meaning ('uniquement en magasin' = confirm); the runtime still owns
+    the domain and the effect (#1 — hard rule 1)."""
+    if provider is None:
+        return None
+    system = load_prompt("interpret_pivot").replace("{domain}", domain)
+    user = f"Question posée : {question}\nRéponse de l'utilisateur : {answer}"
+    try:
+        out = complete_with_retry(provider, system, user, required_keys=("verdict",))
+    except JsonContractError:
+        return None
+    verdict = str(out.get("verdict", ""))
+    return verdict if verdict in ("confirm", "exclude", "unclear") else None
+
+
+def interpret_tie_answer(
+    provider: LLMProvider | None, question: str, answer: str, domains: tuple[str, ...]
+) -> list[str] | None:
+    """LLM selection among the two tie domains, gated to the offered pair; None to fall
+    back to deterministic token matching."""
+    if provider is None:
+        return None
+    system = load_prompt("interpret_tie").replace("{domains}", " / ".join(domains))
+    user = f"Question posée : {question}\nRéponse de l'utilisateur : {answer}"
+    try:
+        out = complete_with_retry(provider, system, user, required_keys=("selected",))
+    except JsonContractError:
+        return None
+    return [str(d) for d in out.get("selected", []) if str(d) in domains]
+
+
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
         return gap_question(candidate.section_id)

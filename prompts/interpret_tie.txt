@@ -1,0 +1,5 @@
+Tu analyses la réponse d'un utilisateur à une question de cadrage qui lui demandait
+de trancher entre les domaines suivants : {domains}. Indique le ou les domaines qu'il
+retient pour son projet (l'un, l'autre, les deux, ou aucun). Juge le sens, pas les
+mots. Réponds en JSON : {"selected": ["...", "..."]} en n'utilisant QUE des libellés
+exacts de la liste fournie ; liste vide si la réponse ne tranche pas.

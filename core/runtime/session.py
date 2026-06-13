@@ -31,7 +31,13 @@ from core.runtime.challenge import (
     statement_fact_flags,
 )
 from core.runtime.ledger import Ledger, Proposal
-from core.runtime.llm_steps import enrich_brief, extract_fields, pick_question
+from core.runtime.llm_steps import (
+    enrich_brief,
+    extract_fields,
+    interpret_pivot_answer,
+    interpret_tie_answer,
+    pick_question,
+)
 from core.runtime.pool import Candidate, build_pool
 from core.runtime.triggers import DomainTieTrigger, PivotTrigger
 
@@ -119,17 +125,29 @@ class ScopingSession:
         self.brief.qa.append(QA(question=question, answer=answer))
         match candidate.trigger:
             case DomainTieTrigger(domain_a=domain_a, domain_b=domain_b):
-                for domain in _match_domains(answer, (domain_a, domain_b)):
+                domains = (domain_a, domain_b)
+                # #1: the LLM judges which domain the answer retains; tokens are the fallback.
+                selected = interpret_tie_answer(self._provider, question, answer, domains)
+                if selected is None:
+                    selected = _match_domains(answer, domains)
+                for domain in selected:
                     if domain not in self.brief.domains:
                         self.brief.domains.append(domain)
                 # an answer naming neither domain resolves nothing: the QA text still enriches the brief
             case PivotTrigger(domain=domain):
-                verdict = _parse_yes_no(answer)
-                if verdict is True and domain not in self.brief.domains:
+                # #1: the LLM judges inclusion/exclusion ('uniquement en magasin' = confirm);
+                # yes/no token parsing is the deterministic fallback. Recall-first: only a
+                # clear negative excludes — 'unclear' is a no-op, never a silent drop.
+                verdict = interpret_pivot_answer(self._provider, question, answer, domain)
+                if verdict is None:
+                    verdict = {True: "confirm", False: "exclude", None: "unclear"}[
+                        _parse_yes_no(answer)
+                    ]
+                if verdict == "confirm" and domain not in self.brief.domains:
                     self.brief.domains.append(domain)
-                elif verdict is False and domain not in self.brief.excluded_domains:
+                elif verdict == "exclude" and domain not in self.brief.excluded_domains:
                     self.brief.excluded_domains.append(domain)
-                # unparseable → the QA text alone enriches the brief; never re-asked
+                # unclear → the QA text alone enriches the brief; never re-asked
 
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None

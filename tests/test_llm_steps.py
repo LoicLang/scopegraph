@@ -7,6 +7,8 @@ from core.runtime.llm_steps import (
     MAX_TOTAL_ENRICHMENTS,
     enrich_brief,
     extract_fields,
+    interpret_pivot_answer,
+    interpret_tie_answer,
     pick_question,
 )
 from core.runtime.pool import Candidate
@@ -90,6 +92,39 @@ def test_pick_question_accepts_a_valid_choice():
     candidate, question = pick_question(mock, [gap], service=None)
     assert candidate.section_id == "objectifs"
     assert question.startswith("Quel succès")
+
+
+def test_interpret_pivot_uses_llm_verdict_beyond_yes_no():
+    # "uniquement en magasin" carries an implicit confirm the token parser misses.
+    provider = MockProvider([{"verdict": "confirm"}])
+    out = interpret_pivot_answer(provider, "Les TPE sont-ils concernés ?",
+                                 "uniquement en magasin", "tpe-acceptation")
+    assert out == "confirm"
+
+
+def test_interpret_pivot_none_provider_returns_none_for_fallback():
+    assert interpret_pivot_answer(None, "q", "oui", "d") is None
+
+
+def test_interpret_pivot_swallows_contract_failure():
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+    assert interpret_pivot_answer(provider, "q", "a", "d") is None
+
+
+def test_interpret_pivot_gates_unknown_verdict_to_none():
+    provider = MockProvider([{"verdict": "peut-être"}])
+    assert interpret_pivot_answer(provider, "q", "a", "d") is None
+
+
+def test_interpret_tie_gates_selection_to_offered_domains():
+    provider = MockProvider([{"selected": ["credit", "inexistant"]}])
+    out = interpret_tie_answer(provider, "credit ou monetique ?", "plutôt le crédit",
+                               ("credit", "monetique"))
+    assert out == ["credit"]  # the off-list domain is dropped
+
+
+def test_interpret_tie_none_provider_returns_none():
+    assert interpret_tie_answer(None, "q", "a", ("x", "y")) is None
 
 
 def test_pick_question_none_provider_uses_templates():

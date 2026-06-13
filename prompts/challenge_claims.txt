@@ -17,4 +17,6 @@ motivent et exprime le reste dans la raison. Fidélité aux faits : dans chaque
 raison ET dans le défi, reprends les faits, dates et chiffres EXACTEMENT tels
 qu'ils figurent dans le texte des nœuds cités (ne transforme pas « à compter du
 15 janvier 2026 » en « jusqu'en 2026 ») ; n'affirme rien au-delà de ce que les
-nœuds disent. Réponds en JSON avec ces quatre clés exactement.
+nœuds disent. N'invente AUCUN chiffre ni pourcentage absent des nœuds (n'écris pas
+« 30 % » si le nœud dit « une part significative ») ; pour toute échéance, raisonne
+à partir de la date du jour fournie. Réponds en JSON avec ces quatre clés exactement.

@@ -12,6 +12,7 @@ from core.runtime.challenge import (
     gate_triage,
     node_provenance,
     pull_governance,
+    statement_fact_flags,
 )
 
 
@@ -123,3 +124,15 @@ def test_node_provenance_returns_authoritative_text_and_drops_unknown(service):
     assert dec["label"] == "Décision Y"
     assert dec["type"] == "decision"
     assert dec["text"] == "Gel des évolutions."  # verbatim from the node, not the LLM
+
+
+def test_statement_fact_flags_catches_unsourced_numbers():
+    sources = ["gel à compter du 15 janvier 2026", "une part significative des dossiers KYC"]
+    flags = statement_fact_flags("Environ 30% des KYC sont périmés ; gel en 2026.", sources)
+    assert "30" in flags        # fabricated figure, absent from every source
+    assert "2026" not in flags  # present in a source — not flagged
+    assert "15" not in flags    # present in a source — not flagged
+
+
+def test_statement_fact_flags_clean_when_all_numbers_sourced():
+    assert statement_fact_flags("Le gel court depuis 2026.", ["gel à compter de 2026"]) == []

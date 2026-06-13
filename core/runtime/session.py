@@ -5,6 +5,7 @@ The runtime owns every decision; the LLM proposes within gates and the ledger.
 provider=None degrades to W2-template behavior plus EDB gap questions.
 """
 
+import datetime
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -23,17 +24,20 @@ from core.runtime.challenge import (
     gate_claims,
     gate_domains,
     gate_triage,
+    node_provenance,
     pull_governance,
     render_stabilized,
     render_subgraph,
+    statement_fact_flags,
 )
 from core.runtime.ledger import Ledger, Proposal
 from core.runtime.llm_steps import enrich_brief, extract_fields, pick_question
 from core.runtime.pool import Candidate, build_pool
-from core.runtime.triggers import DomainTieTrigger, PivotTrigger, WeakBriefTrigger
+from core.runtime.triggers import DomainTieTrigger, PivotTrigger
 
 CHALLENGE_FAILED_MESSAGE = "Le challenge a échoué (modèle) — réessayez."
 EDB_COMPLETE_MESSAGE = "EDB complet — prêt pour la rédaction (W4)"
+MAX_CONSECUTIVE_GRAPH_QUESTIONS = 2  # P3: interleave a discovery gap after this many pivots
 
 
 class SessionState(StrEnum):
@@ -83,6 +87,8 @@ class ScopingSession:
         self.proposed_domains: list[str] = []
         self.restored: set[str] = set()  # user-restored nodes (provenance for the map)
         self.last_result: RetrievalResult | None = None
+        self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
+        self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
     def handle_message(self, text: str) -> Turn:
         text = text.strip()
@@ -94,10 +100,10 @@ class ScopingSession:
             self.state = SessionState.MAPPING
         elif self.state in (SessionState.MAPPING, SessionState.SCOPING):
             if self.pending is not None:
-                if self._apply_answer(self.pending, text):
-                    free_text = text
+                self._apply_answer(self.pending, text)  # domain effects (pivot/tie)
                 self.pending = None
                 self.pending_question = None
+                free_text = text  # P1: always mine the prose — extraction is orthogonal
             else:  # detail volunteered after stability: enrich and re-run
                 self.brief.qa.append(QA(question="(précision)", answer=text))
                 free_text = text
@@ -105,8 +111,9 @@ class ScopingSession:
             raise NotImplementedError(f"state {self.state} arrives with W4")
         return self._map_round(free_text)
 
-    def _apply_answer(self, candidate: Candidate, answer: str) -> bool:
-        """Records the QA and applies domain effects; returns True for free-text answers."""
+    def _apply_answer(self, candidate: Candidate, answer: str) -> None:
+        """Records the QA and applies pivot/tie domain effects (the prose is mined for
+        EDB fields separately, in _map_round — orthogonal to domain resolution)."""
         assert self.brief is not None
         question = self.pending_question or ""
         self.brief.qa.append(QA(question=question, answer=answer))
@@ -116,7 +123,6 @@ class ScopingSession:
                     if domain not in self.brief.domains:
                         self.brief.domains.append(domain)
                 # an answer naming neither domain resolves nothing: the QA text still enriches the brief
-                return False
             case PivotTrigger(domain=domain):
                 verdict = _parse_yes_no(answer)
                 if verdict is True and domain not in self.brief.domains:
@@ -124,10 +130,6 @@ class ScopingSession:
                 elif verdict is False and domain not in self.brief.excluded_domains:
                     self.brief.excluded_domains.append(domain)
                 # unparseable → the QA text alone enriches the brief; never re-asked
-                return False
-            case WeakBriefTrigger() | None:
-                return True  # weak-brief and EDB-gap answers are free prose
-        return True  # pragma: no cover
 
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None
@@ -154,13 +156,21 @@ class ScopingSession:
             ]
         pool = build_pool(result, self.brief, self.asked, self.edb, profile=self._profile)
         graph_candidates = [c for c in pool if c.kind != "edb_gap"]
+        gap_candidates = [c for c in pool if c.kind == "edb_gap"]
         question: str | None = None
         message: str | None = None
         can_ask = self.questions_asked < config.MAX_QUESTIONS
         if graph_candidates and can_ask:
-            # lever 2: a graph ambiguity is resolved before any EDB gap — the runtime
-            # offers ONLY the graph candidates, never letting the LLM detour to a gap.
-            question = self._ask(graph_candidates)
+            # lever 2: a graph ambiguity is resolved before any EDB gap (the LLM only
+            # picks among graph candidates). P3: but interleave a discovery gap after
+            # MAX_CONSECUTIVE_GRAPH_QUESTIONS in a row, so the interview discovers the
+            # project instead of looping on "is domain X in scope?".
+            if self._consecutive_graph_questions >= MAX_CONSECUTIVE_GRAPH_QUESTIONS and gap_candidates:
+                question = self._ask(gap_candidates)
+                self._consecutive_graph_questions = 0
+            else:
+                question = self._ask(graph_candidates)
+                self._consecutive_graph_questions += 1
         elif (self.state is SessionState.MAPPING and not self.challenge_done
               and self._provider is not None):
             try:
@@ -168,11 +178,13 @@ class ScopingSession:
                 message, claim_cards = self._run_challenge(result)
                 cards.extend(claim_cards)
                 self.state = SessionState.SCOPING
+                self._consecutive_graph_questions = 0
             except JsonContractError:
                 self.state = SessionState.MAPPING  # next message retries the challenge
                 message = CHALLENGE_FAILED_MESSAGE
-        elif pool and can_ask:  # EDB gaps only
+        elif pool and can_ask:  # EDB gaps only (graph exhausted)
             question = self._ask(pool)
+            self._consecutive_graph_questions = 0
         if question is None and message is None:
             # lever 1: never a silent turn — acknowledge and state what remains.
             missing = self.edb.missing_sections()
@@ -198,7 +210,10 @@ class ScopingSession:
         submitted = {s.node_id for s in [*result.anchors, *result.expanded]}
         # The brief MUST ride along: the model judges relevance TO this project —
         # without it, it hallucinates a project from the map (caught by the bench).
-        brief_header = f"Brief du projet :\n{self.brief.text()}\n\n"
+        # Today's date rides along too so deadline phrasing stays current (P2: a run
+        # said « pilote avant fin 2025 » in 2026).
+        today = datetime.date.today().isoformat()
+        brief_header = (f"Date du jour : {today}.\nBrief du projet :\n{self.brief.text()}\n\n")
         triage_user = brief_header + "Carte brute :\n" + render_subgraph(result, self._service)
         out1 = complete_with_retry(self._provider, load_prompt("challenge_triage"),
                                    triage_user, required_keys=("verdicts",))
@@ -223,6 +238,10 @@ class ScopingSession:
             cards.append(self.ledger.get(pid))
         self.proposed_domains = gate_domains(out2.get("domains", []), self._service)
         statement = str(out2["challenge_statement"])
+        # P2: flag any number in the free-prose statement absent from its sources.
+        source_texts = [f["text"] for f in node_provenance(self._service, sorted(map_ids))]
+        source_texts.append(self.brief.text())
+        self.statement_flags = statement_fact_flags(statement, source_texts)
         self.edb.add_entry("challenge", EdbEntry(source="llm", text=statement))
         self.challenge_done = True
         return statement, cards

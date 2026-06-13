@@ -154,6 +154,21 @@ def test_claim_cards_carry_node_provenance(tmp_path: Path) -> None:
     assert claim["provenance"][0]["text"] == "Contrainte locale."  # verbatim from the node
 
 
+def test_statement_flags_in_payload(tmp_path: Path) -> None:
+    # P2: unsourced numbers in the challenge statement surface in the payload for the UI.
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": "30% des dossiers sont concernés."},
+    ])
+    client = mini_client(tmp_path, provider)
+    session_id = client.post("/api/session").json()["session_id"]
+    out = client.post(f"/api/session/{session_id}/message",
+                      json={"text": "refonte du canal"}).json()
+    assert "30" in out["statement_flags"]
+
+
 def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
     # queue: enrich(1 chip) · triage · claims · re-run pick (NO re-enrich — lever 3:
     # removing a chip adds no user words, so the round reruns without a new enrichment)

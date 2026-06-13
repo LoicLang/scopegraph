@@ -196,6 +196,74 @@ def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
     assert "section" in turn.message.lower()
 
 
+def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
+    # P1: a rich answer to a GRAPH pivot must still be mined for EDB fields, not discarded
+    # (the bug: pivot/tie answers never reached extract_fields).
+    # queue: t1 enrich · t1 pick(pivot) · t2 enrich · t2 extract(field) · t2 pick(pivot)
+    provider = MockProvider([
+        {"additions": []},
+        {"candidate_key": "pivot:monetique", "question": "Monétique ?"},
+        {"additions": []},
+        {"entries": [{"section_id": "objectifs", "text": "réduire les appels au CRC"}]},
+        {"candidate_key": "pivot:tpe-acceptation", "question": "TPE ?"},
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+    session.handle_message("améliorer notre canal mobile")  # asks pivot monetique
+    turn = session.handle_message(
+        "Non, hors monétique ; l'objectif est de réduire les appels au CRC."
+    )
+    assert any(c.payload.get("section_id") == "objectifs" for c in turn.cards)
+
+
+def test_challenge_flags_unsourced_numbers_in_statement() -> None:
+    # P2: a fabricated figure in the free-prose statement is flagged deterministically.
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": "Environ 30% des cas sont à risque."},
+    ])
+    session = make_challenge_session(provider)
+    session.handle_message("refonte du canal")
+    assert "30" in session.statement_flags
+
+
+def make_multi_pivot_session() -> ScopingSession:
+    """Anchor + three foreign-domain systems → three graph pivots (provider=None)."""
+    nodes = [
+        System(id="sys-anchor", name="Ancre", description="canal ancre central",
+               owner_team="T", domains=["da"]),
+        System(id="sys-b", name="B", description="systeme b", owner_team="T", domains=["db"]),
+        System(id="sys-c", name="C", description="systeme c", owner_team="T", domains=["dc"]),
+        System(id="sys-d", name="D", description="systeme d", owner_team="T", domains=["dd"]),
+    ]
+    edges = [
+        Edge(source_id="sys-anchor", target_id="sys-b", type=EdgeType.DEPENDS_ON),
+        Edge(source_id="sys-anchor", target_id="sys-c", type=EdgeType.DEPENDS_ON),
+        Edge(source_id="sys-anchor", target_id="sys-d", type=EdgeType.DEPENDS_ON),
+    ]
+    service = GraphService({n.id: n for n in nodes}, edges)
+    index = VectorIndex(FakeEmbedder(["ancre"]))
+    index.build(service)
+    return ScopingSession(service, index)
+
+
+def test_graph_questions_interleave_a_discovery_gap() -> None:
+    # P3: after two graph pivots in a row, the interview asks a discovery (EDB gap)
+    # question even though a pivot still remains — no five-pivots-in-a-row elimination loop.
+    session = make_multi_pivot_session()
+    session.handle_message("ancre projet")  # q1 (pivot)
+    session.handle_message("non")           # q2 (pivot)
+    asked_after_2 = set(session.asked)
+    assert asked_after_2 and all(k.startswith("pivot:") for k in asked_after_2)
+    session.handle_message("non")           # q3 — must be a gap, not the 3rd pivot
+    new_key = set(session.asked) - asked_after_2
+    assert any(k.startswith("gap:") for k in new_key)
+
+
 def test_remove_enrichment_does_not_re_enrich() -> None:
     # Lever 3: a chip removal reruns the round (it may ask a fresh question) but must
     # NOT call the LLM for new vocabulary — the user added no words.

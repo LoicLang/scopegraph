@@ -3,10 +3,13 @@
 
 The runtime decides; rejections are returned, never swallowed (hard rule 2)."""
 
+import re
 from dataclasses import dataclass
 
 from core.dossier.template import CLAIM_SECTIONS
 from core.graph.service import GraphService, UnknownNodeError
+
+_NUMBER_RE = re.compile(r"\b\d+(?:[.,]\d+)?")
 
 PULL_CAP = 10  # structural: max governance nodes pulled back per challenge
 _PULL_EDGE_TYPES = {"CONSTRAINS", "SUPERSEDES"}
@@ -125,6 +128,16 @@ def node_provenance(service: GraphService, node_ids: list[str]) -> list[dict]:
         text = getattr(node, "description", "") or getattr(node, "statement", "")
         facts.append({"node_id": node_id, "label": title, "type": node.type, "text": text})
     return facts
+
+
+def statement_fact_flags(statement: str, source_texts: list[str]) -> list[str]:
+    """Numbers/percentages in the free-prose challenge statement absent from every
+    cited source AND from the user's own words — likely fabricated (e.g. « 30 % »
+    when the node says « une part significative »). Deterministic guard: the claims
+    carry provenance, the statement is prose, so the runtime flags unsourced figures
+    for the user to check (W3 known-limits L4 — statement fidelity)."""
+    haystack = " ".join(source_texts)
+    return [num for num in dict.fromkeys(_NUMBER_RE.findall(statement)) if num not in haystack]
 
 
 def gate_domains(domains: list[str], service: GraphService) -> list[str]:

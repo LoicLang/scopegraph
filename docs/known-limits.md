@@ -344,13 +344,29 @@ TURN_CAP 12, cooperative auto-accept of every proposal). Reference run, all thre
 - **S1 BNPL and S3 cash-back stay hard conversationally** (S1: grok 11 %, deepseek
   56 %; S3: grok 0 %, deepseek 67 %) — the L2/L4 retrieval residual, now visible
   end-to-end through the interview, not just single-shot.
-- **The #2 statement judge fires but the count is confounded**: conversation-eval uses
-  ONE provider for both the app and the judge, so each model judges ITSELF — Mistral is
-  a strict self-judge (11/11), DeepSeek lenient (2/11). The issue *content* is real
-  (the « à compter du 15 janvier 2026 » inversion recurs on Mistral S7/S9/S10, proving
-  the P2 directional residual is frequent, not a one-off), but the per-model counts are
-  not comparable. **Harness fix to do: judge with a fixed model** (`--judge-provider`)
-  so statement fidelity is measured independently of the app model.
+- **The #2 self-judge is net false-positive noise (Claude Opus 4.8 read every statement
+  by hand, 2026-06-13 — the orchestrating model judging, since each weak model judging
+  itself is the very flaw).** conversation-eval uses ONE provider for both the app and the
+  judge, so Mistral judged itself 11/11. Reading the actual statements: those flags are
+  almost all FALSE — the freeze date is rendered correctly (« à compter du / depuis le
+  15 janvier 2026 », never « jusqu'au ») across **all three models on every scenario**, so
+  **the P2 directional residual is FIXED, not frequent** (my earlier claim was wrong, based
+  on the noisy self-judge; the date-injection + prompt fix worked). Several Mistral judge
+  « issues » are incoherent (S7: « à compter du… et non à compter du »). Implications:
+  (1) the live LLM faithfulness judge, run on the app's own (mid-tier) model, would flag
+  faithful statements in the demo UI — it needs a FIXED STRONGER judge (ideally Claude,
+  if an Anthropic key is added) or should be off by default; the deterministic number-flag
+  + claim provenance remain the trustworthy fidelity signals. (2) harness `--judge-provider`
+  is still worth adding for clean cross-model measurement.
+- **By-hand model verdict (Claude Opus 4.8):** Mistral = best challenger (rich, narrative,
+  weaves SI context, mostly faithful; demo default) — weaknesses: wanders into irrelevant
+  neighbourhoods (S5 → beneficiaries), missed the monetique freeze on S3, and once returned
+  the statement as a dict (`{'en_francais': …}` — now coerced). DeepSeek = inconsistent:
+  tight & faithful when it challenges (S7-S11) but WHIFFS S3/S4/S6 (0 claims, statement just
+  restates the need). Grok = unusable as challenger: leaks raw slugs into user-facing prose
+  (« s'appuie sur feat-ref-creation-client qui opère sur obj-dossier-client-kyc »), 0 claims
+  on 7/11. The bench's issue-counts alone would NOT have surfaced any of this — a strong
+  reader was required.
 - **Bug found and fixed by this run** (commit `gate_claims rejects a reasonless claim`):
   deepseek-v4-flash AND grok-4.3 each sometimes omit the `reason` key in a claim, which
   passed gate B (never checked it) then crashed `_run_challenge` — i.e. live sessions on

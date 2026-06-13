@@ -253,6 +253,21 @@ def test_challenge_flags_unsourced_numbers_in_statement() -> None:
     assert "30" in session.statement_flags
 
 
+def test_challenge_statement_coerced_when_model_returns_a_dict() -> None:
+    # Robustness: a real Mistral run returned challenge_statement as {"en_francais": "..."}
+    # and str(dict) leaked into the EDB/UI. Coerce to the inner text.
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": {"en_francais": "Le défi en clair."}},
+        {"issues": []},
+    ])
+    session = make_challenge_session(provider)
+    session.handle_message("refonte du canal")
+    assert session.edb.sections["challenge"][0].text == "Le défi en clair."
+
+
 def test_challenge_records_statement_fidelity_issues() -> None:
     # #2: the LLM fidelity judge surfaces semantic drift (directional date inversion).
     provider = MockProvider([

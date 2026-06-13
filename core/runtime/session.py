@@ -259,7 +259,7 @@ class ScopingSession:
                 target_section=claim["target_section"], reason=claim["reason"]))
             cards.append(self.ledger.get(pid))
         self.proposed_domains = gate_domains(out2.get("domains", []), self._service)
-        statement = str(out2["challenge_statement"])
+        statement = _coerce_text(out2["challenge_statement"])
         # P2: flag any number in the free-prose statement absent from its sources, and
         # #2: an LLM faithfulness pass for the semantic drift the number guard misses.
         source_texts = [f["text"] for f in node_provenance(self._service, sorted(map_ids))]
@@ -296,6 +296,18 @@ class ScopingSession:
         assert self.brief is not None
         del self.brief.enrichments[index]
         return self._map_round(enrich=False)
+
+
+def _coerce_text(value) -> str:
+    """A model may wrap the statement in a dict (e.g. {'en_francais': '...'}); pull the
+    inner string rather than leaking the dict repr into the EDB/UI."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        for inner in value.values():
+            if isinstance(inner, str) and inner.strip():
+                return inner
+    return str(value)
 
 
 def _tokens(text: str) -> set[str]:

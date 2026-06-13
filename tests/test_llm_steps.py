@@ -3,7 +3,12 @@
 from core.dossier.template import EdbState
 from core.llm.provider import MockProvider
 from core.runtime.brief import ProjectBrief
-from core.runtime.llm_steps import enrich_brief, extract_fields, pick_question
+from core.runtime.llm_steps import (
+    MAX_TOTAL_ENRICHMENTS,
+    enrich_brief,
+    extract_fields,
+    pick_question,
+)
 from core.runtime.pool import Candidate
 from core.runtime.triggers import WeakBriefTrigger
 
@@ -22,6 +27,27 @@ def test_enrich_brief_caps_at_4_and_records():
     ]}])
     enrich_brief(mock, brief)
     assert brief.enrichments == ["t0", "t1", "t2", "t3"]
+
+
+def test_enrich_brief_dedups_case_and_trailing_plural():
+    brief = ProjectBrief(description="d")
+    brief.enrichments.append("partenaire commercial")
+    mock = MockProvider([{"additions": [
+        {"text": "Partenaire Commercial"},  # case-only duplicate → dropped
+        {"text": "remises"},                # new term
+        {"text": "Remise"},                 # case + plural duplicate of "remises" → dropped
+        {"text": "monétique"},              # new term
+    ]}])
+    enrich_brief(mock, brief)
+    assert brief.enrichments == ["partenaire commercial", "remises", "monétique"]
+
+
+def test_enrich_brief_respects_global_cap():
+    brief = ProjectBrief(description="d")
+    brief.enrichments.extend([f"terme{i}" for i in range(MAX_TOTAL_ENRICHMENTS)])
+    mock = MockProvider([{"additions": [{"text": "nouveau"}]}])
+    enrich_brief(mock, brief)
+    assert len(brief.enrichments) == MAX_TOTAL_ENRICHMENTS  # nothing added past the cap
 
 
 def test_enrich_brief_none_provider_is_a_noop():

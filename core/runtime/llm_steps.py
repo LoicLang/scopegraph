@@ -12,10 +12,22 @@ from core.runtime.pool import Candidate
 from core.runtime.questions import gap_question, render_question
 
 MAX_ENRICHMENTS_PER_TURN = 4
+MAX_TOTAL_ENRICHMENTS = 8  # global cap — keeps the chip row readable (UI debt L6)
+
+
+def _norm_enrichment(text: str) -> str:
+    """Loose dedup key: case-fold, collapse whitespace, drop a trailing plural -s.
+
+    Catches « Partenaire commercial »/« partenaire commercial » and « remise »/
+    « remises ». Irregular French plurals (-aux) are out of scope — accepted limit."""
+    return " ".join(text.casefold().split()).rstrip("s")
 
 
 def enrich_brief(provider: LLMProvider | None, brief: ProjectBrief) -> None:
-    """Adds ≤4 revocable vocabulary chips to the retrieval query (spec §4.1)."""
+    """Adds revocable vocabulary chips to the retrieval query (spec §4.1).
+
+    Bounded: ≤MAX_ENRICHMENTS_PER_TURN per call, ≤MAX_TOTAL_ENRICHMENTS overall,
+    deduplicated on a normalized key (lever 3 — observed chip proliferation)."""
     if provider is None:
         return
     try:
@@ -25,10 +37,15 @@ def enrich_brief(provider: LLMProvider | None, brief: ProjectBrief) -> None:
         )
     except JsonContractError:
         return  # enrichment is sugar — never blocking, the UI shows a discreet notice
+    seen = {_norm_enrichment(chip) for chip in brief.enrichments}
     for addition in out["additions"][:MAX_ENRICHMENTS_PER_TURN]:
+        if len(brief.enrichments) >= MAX_TOTAL_ENRICHMENTS:
+            break
         text = str(addition.get("text", "")).strip()
-        if text and text not in brief.enrichments:
+        key = _norm_enrichment(text)
+        if text and key not in seen:
             brief.enrichments.append(text)
+            seen.add(key)
 
 
 def extract_fields(

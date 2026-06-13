@@ -150,19 +150,72 @@ def make_challenge_session(provider) -> ScopingSession:
     return ScopingSession(service, index, provider=provider)
 
 
-def test_full_turn_with_provider_fills_edb_and_asks_woven_question() -> None:
-    # queue: enrich(no additions) · pick_question(valid gap choice)
+def test_full_turn_with_provider_asks_woven_graph_question() -> None:
+    # A graph ambiguity (pivot monetique) is present → the runtime offers ONLY graph
+    # candidates to the LLM (lever 2: graph ambiguity strictly before EDB gaps); the
+    # LLM phrases a woven question.
+    # queue: enrich(no additions) · pick_question(valid pivot choice)
     provider = MockProvider([
         {"additions": []},
-        {"candidate_key": "gap:objectifs", "question": "Quel succès, sachant le gel T3 ?"},
+        {"candidate_key": "pivot:monetique",
+         "question": "Le périmètre touche-t-il la monétique, vu le moteur d'autorisation ?"},
     ])
     service = make_service()
     index = VectorIndex(FakeEmbedder(["canal"]))
     index.build(service)
     session = ScopingSession(service, index, provider=provider)
     turn = session.handle_message("améliorer notre canal mobile")
-    assert turn.question == "Quel succès, sachant le gel T3 ?"
-    assert "gap:objectifs" in session.asked
+    assert turn.question.startswith("Le périmètre touche-t-il la monétique")
+    assert "pivot:monetique" in session.asked
+
+
+def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
+    # The LLM tries to pick an EDB gap, but the runtime only offered graph candidates,
+    # so the out-of-pool pick is gated back to the graph candidate's template (lever 2).
+    provider = MockProvider([
+        {"additions": []},
+        {"candidate_key": "gap:objectifs", "question": "Question de section ?"},
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+    turn = session.handle_message("améliorer notre canal mobile")
+    assert turn.question is not None
+    assert not any(key.startswith("gap:") for key in session.asked)  # graph won
+
+
+def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
+    # Lever 1: past the question cap, a message that asks nothing must still answer.
+    session = make_session(["canal"])  # provider=None, template mode
+    session.handle_message("améliorer notre canal mobile")  # asks question 1
+    session.questions_asked = config.MAX_QUESTIONS  # exhaust the cap
+    turn = session.handle_message("quelques précisions libres en plus")
+    assert turn.question is None  # cap reached, nothing asked
+    assert turn.message is not None  # NEVER a silent turn
+    assert "section" in turn.message.lower()
+
+
+def test_remove_enrichment_does_not_re_enrich() -> None:
+    # Lever 3: a chip removal reruns the round (it may ask a fresh question) but must
+    # NOT call the LLM for new vocabulary — the user added no words.
+    from core.llm.prompts import load_prompt
+
+    enrich_system = load_prompt("enrich_brief")
+    provider = MockProvider([
+        {"additions": [{"text": "fidélité"}]},                          # turn 1 enrich
+        {"candidate_key": "pivot:monetique", "question": "Q monétique ?"},  # turn 1 pick
+        {"candidate_key": "pivot:tpe-acceptation", "question": "Q TPE ?"},  # rerun pick
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+    session.handle_message("améliorer notre canal mobile")
+    session.remove_enrichment(0)
+    assert session.brief.enrichments == []
+    enrich_calls = [call for call in provider.calls if call[0] == enrich_system]
+    assert len(enrich_calls) == 1  # the rerun reused the brief, no second enrichment
 
 
 def test_no_provider_session_behaves_like_w2_plus_gap_templates() -> None:

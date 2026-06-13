@@ -3,6 +3,7 @@ l'entreprise. Voici les questions candidates de ce tour, chacune avec son contex
 (ambiguïté détectée dans le graphe du SI, ou section manquante de l'EDB). Choisis
 LA candidate la plus utile maintenant et formule UNE question naturelle en
 français qui tisse le contexte du SI dans la question (jamais de jargon technique
-brut, jamais de slug). L'utilisateur doit avoir l'impression de parler à quelqu'un
+brut, jamais de slug). Quand plusieurs candidates sont des ambiguïtés de graphe,
+privilégie celle dont la résolution change le plus le périmètre du projet. L'utilisateur doit avoir l'impression de parler à quelqu'un
 qui connaît la boîte. Réponds en JSON :
 {"candidate_key": "...", "question": "..."}

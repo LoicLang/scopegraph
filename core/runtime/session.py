@@ -129,9 +129,10 @@ class ScopingSession:
                 return True  # weak-brief and EDB-gap answers are free prose
         return True  # pragma: no cover
 
-    def _map_round(self, free_text: str | None = None) -> Turn:
+    def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None
-        enrich_brief(self._provider, self.brief)
+        if enrich:  # skip when the user added no words (e.g. a chip-removal rerun) — lever 3
+            enrich_brief(self._provider, self.brief)
         result = retrieve(
             self.brief.query_text(),
             self._service,
@@ -157,7 +158,9 @@ class ScopingSession:
         message: str | None = None
         can_ask = self.questions_asked < config.MAX_QUESTIONS
         if graph_candidates and can_ask:
-            question = self._ask(pool)
+            # lever 2: a graph ambiguity is resolved before any EDB gap — the runtime
+            # offers ONLY the graph candidates, never letting the LLM detour to a gap.
+            question = self._ask(graph_candidates)
         elif (self.state is SessionState.MAPPING and not self.challenge_done
               and self._provider is not None):
             try:
@@ -170,8 +173,14 @@ class ScopingSession:
                 message = CHALLENGE_FAILED_MESSAGE
         elif pool and can_ask:  # EDB gaps only
             question = self._ask(pool)
-        elif not pool:
-            message = EDB_COMPLETE_MESSAGE
+        if question is None and message is None:
+            # lever 1: never a silent turn — acknowledge and state what remains.
+            missing = self.edb.missing_sections()
+            message = (
+                f"Noté. La phase de questions est close — il reste {len(missing)} "
+                "section(s) à compléter, décrivez-les directement et je les classerai."
+                if missing else EDB_COMPLETE_MESSAGE
+            )
         self.last_result = result
         return Turn(state=self.state, question=question, result=result,
                     brief=self.brief, message=message, cards=cards)
@@ -243,7 +252,7 @@ class ScopingSession:
         """Drops one AI vocabulary chip and re-runs the round on the leaner query."""
         assert self.brief is not None
         del self.brief.enrichments[index]
-        return self._map_round()
+        return self._map_round(enrich=False)
 
 
 def _tokens(text: str) -> set[str]:

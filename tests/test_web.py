@@ -135,13 +135,13 @@ def test_proposal_accept_endpoint_applies_to_edb(tmp_path: Path) -> None:
 
 
 def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
-    # queue: enrich(1 chip) · triage · claims · re-run enrich(empty) · re-run pick
+    # queue: enrich(1 chip) · triage · claims · re-run pick (NO re-enrich — lever 3:
+    # removing a chip adds no user words, so the round reruns without a new enrichment)
     provider = MockProvider([
         {"additions": [{"text": "fidélité", "kind": "synonym"}]},
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
-        {"additions": []},
         {"candidate_key": "gap:contexte", "question": "Quel contexte ?"},
     ])
     client = mini_client(tmp_path, provider)

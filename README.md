@@ -1,84 +1,119 @@
+<div align="center">
+
 # scopegraph
 
-An AI scoping runtime for projects that don't exist in isolation.
+**An AI scoping runtime for projects that don't exist in isolation.**
+It maps a new project against the IT estate it will inherit — dependencies, past
+decisions, inherited constraints, parallel initiatives — and **challenges the need**
+with findings that each cite a real node in the graph.
 
-**Status:** design public, MVP in progress — W1 foundations complete (schema, seed data, graph service, tests).
+[![CI](https://github.com/LoicLang/scopegraph/actions/workflows/ci.yml/badge.svg)](https://github.com/LoicLang/scopegraph/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-4f46e5.svg)](LICENSE)
+[![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB.svg)](pyproject.toml)
+[![tests](https://img.shields.io/badge/tests-234%20hermetic-2e9e6b.svg)](tests)
+
+</div>
+
+> **Status — W1→W3 built and benched.** The ecosystem graph, the hybrid retrieval, the
+> deterministic interview, and the full **LLM challenge layer** (grounded claims +
+> governance pull + fidelity guards) work end-to-end across three models. W4 (dossier
+> render, write-back, formal eval run) is next. 234 hermetic tests, CI green.
 
 ---
 
-## The product in five lines
+## Why I built it
 
-*I describe a project. scopegraph finds the existing context.
-It shows the links. It challenges the need. It generates a contextualized scoping dossier.*
+Every scoping tool I've met treats a project as if it arrived alone: *what's your goal,
+who are the users, what's the budget?* In a real IT estate — a bank's especially — a new
+project inherits constraints from decisions made years ago, depends on systems nobody on
+the team has heard of, and collides with initiatives running in parallel. That
+propagation is invisible to a form. It surfaces later, as an incident or a rebuild.
 
----
+scopegraph makes it visible up front. You describe a project in one sentence; it walks
+the graph of what already exists, conducts a short context-aware interview, then
+**challenges the framing** — stating what the project really is and what it inherits,
+with every constraint and risk grounded in an existing node. The LLM proposes; a
+deterministic runtime decides, and rejects anything ungrounded *visibly*. The point is
+not a smarter form. It is to move the hidden, expensive context to the front of the
+conversation, where it is cheap.
 
-## Why this project exists
-
-scopegraph is the successor of **MAS**, a multi-agent system that turned fuzzy needs into structured
-project proposals. MAS overlapped with `use-case-assistant` (vague business AI idea → structured
-intake form), looking like a more complex version of the same thing. More fundamentally: classic scoping assistants
-treat every project as if it arrived alone. In banking IT a new project inherits constraints from past
-decisions, depends on existing systems, and competes with parallel initiatives. That propagation is
-invisible to any tool that only asks "what's your goal and who are the users?". It surfaces later, as
-incidents or rework.
-
-scopegraph drops the spec-filler framing and solves that gap: context-aware scoping for non-independent
-projects. Full pivot story: [docs/adr/0000-pivot-from-mas.md](docs/adr/0000-pivot-from-mas.md).
-
-**Portfolio narrative:** `use-case-assistant` captures the need → `scopegraph` scopes it within
-everything that already exists → (roadmap) `ecosystem-foundry` builds the ecosystem graph from
-documents. Three links, zero redundancy.
+Full pivot story (from a multi-agent predecessor): [docs/adr/0000-pivot-from-mas.md](docs/adr/0000-pivot-from-mas.md).
 
 ---
 
 ## How it works
 
-Six steps from fuzzy idea to grounded dossier:
-
-1. User describes a fuzzy project idea (one sentence is enough).
-2. scopegraph searches the ecosystem graph (semantic + domain-overlap boost).
-3. It retrieves related systems, past projects, decisions, and constraints.
-4. It identifies dependencies, risks, and inherited constraints — every claim grounded in a node ID.
-5. It challenges the need, stating what the project actually is and what it inherits.
-6. It produces a contextualized scoping dossier and a Context Map. On validation, write-back into the graph.
-
 ```mermaid
 flowchart LR
     A[idea] --> B[ecosystem graph]
     B --> C[grounded links]
-    C --> D[challenge]
-    D --> E[dossier]
-    E --> F[write-back]
+    C --> D[interview]
+    D --> E[challenge]
+    E --> F[dossier]
+    F --> G[write-back]
 ```
+
+1. The user describes a fuzzy project idea (one sentence is enough).
+2. scopegraph searches the ecosystem graph — semantic anchors + domain-overlap boost +
+   bounded 1–2 hop expansion with edge-path provenance.
+3. A deterministic **interview** resolves the ambiguities the graph exposes (which
+   domains are in scope?) and fills a 12-section dossier — graph questions and discovery
+   questions interleaved, never an interrogation.
+4. When the map stabilizes, the **challenge** runs: the LLM triages the over-complete
+   subgraph, a deterministic *governance pull* brings back the linked decisions/risks, and
+   the LLM states the case — every claim citing node IDs, every figure checked.
+5. The user accepts or rejects each proposed claim and dossier entry.
+6. (Roadmap) On validation, the scoping writes back into the graph — so the *next*
+   project sees this one.
+
+---
+
+## The challenge layer — what makes it different
+
+Retrieval is deliberately recall-first: it returns an over-complete map. **Precision is
+the job of the challenge layer**, and it is where the runtime keeps the LLM honest:
+
+- **Two-phase, gated.** Gate A: the LLM triages each retrieved node (keep / reject, with a
+  reason); missing verdicts default to *keep* (recall-first). A deterministic **governance
+  pull** then walks one hop from the kept nodes along `CONSTRAINS`/`SUPERSEDES` edges to
+  bring back the decisions, constraints and risks they inherit. Gate B: every claim the LLM
+  makes must cite a node that is actually on the stabilized map, target an allowed dossier
+  section, and carry a reason — anything else is **rejected visibly**, not silently.
+- **Claims ship their proof.** Each claim card carries the *authoritative text* of the
+  nodes it cites, straight from the graph — so the reader verifies the model's paraphrase
+  against the source, not the other way round.
+- **Statement fidelity.** A deterministic guard flags any number/percentage in the
+  free-prose challenge that is absent from the cited sources (catching invented
+  statistics); an optional LLM pass flags semantic drift.
+- **It degrades to nothing gracefully.** `SCOPEGRAPH_LLM_PROVIDER=none` runs the whole
+  product on deterministic templates — no key, no network. The LLM is polish on a floor
+  that always holds.
 
 ---
 
 ## The ecosystem graph
 
-The graph has **7 node types** (System, Feature, BusinessObject, Project, Decision, Constraint, Risk)
+**7 node types** (System, Feature, BusinessObject, Project, Decision, Constraint, Risk)
 and **7 edge types** (PART_OF, OPERATES_ON, DEPENDS_ON, CONSTRAINS, PRODUCED, SUPERSEDES,
-RELATES_TO). The schema is defined at the Feature/BusinessObject grain, not the application grain.
+RELATES_TO), defined at the Feature/BusinessObject grain, not the application grain.
 
-A shared business rule is defined once as a single `Constraint` node. Its `CONSTRAINS` edges are
-drawn to every `BusinessObject` it applies to. Every `Feature` that `OPERATES_ON` that object
-inherits the constraint automatically — including features built after the constraint was defined,
-and across applications that have no direct edge to each other. For example: the 48-hour
-cooling-off period on new payees is one `Constraint` node attached to the `obj-beneficiaire`
-`BusinessObject`; the beneficiary-management app and the mobile app both inherit it through
-their `OPERATES_ON` edges, without any direct application-to-application edge.
+A shared business rule is one `Constraint` node. Its `CONSTRAINS` edges reach every
+`BusinessObject` it applies to; every `Feature` that `OPERATES_ON` that object inherits it
+automatically — including features built after the rule, across applications with no direct
+edge to each other. The 48-hour cooling-off on new payees is a single node on
+`obj-beneficiaire`; the beneficiary app and the mobile app both inherit it, with no
+application-to-application edge.
 
-The schema is domain-agnostic: node and edge types contain nothing banking-specific. Only
-`graph/domains.yaml` and the seed content are environment-specific. Porting scopegraph to a
-different IT estate means swapping those two; zero schema-code change. See
-[docs/adr/0001-graph-schema-v1.md](docs/adr/0001-graph-schema-v1.md) for the full topology rules.
+The schema is **domain-agnostic** — node and edge types contain nothing banking-specific.
+Only `graph/domains.yaml` and the seed content are environment-specific; porting to a
+different estate swaps those two, zero schema-code change. Topology rules:
+[docs/adr/0001-graph-schema-v1.md](docs/adr/0001-graph-schema-v1.md).
 
-The ecosystem registry is seeded. The seed contains **72 fictional French banking-IT nodes**
-across 10 domains, **100 edges**, and **7 deliberate traps**: system aliases, contradictory
-decisions, a superseded decision, a 2-hop cross-domain propagation chain, constraint
-inheritance through a shared business object, non-uniform documentation depth, and a
-cancelled project that must surface as a warning, not a constraint. All entities are
-fictional; ingestion from documents is the roadmap (see ecosystem-foundry).
+The seed is **72 fictional French banking-IT nodes** across 10 domains, **100 edges**, and
+**7 deliberate traps**: aliases, contradictory decisions, a superseded decision, a 2-hop
+cross-domain propagation chain, constraint inheritance through a shared object, non-uniform
+documentation depth, and a cancelled project that must surface as a *warning*, not a
+constraint. All entities are fictional; ingestion from documents is the roadmap.
 
 ---
 
@@ -86,53 +121,51 @@ fictional; ingestion from documents is the roadmap (see ecosystem-foundry).
 
 Input: *"We want to add a 'pay in 3 installments' option (BNPL) to the mobile banking app."*
 
-A naive assistant asks about goals, users, and expected gains — and scopes it as an isolated
-mobile feature.
+A naive assistant asks about goals, users and gains, and scopes it as an isolated mobile
+feature. scopegraph grounds every finding in node IDs:
 
-scopegraph retrieves from the seed graph and grounds every finding in node IDs:
+- the card authorization engine + *"all new payment flows must reuse the DSP2 SCA
+  orchestration"* → an inherited dependency, not optional;
+- the single fraud-scoring decision point → the BNPL eligibility check cannot ship its own
+  parallel scoring;
+- the `credit` domain → an installment plan is legally a credit product, pulling in
+  regulation the mobile team never thinks about;
+- the TPE acceptance software, **2 hops away**, + *"TPE updates are quarterly, no
+  out-of-band releases"* → a hard scheduling constraint if in-store BNPL is in scope.
 
-- The card authorization engine (`monetique` domain) and the decision *"all new payment flows must
-  reuse the SCA orchestration from the DSP2 program"* → inherited dependency, not optional.
-- The fraud-scoring engine and the decision *"fraud scoring is the single decision point for
-  payment risk"* → the BNPL eligibility check cannot ship its own parallel scoring.
-- The `credit` domain → installment payment is legally a credit product, pulling in credit-domain
-  regulation the mobile team never thinks about.
-- The TPE acceptance software (2 hops away via `monetique`) and the decision *"TPE software updates
-  are quarterly, no out-of-band releases"* → if in-store BNPL is in scope, that quarterly-release
-  decision is a hard scheduling constraint.
+> *"This should not be scoped as a mobile feature. It is a credit product riding on the
+> monétique stack: it inherits SCA orchestration, the single fraud-scoring decision point,
+> credit-domain regulation, and — if in-store acceptance is in scope — the TPE quarterly
+> release constraint. Scope and owners must reflect that."*
 
-The challenge statement:
-
-> *"This should not be scoped as a mobile feature. It is a credit product riding on the monétique
-> stack: it inherits SCA orchestration, the single fraud-scoring decision point, credit-domain
-> regulation, and — if in-store acceptance is in scope — the TPE quarterly release constraint.
-> Scope and owners must reflect that."*
-
-**The killer move:** scope a second project right after. Write-back means it "sees" the first one —
-the graph grows through usage.
+**The killer move:** scope a second project right after. Write-back means it *sees* the
+first — the graph grows through usage.
 
 ---
 
-## What keeps it honest
+## Measured, not claimed
 
-- **Grounding gate.** Every claim must cite an existing node ID; the runtime rejects ungrounded claims
-  visibly, never silently. Rejections appear in the UI — they are a demo feature, not a silent failure.
-- **Runtime authority.** The LLM proposes; the runtime decides. All state transitions go through a
-  deterministic state machine. The LLM never mutates the source of truth.
-- **Human validation.** Propose → validate → apply for every significant step: links into the
-  dossier, write-back into the graph.
-- **Hermetic tests.** No API key, no network, no model download. `MockProvider` and `FakeEmbedder`
-  stand in for all LLM and embedding calls. A test that calls a real provider is a bug.
+Quality is benched against real models, never asserted. Two out-of-CI harnesses replay
+over a disk cache so re-runs are free; findings live in [docs/known-limits.md](docs/known-limits.md).
+
+- **`scripts/challenge-eval`** — the challenge end-to-end over 11 hand-derived scenarios.
+  The challenge layer delivers the precision stage it was designed for: mean map **60 → 11.5
+  nodes**, precision **13% → 53%**, **0 / N ungrounded claims** survive the gate.
+- **`scripts/conversation-eval`** — an LLM *persona* plays a project manager and is scoped
+  by the real session, over the full interview + challenge, across DeepSeek, Mistral and
+  Grok. It earns its keep: it caught a production crash (two models omit a required claim
+  field), a statement dict-leak, and the limits of an LLM judging its own output.
+
+The honest limits — recall-vs-scale, the vocabulary bridge, retrieval drift under
+conversation — are written down with their evidence, not hidden.
 
 ---
 
 ## Language note
 
-Demo, seed data, dossiers, and the application UI are in **French** — this is the French banking
-domain, and authenticity matters. The demo challenge statement above is rendered in French in the
-actual application.
-
-Code, comments, docstrings, README, and ADRs are in **English**.
+Seed data, dossiers, prompts and the app UI are **French** — this is the French banking
+domain, and authenticity matters. Code, comments, docstrings, README and ADRs are
+**English**.
 
 ---
 
@@ -142,30 +175,25 @@ Code, comments, docstrings, README, and ADRs are in **English**.
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 
-# Run the test suite (no API key or network required)
+# Run the test suite — no API key, no network, no model download
 .venv/bin/python -m pytest
 
-# Explore active docs with "read when" hints
-./scripts/docs-list
-
-# Run the app (real embedder; LLM optional)
+# Run the app. Template mode works with zero config:
 .venv/bin/pip install -e ".[embeddings,llm]"
-export SCOPEGRAPH_LLM_PROVIDER=mistral   # or deepseek | none (template mode, default)
-export MISTRAL_API_KEY=...               # DEEPSEEK_API_KEY for deepseek
-.venv/bin/uvicorn --factory web.app:create_app
+.venv/bin/uvicorn --factory web.app:create_app          # SCOPEGRAPH_LLM_PROVIDER defaults to none
 ```
 
-API keys (and `SCOPEGRAPH_LLM_PROVIDER`) may also live in a project-root `.env`
-(gitignored, `KEY=VALUE` lines) — the real environment always wins over the file.
+To add the LLM polish, copy `.env.example` to `.env` and set a provider + key
+(`mistral` | `deepseek` | `grok`). The real environment always wins over the file.
 
 ---
 
 ## Roadmap
 
-| Week | Deliverables |
-|------|--------------|
-| **W1 — done** | ADRs · Pydantic schema + loader + GraphService · seed data (72 nodes, 100 edges) · README · eval cases drafted |
-| **W2** | Embedder + ChromaDB indexing · hybrid retrieval (semantic + domain boost + 2-hop traversal) · first web screens (chat pane + live Context Map) |
-| **W3** | LLM providers (Mistral, DeepSeek, Mock) · grounding gate · propose/validate/apply ledger · challenge + scoping questions |
-| **W4** | Dossier renderer · Context Map polish · write-back · scripted BNPL demo (incl. second scoping that sees the first) · eval run |
-| **ecosystem-foundry** | Separate repo: graph built from unstructured documents — entity extraction, resolution, adversarial edge verification. Output conforms to schema v1; plugging into scopegraph is trivial by construction. |
+| Phase | Status | Deliverables |
+|---|---|---|
+| **W1 — foundations** | ✅ done | ADRs · Pydantic schema + fail-fast loader + GraphService · seed (72 nodes, 100 edges, 7 traps) · interactive graph viewer |
+| **W2 — retrieval + map** | ✅ done | Qwen3 embedder + Chroma index · hybrid retrieval (semantic + domain boost + 2-hop) · MAPPING interview · chat + live Context Map |
+| **W3 — LLM challenge layer** | ✅ done | Provider protocol (Mistral/DeepSeek/Grok/Mock) · 12-section dossier · two-phase challenge + governance pull · propose/validate ledger · claim provenance + statement fidelity · graph/gap interview · three-pane UI · challenge-eval + conversation-eval |
+| **W4 — dossier + eval** | next | Dossier renderer · Context Map polish · graph write-back · scripted BNPL demo (incl. the second scoping that sees the first) · formal eval run |
+| **ecosystem-foundry** | roadmap | Separate repo: graph built from unstructured documents (extraction, resolution, adversarial edge verification). Output conforms to schema v1 by construction. |

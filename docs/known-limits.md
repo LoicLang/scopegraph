@@ -322,3 +322,37 @@ SUPERSEDES-as-history + exact-ids claims):**
   the models. Best operating points: deepseek 90 %/38 % balanced, grok 86 %/51 %
   precision-lean, mistral 91 %/23 % recall-lean (demo default keeps the woven-question
   quality argument, not the triage numbers).
+
+## L8 — Conversation-eval reference run (measured 2026-06-13)
+
+First end-to-end conversational benchmark: an LLM persona plays a banking PM and is
+scoped by the REAL `ScopingSession` over the 11 scenarios (`./scripts/conversation-eval`,
+TURN_CAP 12, cooperative auto-accept of every proposal). Reference run, all three models:
+
+| model | EDB compl. | end recall | Qgraph/Qgap | turns | num-flags | judge-issues |
+|---|---|---|---|---|---|---|
+| deepseek-v4-flash | 49 % | **88 %** | 3.9/1.1 | 12 | 0/11 | 2/11 |
+| mistral-small (Small 4) | **70 %** | 78 % | 4.0/1.0 | 12 | 2/11 | 11/11 |
+| grok-4.3 | 34 % | 66 % | 4.0/1.0 | 12 | 0/11 | 4/11 |
+
+- **The interleave (P3) is rock-solid**: ~4 graph + ~1 gap per conversation on every
+  model and scenario — the designed 2-pivots-then-discovery cadence holds.
+- **Model profiles differ sharply.** Mistral fills the richest dossier (70 % EDB, most
+  claims) — the demo-default argument. DeepSeek has the best end recall (88 %). Grok
+  under-produces: **0 valid claims on 7/11 scenarios** (it returns an empty claims
+  list, not rejected claims) and the lowest EDB/recall. A terse challenger.
+- **S1 BNPL and S3 cash-back stay hard conversationally** (S1: grok 11 %, deepseek
+  56 %; S3: grok 0 %, deepseek 67 %) — the L2/L4 retrieval residual, now visible
+  end-to-end through the interview, not just single-shot.
+- **The #2 statement judge fires but the count is confounded**: conversation-eval uses
+  ONE provider for both the app and the judge, so each model judges ITSELF — Mistral is
+  a strict self-judge (11/11), DeepSeek lenient (2/11). The issue *content* is real
+  (the « à compter du 15 janvier 2026 » inversion recurs on Mistral S7/S9/S10, proving
+  the P2 directional residual is frequent, not a one-off), but the per-model counts are
+  not comparable. **Harness fix to do: judge with a fixed model** (`--judge-provider`)
+  so statement fidelity is measured independently of the app model.
+- **Bug found and fixed by this run** (commit `gate_claims rejects a reasonless claim`):
+  deepseek-v4-flash AND grok-4.3 each sometimes omit the `reason` key in a claim, which
+  passed gate B (never checked it) then crashed `_run_challenge` — i.e. live sessions on
+  those models would crash too. Mistral never triggers it. Cross-model testing earned
+  its keep.

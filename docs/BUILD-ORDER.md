@@ -8,7 +8,31 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-12, end of session 3)
+## Current state (2026-06-13, session 4 — reliability + measurement)
+
+- **Three follow-ups DONE (2026-06-13), all TDD-hermetic on `main`:**
+  - **#1 LLM interprets pivot/tie answers** (`interpret_pivot_answer` / `interpret_tie_answer`):
+    the runtime no longer parses only oui/non — the LLM judges inclusion/exclusion/unclear
+    (« uniquement en magasin » = confirm), gated to the asked domain, recall-first
+    (unclear = no-op), falling back to the W2 token parser without a provider.
+  - **#2 statement faithfulness judge** (`judge_statement_fidelity`): an LLM pass over the
+    free-prose challenge statement flags contradictions/unsupported claims (the directional
+    « jusqu'au » vs « à compter du » class the deterministic number guard can't see),
+    surfaced as an amber UI strip. Live-confirmed catching real drift.
+  - **#3 `conversation-eval` harness**: an LLM persona plays a PM and is scoped by the REAL
+    ScopingSession; `CachingProvider` memoizes every call (app + persona) at temp 0 so
+    re-runs are free. Metrics: turns, EDB completion (cooperative auto-accept), graph-vs-gap
+    split, expected recall in the final map, claims valid/rejected, statement flags + judge
+    issues. `core/benchdata/metrics.py` + `core/llm/caching.py` hermetically tested.
+  - **Harness findings (2-scenario Mistral smoke, the measurement earning its keep):**
+    it caught a **date-injection backfire** from P2 (the model fabricated a « 13 juin →
+    15 juin 2026 » carence window from today's date — now constrained in prompt + header),
+    a **conversational recall collapse vs single-shot** (S1 11% end-to-end vs challenge-eval's
+    76% — the multi-turn persona steers retrieval astray, an L2/L4 amplification), and the #2
+    judge flagging drift on both scenarios. Full 11-scenario × 3-model run is the next step
+    (needs a go — expensive, cached).
+
+## Previous state (2026-06-12, end of session 3)
 
 - **W3 main lot DONE — LLM layer + EDB conversation + two-phase challenge**
   (branch `w3-llm-edb`, executed inline via executing-plans from

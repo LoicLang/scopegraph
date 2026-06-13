@@ -160,11 +160,31 @@ through the live Mistral app).** Three reliability fixes, all measured live + he
   15 janvier 2026 » → « jusqu'en 2026 ») — live: all 14 claims of a cash-back session
   carried their sources. Deterministic for claims; the free-prose challenge statement
   stays prompt-only (best-effort, no structured citations).
-- Still open (observed in the same session, NOT yet done): LLM interpretation of
-  pivot/tie answers (still W2 yes/no token parsing — « uniquement en magasin »
-  confirms/excludes nothing), and a `conversation-eval` harness (scripted personas →
-  full session → EDB completion / graph-vs-gap question ratio / claim-fidelity
-  metrics) to make these levers measurable instead of eyeballed.
+**Usage-test levers P1–P3 (2026-06-13, from 4 parallel role-play scoping sessions on
+the live Mistral app — distinct fictional PMs, black-box users).** All four scored the
+CHALLENGE 5/5 (real SI-aware constraints), claim fidelity 4-5/5 (provenance feature
+validated — agents verified claims against sources, no fabricated dates/numbers in
+claims), but converged on three defects, now fixed:
+- P1 *extraction during MAPPING*: pivot/tie answers (sponsor, objectif, jalon) were
+  silently discarded — `extract_fields` only ran on weak/gap answers, and lever 2
+  routed MORE prose through pivots. Now every answer is mined. Live: a pivot answer
+  yields objectifs+jalons cards.
+- P2 *statement fidelity*: the free-prose statement fabricated facts (one run invented
+  « 30 % » for « une part significative »; another said « pilote avant fin 2025 » in
+  2026). Fix: inject today's date (kills the past-date bug — live confirmed), prompt
+  forbids unsourced figures, and `statement_fact_flags()` deterministically flags
+  numbers absent from the cited sources (amber UI strip). **Residual known limit**:
+  directional semantic drift (« jusqu'au 15 janvier 2026 » vs the seed's « à compter
+  du 15 janvier 2026 ») is NOT caught by the number guard (the number is in the
+  source) — mitigated only by the claim provenance showing the real node text.
+- P3 *discovery vs elimination*: all four hated the « is domain X in scope? » loop (up
+  to 5 pivots in a row). Now a discovery EDB-gap question interleaves after 2 graph
+  pivots. Live: pivot, pivot, GAP, pivot, pivot, challenge.
+- Still open: LLM interpretation of pivot/tie answers (still W2 yes/no token parsing —
+  « uniquement en magasin » confirms/excludes nothing), the P2 directional-fidelity
+  residual above, and a `conversation-eval` harness (scripted personas → full session →
+  EDB completion / graph-vs-gap ratio / claim-&-statement fidelity) to make all these
+  levers measurable instead of eyeballed.
 
 ## Week 3 original scope notes (superseded by the spec above — kept for history)
 

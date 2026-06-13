@@ -233,7 +233,9 @@ class ScopingSession:
         # Today's date rides along too so deadline phrasing stays current (P2: a run
         # said « pilote avant fin 2025 » in 2026).
         today = datetime.date.today().isoformat()
-        brief_header = (f"Date du jour : {today}.\nBrief du projet :\n{self.brief.text()}\n\n")
+        brief_header = (f"Date du jour (à n'utiliser que pour situer une échéance relative "
+                        f"comme « avant la fin de l'année », jamais pour inventer une date) : "
+                        f"{today}.\nBrief du projet :\n{self.brief.text()}\n\n")
         triage_user = brief_header + "Carte brute :\n" + render_subgraph(result, self._service)
         out1 = complete_with_retry(self._provider, load_prompt("challenge_triage"),
                                    triage_user, required_keys=("verdicts",))

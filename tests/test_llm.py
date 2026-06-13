@@ -174,6 +174,29 @@ def test_load_dotenv_missing_file_is_a_noop(tmp_path):
     load_dotenv(tmp_path / "absent.env")  # must not raise
 
 
+def test_caching_provider_memoizes_by_model_system_user(tmp_path):
+    from core.llm.caching import CachingProvider
+
+    inner = MockProvider([{"a": 1}, {"b": 2}])
+    inner.model = "m1"
+    cached = CachingProvider(inner, tmp_path)
+    assert cached.complete_json("sys", "u") == {"a": 1}
+    assert cached.complete_json("sys", "u") == {"a": 1}  # served from disk, not the queue
+    assert len(inner.calls) == 1  # the inner provider was called only once
+    assert cached.complete_json("sys", "other") == {"b": 2}  # different user → inner call
+    assert len(inner.calls) == 2
+
+
+def test_caching_provider_disabled_bypasses_cache(tmp_path):
+    from core.llm.caching import CachingProvider
+
+    inner = MockProvider([{"a": 1}, {"a": 1}])
+    cached = CachingProvider(inner, tmp_path, enabled=False)
+    cached.complete_json("s", "u")
+    cached.complete_json("s", "u")
+    assert len(inner.calls) == 2  # no cache read
+
+
 def test_factory_resolves_provider_from_env(monkeypatch):
     from core.llm.factory import make_provider
 

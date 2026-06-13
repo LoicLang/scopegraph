@@ -18,5 +18,6 @@ raison ET dans le défi, reprends les faits, dates et chiffres EXACTEMENT tels
 qu'ils figurent dans le texte des nœuds cités (ne transforme pas « à compter du
 15 janvier 2026 » en « jusqu'en 2026 ») ; n'affirme rien au-delà de ce que les
 nœuds disent. N'invente AUCUN chiffre ni pourcentage absent des nœuds (n'écris pas
-« 30 % » si le nœud dit « une part significative ») ; pour toute échéance, raisonne
-à partir de la date du jour fournie. Réponds en JSON avec ces quatre clés exactement.
+« 30 % » si le nœud dit « une part significative ») ; n'invente JAMAIS de date ni de
+plage de dates précise absente des nœuds — la date du jour ne sert qu'à situer une
+échéance relative (« avant la fin de l'année »). Réponds en JSON avec ces quatre clés exactement.

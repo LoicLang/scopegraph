@@ -1,0 +1,157 @@
+#!/usr/bin/env python3
+"""End-to-end CONVERSATION bench (real models, never in CI): an LLM persona plays a
+banking PM and is scoped by the REAL ScopingSession — interview, EDB extraction, the
+graph/gap interleave, the two-phase challenge, claim & statement fidelity, all exercised
+through the actual product code, not a reimplementation.
+
+Per scenario it reports: turns, EDB completion (cooperative user — every proposal is
+accepted), graph-vs-gap question split, expected-node recall in the final map, valid/
+rejected claims, and statement fidelity (unsourced numbers + LLM-judge issues).
+
+Usage:
+    pip install -e ".[embeddings,llm]"
+    DEEPSEEK_API_KEY=... ./scripts/conversation-eval --provider deepseek --n 3
+    ./scripts/conversation-eval --provider mistral          # all 11 scenarios
+    ./scripts/conversation-eval --no-cache
+
+Every LLM call (app AND persona) is cached on disk at temperature 0, so re-runs are
+free; a prompt change busts only the calls it touches.
+"""
+
+import argparse
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from core.benchdata.metrics import conversation_metrics  # noqa: E402
+from core.benchdata.scenarios import SCENARIOS  # noqa: E402
+from core.graph.service import GraphService  # noqa: E402
+from core.llm.caching import CachingProvider  # noqa: E402
+from core.llm.factory import load_dotenv  # noqa: E402
+from core.llm.json_contract import JsonContractError, complete_with_retry  # noqa: E402
+from core.retrieval.index import VectorIndex  # noqa: E402
+from core.retrieval.st_embedder import SentenceTransformersEmbedder  # noqa: E402
+from core.runtime.session import EDB_COMPLETE_MESSAGE, ScopingSession  # noqa: E402
+
+CACHE_DIR = ROOT / ".bench-cache" / "conv"
+TURN_CAP = 12
+
+PERSONA_SYSTEM = """Tu es un chef de projet dans une banque de détail française.
+Ton projet : {brief}
+Tu connais bien le métier mais PAS la plomberie informatique du SI. Réponds aux
+questions de l'outil de cadrage en français, en une ou deux phrases, comme un vrai
+chef de projet : langage métier, n'invente aucun détail technique du SI, et écarte
+naturellement ce qui est clairement hors de ton projet. Si on te demande un détail
+que tu ne connais pas, dis-le et renvoie la balle. Réponds en JSON : {{"answer": "..."}}"""
+
+
+def make_bench_provider(name: str):
+    load_dotenv()
+    env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY",
+               "grok": "GROK_API_KEY"}[name]
+    api_key = os.environ.get(env_var)
+    if not api_key:
+        sys.exit(f"missing {env_var} — set it in .env, export it, or pick another --provider")
+    if name == "deepseek":
+        from core.llm.deepseek import DeepSeekProvider
+
+        return DeepSeekProvider(api_key=api_key)
+    if name == "grok":
+        from core.llm.grok import GrokProvider
+
+        return GrokProvider(api_key=api_key)
+    from core.llm.mistral import MistralProvider
+
+    return MistralProvider(api_key=api_key)
+
+
+def persona_answer(provider, persona_system: str, transcript: list[tuple[str, str]]) -> str:
+    convo = "\n".join(
+        f"{'Outil' if role == 'app' else 'Vous'} : {text}" for role, text in transcript
+    )
+    user = convo + "\n\nRéponds à la dernière intervention de l'outil."
+    out = complete_with_retry(provider, persona_system, user, required_keys=("answer",))
+    return str(out["answer"]).strip() or "Je ne sais pas, à vous de me dire."
+
+
+def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, int]:
+    """Drive a full conversation; a cooperative persona accepts every proposal."""
+    session = ScopingSession(service, index, provider=provider)
+    persona_system = PERSONA_SYSTEM.format(brief=brief)
+    transcript: list[tuple[str, str]] = []
+    turn = session.handle_message(brief)
+    transcript.append(("app", turn.question or turn.message or ""))
+    turns = 0
+    while turns < TURN_CAP:
+        for proposal in list(session.ledger.pending()):
+            session.accept_proposal(proposal.id)
+        if session.challenge_done and not session.edb.missing_sections():
+            break
+        if turn.message == EDB_COMPLETE_MESSAGE:
+            break
+        answer = persona_answer(provider, persona_system, transcript)
+        transcript.append(("user", answer))
+        turn = session.handle_message(answer)
+        transcript.append(("app", turn.question or turn.message or ""))
+        turns += 1
+    for proposal in list(session.ledger.pending()):
+        session.accept_proposal(proposal.id)
+    return session, turns
+
+
+def main() -> None:
+    sys.stdout.reconfigure(line_buffering=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--provider", choices=["deepseek", "mistral", "grok"],
+                        default="deepseek")
+    parser.add_argument("--n", type=int, default=len(SCENARIOS), metavar="N",
+                        help="run the first N scenarios (default: all 11)")
+    parser.add_argument("--no-cache", action="store_true", help="bypass .bench-cache/conv/")
+    args = parser.parse_args()
+
+    raw = make_bench_provider(args.provider)
+    provider = CachingProvider(raw, CACHE_DIR, enabled=not args.no_cache)
+    import datetime
+
+    print(f"provider: {args.provider}  model: {provider.model}"
+          f"  date: {datetime.date.today().isoformat()}  cache: {not args.no_cache}")
+    embedder = SentenceTransformersEmbedder()
+    service = GraphService.from_dir(ROOT / "graph")
+    index = VectorIndex(embedder)
+    index.build(service)
+
+    completions, recalls, graphs, gaps, turn_counts = [], [], [], [], []
+    flagged, judged = 0, 0
+    for name, brief, expected, _trap in SCENARIOS[: args.n]:
+        try:
+            session, turns = run_scenario(provider, service, index, brief)
+        except JsonContractError as exc:
+            print(f"  {name:30s} CONVERSATION FAILED: {exc}")
+            continue
+        m = conversation_metrics(session, set(expected))
+        completions.append(m["edb_completion"])
+        recalls.append(m["expected_recall"])
+        graphs.append(m["graph_questions"])
+        gaps.append(m["gap_questions"])
+        turn_counts.append(turns)
+        flagged += bool(m["statement_flags"])
+        judged += bool(m["statement_issues"])
+        print(f"  {name:30s} turns {turns:2d} | EDB {m['edb_completion']:.0%}"
+              f" | recall {m['expected_recall']:.0%} | Qg/Qgap {m['graph_questions']}/{m['gap_questions']}"
+              f" | claims {m['claims_valid']}v/{m['claims_rejected']}r"
+              f" | flags {len(m['statement_flags'])} | issues {len(m['statement_issues'])}")
+        if m["statement_flags"] or m["statement_issues"]:
+            print(f"    statement: flags={m['statement_flags']} issues={m['statement_issues']}")
+
+    count = max(len(completions), 1)
+    print(f"\n==> EDB {sum(completions) / count:.0%} | recall {sum(recalls) / count:.0%}"
+          f" | mean Qgraph {sum(graphs) / count:.1f} / Qgap {sum(gaps) / count:.1f}"
+          f" | mean turns {sum(turn_counts) / count:.1f}"
+          f" | statements with flags {flagged}/{count}, with judge-issues {judged}/{count}")
+
+
+if __name__ == "__main__":
+    main()

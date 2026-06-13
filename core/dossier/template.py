@@ -50,7 +50,8 @@ EDB_TEMPLATE_V1: tuple[EdbSectionSpec, ...] = (
 
 _SPEC_BY_ID = {section.id: section for section in EDB_TEMPLATE_V1}
 # Sections the conversation may ask about (never the llm/runtime-owned ones).
-_ASKABLE = tuple(s.id for s in EDB_TEMPLATE_V1 if s.owner in ("user", "mixed"))
+ASKABLE_SECTIONS = tuple(s.id for s in EDB_TEMPLATE_V1 if s.owner in ("user", "mixed"))
+_ASKABLE = ASKABLE_SECTIONS  # internal alias
 
 
 @dataclass

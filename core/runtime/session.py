@@ -359,7 +359,8 @@ class ScopingSession:
                 node_refs=list(proposal.payload["node_refs"])))
         elif proposal.kind == "statement":
             # #4: accepting a quarantined statement writes it into the challenge section.
-            self.edb.add_entry("challenge", EdbEntry(source="llm", text=proposal.text))
+            source = "user" if edited_text is not None else "llm"
+            self.edb.add_entry("challenge", EdbEntry(source=source, text=proposal.text))
         else:  # claim
             self.edb.add_entry(proposal.payload["target_section"], EdbEntry(
                 source=f"claim:{pid}", text=proposal.text,

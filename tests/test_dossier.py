@@ -70,3 +70,9 @@ def test_incomplete_sections_includes_empty_and_judged_insufficient():
     assert "objectifs" in incomplete
     # filled AND judged sufficient → not incomplete
     assert "besoin" not in state.incomplete_sections(insufficient=set())
+
+
+def test_incomplete_sections_no_arg_equals_missing_sections():
+    state = EdbState.new()
+    state.add_entry("besoin", EdbEntry(source="user", text="t"))
+    assert state.incomplete_sections() == state.missing_sections()

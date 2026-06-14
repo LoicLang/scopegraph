@@ -5,6 +5,7 @@ expression-de-besoins + note-de-cadrage merge). The runtime owns this state;
 the LLM only proposes entries that cross a gate and the user ledger.
 """
 
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -29,7 +30,7 @@ EDB_TEMPLATE_V1: tuple[EdbSectionSpec, ...] = (
                    "Un déclencheur concret est nommé (événement, contrainte, opportunité datée)."),
     EdbSectionSpec("besoin", "Expression du besoin", "user",
                    "Quel problème métier ce projet doit-il résoudre, en une phrase ?",
-                   "Le problème métier est formulé précisément, pas en généralités."),
+                   "Le problème métier est nommé concrètement (le manque ou le risque actuel et qui il affecte), pas une généralité comme « améliorer l'expérience »."),
     EdbSectionSpec("utilisateurs", "Utilisateurs & parties prenantes", "mixed",
                    "Qui utilisera le résultat, et qui sponsorise le projet ?",
                    "Le sponsor ET les utilisateurs finaux sont nommés."),
@@ -44,10 +45,10 @@ EDB_TEMPLATE_V1: tuple[EdbSectionSpec, ...] = (
                    "Les exigences non-fonctionnelles sont chiffrées quand cela a un sens (volumétrie, SLA, délai)."),
     EdbSectionSpec("dependances", "Dépendances & systèmes impactés", "graph",
                    "Des dépendances connues à signaler ?",
-                   "Les systèmes impactés connus sont listés."),
+                   ""),
     EdbSectionSpec("contraintes", "Contraintes héritées", "graph",
                    "Des contraintes (réglementaires, gels, standards) à signaler ?",
-                   "Les contraintes réglementaires/gels/standards pertinents sont listés."),
+                   ""),
     EdbSectionSpec("risques", "Risques initiaux", "mixed",
                    "Quels risques voyez-vous à ce stade ?",
                    "Au moins un risque concret avec son origine est nommé."),
@@ -93,7 +94,7 @@ class EdbState:
         """Askable sections still empty, in template order (the gap candidates)."""
         return [sid for sid in _ASKABLE if not self.sections[sid]]
 
-    def incomplete_sections(self, insufficient: set[str] = frozenset()) -> list[str]:
+    def incomplete_sections(self, insufficient: Collection[str] = frozenset()) -> list[str]:
         """Askable sections still empty OR judged insufficient, in template order.
 
         `insufficient` is the set of filled-but-imprecise section ids from the LLM

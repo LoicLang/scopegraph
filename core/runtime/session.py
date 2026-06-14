@@ -340,7 +340,14 @@ class ScopingSession:
         source_texts.append(self.brief.text())
         self.statement_flags = statement_fact_flags(statement, source_texts)
         self.statement_issues = judge_statement_fidelity(self._provider, statement, source_texts)
-        self.edb.add_entry("challenge", EdbEntry(source="llm", text=statement))
+        if self.statement_flags or self.statement_issues:
+            # #4: a flagged statement is NOT auto-stored — it waits in the ledger as a
+            # card so the user accepts/edits it before it enters the EDB (quarantine).
+            pid = self.ledger.add(Proposal.statement(
+                text=statement, flags=self.statement_flags, issues=self.statement_issues))
+            cards.append(self.ledger.get(pid))
+        else:
+            self.edb.add_entry("challenge", EdbEntry(source="llm", text=statement))
         self.challenge_done = True
         return statement, cards
 
@@ -350,6 +357,9 @@ class ScopingSession:
             self.edb.add_entry(proposal.payload["section_id"], EdbEntry(
                 source="user", text=proposal.text,
                 node_refs=list(proposal.payload["node_refs"])))
+        elif proposal.kind == "statement":
+            # #4: accepting a quarantined statement writes it into the challenge section.
+            self.edb.add_entry("challenge", EdbEntry(source="llm", text=proposal.text))
         else:  # claim
             self.edb.add_entry(proposal.payload["target_section"], EdbEntry(
                 source=f"claim:{pid}", text=proposal.text,

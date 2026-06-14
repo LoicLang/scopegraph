@@ -614,3 +614,42 @@ def test_gate_and_grounding_rejections_both_tagged_kind_claim() -> None:
     assert cards == []  # neither claim is carded
     claim_rejections = [r for r in session.gate_rejections if r.get("kind") == "claim"]
     assert len(claim_rejections) == 2  # both the gate-rejected and the grounding-rejected claim
+
+
+def test_clean_statement_is_auto_stored() -> None:
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index)
+    session.handle_message("améliorer le canal mobile")
+    result = session.last_result
+    session._provider = MockProvider([
+        {"verdicts": []},  # triage
+        {"pulled_justifications": [], "domains": [], "claims": [],
+         "challenge_statement": "Énoncé fidèle aux sources."},
+        {"issues": []},  # clean fidelity → no quarantine
+    ])
+    session._run_challenge(result)
+    assert [e.text for e in session.edb.sections["challenge"]] == ["Énoncé fidèle aux sources."]
+
+
+def test_flagged_statement_is_quarantined_not_auto_stored() -> None:
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index)
+    session.handle_message("améliorer le canal mobile")
+    result = session.last_result
+    session._provider = MockProvider([
+        {"verdicts": []},  # triage
+        {"pulled_justifications": [], "domains": [], "claims": [],
+         "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
+    ])
+    _msg, cards = session._run_challenge(result)
+    assert session.edb.sections["challenge"] == []  # NOT auto-stored
+    statement_cards = [c for c in cards if c.kind == "statement"]
+    assert statement_cards and statement_cards[0].payload["issues"]
+    # accepting it lands it in the EDB
+    session.accept_proposal(statement_cards[0].id)
+    assert any("jusqu'au" in e.text for e in session.edb.sections["challenge"])

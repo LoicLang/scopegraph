@@ -185,3 +185,9 @@ def test_judge_sufficiency_swallows_contract_failure():
     edb.add_entry("objectifs", EdbEntry(source="user", text="x"))
     provider = MockProvider([{"bad": 1}, {"still": 2}])
     assert judge_section_sufficiency(provider, edb) == (set(), {})
+
+
+def test_judge_sufficiency_empty_edb_returns_empty():
+    from core.runtime.llm_steps import judge_section_sufficiency
+    edb = EdbState.new()
+    assert judge_section_sufficiency(MockProvider([]), edb) == (set(), {})

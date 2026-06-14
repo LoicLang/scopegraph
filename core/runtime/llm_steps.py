@@ -139,7 +139,7 @@ def judge_section_sufficiency(
     blocks = []
     for sid in filled:
         spec = section_spec(sid)
-        content = " | ".join(e.text for e in edb.sections[sid])
+        content = "\n".join(f"- {e.text}" for e in edb.sections[sid])
         blocks.append(f"[{sid}] critère : {spec.sufficiency_fr}\ncontenu : {content}")
     user = "\n\n".join(blocks)
     try:
@@ -153,7 +153,9 @@ def judge_section_sufficiency(
         sid = str(verdict.get("section_id", ""))
         if sid in filled and verdict.get("sufficient") is False:
             insufficient.add(sid)
-            followups[sid] = str(verdict.get("followup_fr", "")).strip()
+            followup = str(verdict.get("followup_fr", "")).strip()
+            if followup:
+                followups[sid] = followup
     return insufficient, followups
 
 

@@ -50,3 +50,15 @@ def test_round_trip():
     clone = Ledger.from_dict(ledger.to_dict())
     assert clone.get("p1").kind == "claim"
     assert clone.get("p1").payload["target_section"] == "dependances"
+
+
+def test_statement_proposal_carries_flags_and_issues():
+    from core.runtime.ledger import Ledger, Proposal
+    ledger = Ledger()
+    pid = ledger.add(Proposal.statement(
+        text="Le gel court jusqu'au 15 janvier 2026.",
+        flags=["30"], issues=["Date inversée."]))
+    p = ledger.get(pid)
+    assert p.kind == "statement"
+    assert p.payload["flags"] == ["30"]
+    assert p.payload["issues"] == ["Date inversée."]

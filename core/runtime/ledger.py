@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 @dataclass
 class Proposal:
     id: str
-    kind: str  # "claim" | "field"
+    kind: str  # "claim" | "field" | "statement"
     text: str  # FR display text (claim reason or field entry text)
     payload: dict  # kind-specific data, applied on accept
     status: str = "pending"  # pending | accepted | rejected
@@ -26,6 +26,12 @@ class Proposal:
     def field(cls, *, section_id: str, text: str, node_refs: list[str] | None = None):
         return cls(id="", kind="field", text=text, payload={
             "section_id": section_id, "node_refs": node_refs or [],
+        })
+
+    @classmethod
+    def statement(cls, *, text: str, flags: list[str], issues: list[str]):
+        return cls(id="", kind="statement", text=text, payload={
+            "flags": list(flags), "issues": list(issues),
         })
 
 

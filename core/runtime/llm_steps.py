@@ -2,7 +2,7 @@
 no provider, or a failed JSON contract, never blocks a turn (hard rule: the
 templates and the gates are the product's floor, the LLM is the polish)."""
 
-from core.dossier.template import ASKABLE_SECTIONS, EdbState, section_spec
+from core.dossier.template import ASKABLE_SECTIONS, EDB_TEMPLATE_V1, EdbState, section_spec
 from core.graph.service import GraphService
 from core.llm.json_contract import JsonContractError, complete_with_retry
 from core.llm.prompts import load_prompt
@@ -13,6 +13,16 @@ from core.runtime.questions import gap_question, render_question
 
 MAX_ENRICHMENTS_PER_TURN = 4
 MAX_TOTAL_ENRICHMENTS = 8  # global cap — keeps the chip row readable (UI debt L6)
+
+# Non-canonical section ids emitted by some models in the wild → canonical id.
+# Applied before the allowed-section gate so live data isn't silently discarded.
+_SECTION_SYNONYMS: dict[str, str] = {
+    "parties_prenantes": "utilisateurs",
+    "parties prenantes": "utilisateurs",
+    "carta": "carte",
+    "carte_de_contexte": "carte",
+    "perimetre_hors": "perimetre",
+}
 
 
 def _norm_enrichment(text: str) -> str:
@@ -55,19 +65,21 @@ def extract_fields(
     if provider is None:
         return [], []
     allowed = set(edb.sections)
-    system = load_prompt("extract_fields").replace("{sections}", ", ".join(sorted(allowed)))
+    catalogue = ", ".join(f"{s.id} ({s.title_fr})" for s in EDB_TEMPLATE_V1 if s.id in allowed)
+    system = load_prompt("extract_fields").replace("{sections}", catalogue)
     try:
         out = complete_with_retry(provider, system, answer, required_keys=("entries",))
     except JsonContractError:
         return [], []
     entries, dropped = [], []
     for raw in out["entries"]:
-        section_id = raw.get("section_id", "")
+        raw_id = raw.get("section_id", "")
+        section_id = _SECTION_SYNONYMS.get(raw_id, raw_id)
         if section_id in allowed and raw.get("text"):
             entries.append({"section_id": section_id, "text": raw["text"],
                             "node_refs": list(raw.get("node_refs", []))})
         else:
-            dropped.append(section_id)
+            dropped.append(raw_id)
     return entries, dropped
 
 

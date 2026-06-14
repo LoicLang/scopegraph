@@ -191,3 +191,16 @@ def test_judge_sufficiency_empty_edb_returns_empty():
     from core.runtime.llm_steps import judge_section_sufficiency
     edb = EdbState.new()
     assert judge_section_sufficiency(MockProvider([]), edb) == (set(), {})
+
+
+def test_extract_fields_remaps_known_section_synonyms():
+    # the model emits non-canonical ids seen live (parties_prenantes, carta)
+    mock = MockProvider([{"entries": [
+        {"section_id": "parties_prenantes", "text": "DSI sponsor"},  # → utilisateurs
+        {"section_id": "carta", "text": "x"},                         # → carte (then dropped: not askable? still remapped)
+        {"section_id": "objectifs", "text": "+10% conversion"},
+    ]}])
+    entries, dropped = extract_fields(mock, "réponse", EdbState.new())
+    sids = [e["section_id"] for e in entries]
+    assert "utilisateurs" in sids  # parties_prenantes remapped
+    assert "parties_prenantes" not in dropped  # remapped, not lost

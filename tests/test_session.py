@@ -686,7 +686,10 @@ def test_audit_fixes_hold_end_to_end() -> None:
     # empty on turn 1), so judge_section_sufficiency early-returns with NO LLM call and
     # the opener consumes exactly enrich · extract · pick.
     service = make_service()
-    index = VectorIndex(FakeEmbedder(["canal"]))
+    # ["canal", "moteur"]: a later precision naming the moteur surfaces sys-moteur as an
+    # ANCHOR (anchors bypass the retriever's excluded-domain filter), so #1 below proves
+    # kept_node_ids() — not retrieval — is what keeps the excluded node off the map.
+    index = VectorIndex(FakeEmbedder(["canal", "moteur"]))
     index.build(service)
     session = ScopingSession(service, index)  # provider attached per phase
 
@@ -711,7 +714,12 @@ def test_audit_fixes_hold_end_to_end() -> None:
     assert "sys-moteur" not in session.kept_node_ids()
     session.handle_message("préciser les délais du moteur central de paiement")
     assert "monetique" in session.brief.excluded_domains  # exclusion is a commitment
-    assert "sys-moteur" not in session.kept_node_ids()  # #1: excluded node stays off the map
+    # #1: the precision names the moteur, so retrieval surfaces sys-moteur AS AN ANCHOR
+    # (anchors bypass the retriever's excluded-domain filter). It is therefore present in
+    # the raw result, and only kept_node_ids()'s re-filter keeps it off the map — deleting
+    # that re-filter would now fail this test.
+    assert "sys-moteur" in session.last_result.node_ids()   # retrieval surfaces it (as an anchor)
+    assert "sys-moteur" not in session.kept_node_ids()      # kept_node_ids re-applies the exclusion
     confirmed = set(session.brief.domains)
     excluded = set(session.brief.excluded_domains)
     for nid in session.kept_node_ids():

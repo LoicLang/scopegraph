@@ -8,6 +8,7 @@ from core.llm.json_contract import JsonContractError, complete_with_retry
 from core.llm.prompts import load_prompt
 from core.llm.provider import LLMProvider
 from core.runtime.brief import ProjectBrief
+from core.runtime.challenge import node_provenance
 from core.runtime.pool import Candidate
 from core.runtime.questions import gap_question, render_question
 
@@ -169,6 +170,42 @@ def judge_section_sufficiency(
             if followup:
                 followups[sid] = followup
     return insufficient, followups
+
+
+def judge_claim_grounding(
+    provider: LLMProvider | None, claims: list[dict], service: GraphService
+) -> list[dict]:
+    """Per-claim faithfulness: is every conclusion of the claim's reason covered by the
+    text of the nodes it cites? Returns a verdict parallel to `claims`:
+    [{"grounded": bool, "reason_fr": str}]. All grounded without a provider, on contract
+    failure, or for an empty list (recall-first: the syntactic gate stays the floor)."""
+    if provider is None or not claims:
+        return [{"grounded": True, "reason_fr": ""} for _ in claims]
+    blocks = []
+    for i, claim in enumerate(claims):
+        facts = node_provenance(service, [str(n) for n in claim.get("node_ids", [])])
+        sources = " | ".join(f["text"] for f in facts)
+        blocks.append(f"[{i}] affirmation : {claim.get('reason', '')}\nsources citées : {sources}")
+    user = "\n\n".join(blocks)
+    try:
+        out = complete_with_retry(provider, load_prompt("judge_claim_grounding"), user,
+                                  required_keys=("verdicts",))
+    except JsonContractError:
+        return [{"grounded": True, "reason_fr": ""} for _ in claims]
+    by_index: dict[int, dict] = {}
+    for v in out.get("verdicts", []):
+        try:
+            by_index[int(v["index"])] = v
+        except (KeyError, ValueError, TypeError):
+            continue
+    verdicts = []
+    for i in range(len(claims)):
+        v = by_index.get(i, {})
+        verdicts.append({
+            "grounded": v.get("grounded", True) is not False,  # default keep (recall-first)
+            "reason_fr": str(v.get("reason_fr", "")).strip(),
+        })
+    return verdicts
 
 
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:

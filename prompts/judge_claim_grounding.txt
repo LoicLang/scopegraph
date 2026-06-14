@@ -1,0 +1,8 @@
+Tu vérifies des affirmations de cadrage par rapport aux sources qu'elles citent (le
+texte exact des éléments du référentiel). Pour chaque affirmation, vérifie que TOUTES
+ses conclusions sont couvertes par les sources citées. Une affirmation qui ajoute un
+système, une conclusion ou une obligation absente des sources n'est PAS couverte.
+Ignore le style et les reformulations fidèles. Réponds en JSON :
+{"verdicts": [{"index": <numéro de l'affirmation>, "grounded": true|false,
+"reason_fr": "<si non couverte, ce qui n'est pas dans les sources>"}]}
+Renvoie un verdict par affirmation fournie.

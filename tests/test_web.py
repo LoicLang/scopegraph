@@ -110,9 +110,10 @@ def mini_client(tmp_path: Path, provider: MockProvider) -> TestClient:
 
 
 def test_message_response_carries_edb_cards_and_rejections() -> None:
-    # queue: enrich(no additions) · pick_question(valid gap choice)
+    # queue: enrich(no additions) · extract(opener mined, empty) · pick_question(valid gap choice)
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"candidate_key": "gap:objectifs", "question": "Quel succès ?"},
     ])
     client = TestClient(create_app(graph_dir=GRAPH_DIR,
@@ -128,9 +129,10 @@ def test_message_response_carries_edb_cards_and_rejections() -> None:
 
 
 def test_proposal_accept_endpoint_applies_to_edb(tmp_path: Path) -> None:
-    # queue: enrich · triage(keep all) · claims(one valid claim)
+    # queue: enrich · extract(opener mined, empty) · triage(keep all) · claims(one valid claim)
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [
             {"kind": "constraint_applies", "node_ids": ["con-mini"],
@@ -153,6 +155,7 @@ def test_claim_cards_carry_node_provenance(tmp_path: Path) -> None:
     # user verifies the LLM's paraphrase against the seed (the runtime is the source of truth).
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [
             {"kind": "constraint_applies", "node_ids": ["con-mini"],
@@ -173,6 +176,7 @@ def test_statement_flags_in_payload(tmp_path: Path) -> None:
     # P2: unsourced numbers in the challenge statement surface in the payload for the UI.
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "30% des dossiers sont concernés."},
@@ -190,6 +194,7 @@ def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
     # removing a chip adds no user words, so the round reruns without a new enrichment)
     provider = MockProvider([
         {"additions": [{"text": "fidélité", "kind": "synonym"}]},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
@@ -206,9 +211,10 @@ def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
 
 
 def test_node_restore_endpoint_moves_rejected_back_to_map(tmp_path: Path) -> None:
-    # queue: enrich · triage(reject con-mini) · claims(empty)
+    # queue: enrich · extract(opener mined, empty) · triage(reject con-mini) · claims(empty)
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": [{"node_id": "con-mini", "verdict": "reject", "reason": "hors sujet"}]},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
@@ -233,9 +239,10 @@ def test_node_restore_endpoint_moves_rejected_back_to_map(tmp_path: Path) -> Non
 def test_payload_map_uses_kept_node_ids_and_honors_exclusions(tmp_path: Path) -> None:
     # After triage rejects con-mini, the map must not contain it — proving kept_node_ids()
     # (which respects rejected_nodes) drives the only= set in _session_payload.
-    # queue: enrich · triage(reject con-mini) · claims(empty)
+    # queue: enrich · extract(opener mined, empty) · triage(reject con-mini) · claims(empty)
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too
         {"verdicts": [{"node_id": "con-mini", "verdict": "reject", "reason": "hors sujet"}]},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},

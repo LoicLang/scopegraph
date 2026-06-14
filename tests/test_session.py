@@ -1,5 +1,6 @@
 import pytest
 
+from core.dossier.template import EdbEntry
 from core.graph.models import Constraint, Edge, EdgeType, System
 from core.graph.service import GraphService
 from core.retrieval import config
@@ -154,9 +155,10 @@ def test_full_turn_with_provider_asks_woven_graph_question() -> None:
     # A graph ambiguity (pivot monetique) is present → the runtime offers ONLY graph
     # candidates to the LLM (lever 2: graph ambiguity strictly before EDB gaps); the
     # LLM phrases a woven question.
-    # queue: enrich(no additions) · pick_question(valid pivot choice)
+    # queue: enrich(no additions) · extract(opener mined, empty) · pick_question(valid pivot choice)
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is now mined too (empty EDB → no sufficiency call)
         {"candidate_key": "pivot:monetique",
          "question": "Le périmètre touche-t-il la monétique, vu le moteur d'autorisation ?"},
     ])
@@ -174,6 +176,7 @@ def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
     # so the out-of-pool pick is gated back to the graph candidate's template (lever 2).
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the initial brief is mined (empty EDB → no sufficiency call)
         {"candidate_key": "gap:objectifs", "question": "Question de section ?"},
     ])
     service = make_service()
@@ -199,9 +202,13 @@ def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
 def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
     # P1: a rich answer to a GRAPH pivot must still be mined for EDB fields, not discarded
     # (the bug: pivot/tie answers never reached extract_fields).
-    # queue: t1 enrich · t1 pick · t2 interpret · t2 enrich · t2 extract · t2 pick
+    # queue: t1 enrich · t1 extract(opener, empty) · t1 pick · t2 interpret · t2 enrich
+    #      · t2 extract(objectifs) · t2 pick
+    # NOTE: extracted entries become ledger CARDS, not EDB entries, so the EDB stays empty
+    # and judge_section_sufficiency returns early (no dict consumed) until a card is accepted.
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: opener mined (empty)
         {"candidate_key": "pivot:monetique", "question": "Monétique ?"},
         {"verdict": "exclude"},
         {"additions": []},
@@ -221,9 +228,11 @@ def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
 
 def test_natural_pivot_answer_confirmed_by_llm_interpretation() -> None:
     # #1: a non-yes/no answer confirms the domain because the LLM judged it, not tokens.
-    # queue: t1 enrich · t1 pick · t2 interpret(confirm) · t2 enrich · t2 extract · t2 pick
+    # queue: t1 enrich · t1 extract(opener) · t1 pick · t2 interpret(confirm) · t2 enrich
+    #      · t2 extract · t2 pick
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: opener mined (empty)
         {"candidate_key": "pivot:monetique", "question": "Monétique concernée ?"},
         {"verdict": "confirm"},
         {"additions": []},
@@ -243,6 +252,7 @@ def test_challenge_flags_unsourced_numbers_in_statement() -> None:
     # P2: a fabricated figure in the free-prose statement is flagged deterministically.
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: opener mined (empty)
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Environ 30% des cas sont à risque."},
@@ -258,6 +268,7 @@ def test_challenge_statement_coerced_when_model_returns_a_dict() -> None:
     # and str(dict) leaked into the EDB/UI. Coerce to the inner text.
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: opener mined (empty)
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": {"en_francais": "Le défi en clair."}},
@@ -272,6 +283,7 @@ def test_challenge_records_statement_fidelity_issues() -> None:
     # #2: the LLM fidelity judge surfaces semantic drift (directional date inversion).
     provider = MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: opener mined (empty)
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
@@ -323,8 +335,9 @@ def test_remove_enrichment_does_not_re_enrich() -> None:
     enrich_system = load_prompt("enrich_brief")
     provider = MockProvider([
         {"additions": [{"text": "fidélité"}]},                          # turn 1 enrich
+        {"entries": []},                                                # turn 1 extract (opener mined)
         {"candidate_key": "pivot:monetique", "question": "Q monétique ?"},  # turn 1 pick
-        {"candidate_key": "pivot:tpe-acceptation", "question": "Q TPE ?"},  # rerun pick
+        {"candidate_key": "pivot:tpe-acceptation", "question": "Q TPE ?"},  # rerun pick (enrich=False, no extract)
     ])
     service = make_service()
     index = VectorIndex(FakeEmbedder(["canal"]))
@@ -345,9 +358,11 @@ def test_no_provider_session_behaves_like_w2_plus_gap_templates() -> None:
 
 
 def _challenge_provider() -> MockProvider:
-    # queue: enrich · triage(keep all) · claims(one valid claim + statement) · fidelity judge
+    # queue: enrich · extract(opener mined, empty) · triage(keep all)
+    #      · claims(one valid claim + statement) · fidelity judge
     return MockProvider([
         {"additions": []},
+        {"entries": []},  # #5: the opener is mined; empty EDB → no sufficiency call
         {"verdicts": []},  # gate A defaults everything to keep
         {"pulled_justifications": [], "claims": [
             {"kind": "depends_on", "node_ids": ["sys-canal"],
@@ -362,8 +377,8 @@ def test_challenge_runs_when_map_stable_and_fills_ledger_and_edb() -> None:
     session = make_challenge_session(provider)
     turn = session.handle_message("refonte du canal")
     # both challenge calls must carry the brief — the model judges relevance TO this project
-    assert "refonte du canal" in provider.calls[1][1]  # triage user message
-    assert "refonte du canal" in provider.calls[2][1]  # claims user message
+    assert "refonte du canal" in provider.calls[2][1]  # triage user message (calls[1] is extract)
+    assert "refonte du canal" in provider.calls[3][1]  # claims user message
     assert session.challenge_done is True
     assert session.edb.status("challenge") == "filled"
     pending = session.ledger.pending()
@@ -381,8 +396,8 @@ def test_accept_claim_card_writes_edb_section() -> None:
 
 
 def test_challenge_provider_failure_keeps_state_mapping() -> None:
-    # queue: enrich ok · triage invalid twice (contract failure)
-    provider = MockProvider([{"additions": []}, {"bad": 1}, {"bad": 2}])
+    # queue: enrich ok · extract(opener, empty) · triage invalid twice (contract failure)
+    provider = MockProvider([{"additions": []}, {"entries": []}, {"bad": 1}, {"bad": 2}])
     session = make_challenge_session(provider)
     turn = session.handle_message("refonte du canal")
     assert session.challenge_done is False
@@ -450,3 +465,39 @@ def test_post_challenge_precision_marks_new_nodes_and_keeps_exclusions() -> None
     new_nodes = session.kept_node_ids() - snapshot
     assert "sys-terminal" not in new_nodes  # excluded stays out of the new set too
     assert new_nodes == session.kept_node_ids() - snapshot  # diff is against the challenge-time snapshot
+
+
+def test_initial_brief_is_mined_into_the_edb() -> None:
+    # the first message must feed extract_fields (provider path), not be discarded
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    mock = MockProvider([
+        {"additions": []},  # enrich_brief
+        {"entries": [{"section_id": "jalons", "text": "pilote octobre 2026"}]},  # extract on brief
+        {"verdicts": []},  # judge_section_sufficiency (jalons now filled)
+        {"candidate_key": "gap:contexte", "question": "Contexte ?"},  # pick_question
+    ])
+    session = ScopingSession(service, index, provider=mock)
+    turn = session.handle_message("paiement en 3 fois, pilote octobre 2026")
+    # the opener is mined: extract_fields proposes a jalons field card (was previously
+    # discarded — the DESCRIBING branch left free_text=None and never reached extraction).
+    assert any(c.payload.get("section_id") == "jalons" and "octobre 2026" in c.text
+               for c in turn.cards)
+
+
+def test_insufficient_section_is_re_asked_once_then_closed() -> None:
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    # objectifs filled-but-vague; judged insufficient → re-asked; precision_asked closes it
+    session = ScopingSession(service, index)  # template mode: deterministic
+    session.handle_message("améliorer le canal mobile")
+    session.edb.add_entry("objectifs", EdbEntry(source="user", text="vague"))
+    # before the re-ask, an insufficient filled section is still incomplete (would be offered)
+    assert "objectifs" in session.edb.incomplete_sections(insufficient={"objectifs"})
+    session._mark_precision_asked("objectifs")
+    # the session subtracts precision_asked before building the pool (bounded re-ask):
+    # once re-asked, the section converges and is no longer offered.
+    insufficient = {"objectifs"} - session.precision_asked
+    assert "objectifs" not in session.edb.incomplete_sections(insufficient=insufficient)

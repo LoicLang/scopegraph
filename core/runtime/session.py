@@ -36,6 +36,7 @@ from core.runtime.llm_steps import (
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
+    judge_section_sufficiency,
     judge_statement_fidelity,
     pick_question,
 )
@@ -97,6 +98,7 @@ class ScopingSession:
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
         self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
         self.previously_mapped: set[str] = set()  # stabilized map snapshotted once at challenge completion (new-node diff); not updated post-challenge
+        self.precision_asked: set[str] = set()  # sections already re-asked for precision (convergence)
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
     def handle_message(self, text: str) -> Turn:
@@ -107,6 +109,7 @@ class ScopingSession:
         if self.state is SessionState.DESCRIBING:
             self.brief = ProjectBrief(description=text)
             self.state = SessionState.MAPPING
+            free_text = text  # #5: mine the initial brief too (jalons/objectifs in the opener)
         elif self.state in (SessionState.MAPPING, SessionState.SCOPING):
             if self.pending is not None:
                 self._apply_answer(self.pending, text)  # domain effects (pivot/tie)
@@ -188,7 +191,13 @@ class ScopingSession:
                 if not (set(self._service.get_node(p.node_id).domains) & excluded
                         and not (set(self._service.get_node(p.node_id).domains) & confirmed))
             ]
-        pool = build_pool(result, self.brief, self.asked, self.edb, profile=self._profile)
+        # #2: LLM sufficiency judge marks filled-but-vague sections so they re-enter the
+        # pool with a targeted follow-up. Subtracting precision_asked bounds the re-ask to
+        # once per section (convergence) — without a provider this is (set(), {}), a no-op.
+        insufficient, followups = judge_section_sufficiency(self._provider, self.edb)
+        insufficient -= self.precision_asked
+        pool = build_pool(result, self.brief, self.asked, self.edb,
+                          profile=self._profile, insufficient=insufficient, followups=followups)
         graph_candidates = [c for c in pool if c.kind != "edb_gap"]
         gap_candidates = [c for c in pool if c.kind == "edb_gap"]
         question: str | None = None
@@ -222,7 +231,9 @@ class ScopingSession:
             self._consecutive_graph_questions = 0
         if question is None and message is None:
             # lever 1: never a silent turn — acknowledge and state what remains.
-            missing = self.edb.missing_sections()
+            # incomplete_sections() with no insufficient arg == missing_sections() (no-provider
+            # path unchanged); with a provider it is sufficiency-aware.
+            missing = self.edb.incomplete_sections()
             message = (
                 f"Noté. La phase de questions est close — il reste {len(missing)} "
                 "section(s) à compléter, décrivez-les directement et je les classerai."
@@ -253,9 +264,17 @@ class ScopingSession:
             kept.add(nid)
         return kept
 
+    def _mark_precision_asked(self, section_id: str) -> None:
+        self.precision_asked.add(section_id)
+
     def _ask(self, pool: list[Candidate]) -> str:
         candidate, question = pick_question(self._provider, pool, self._service)
         self.asked.add(candidate.key)
+        # #2: re-asking a FILLED gap section is a precision follow-up — record it so the
+        # sufficiency judge cannot re-offer it next round (bounded). An empty section is a
+        # first ask, never precision: gating on the section's truthiness keeps it openable.
+        if candidate.kind == "edb_gap" and self.edb.sections.get(candidate.section_id):
+            self._mark_precision_asked(candidate.section_id)
         self.questions_asked += 1
         self.pending = candidate
         self.pending_question = question

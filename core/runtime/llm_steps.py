@@ -161,13 +161,16 @@ def judge_section_sufficiency(
 
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
-        return gap_question(candidate.section_id)
+        # #2: an insufficient filled section carries a targeted precision follow-up; the
+        # deterministic gap question is the fallback (empty section or no provider).
+        return candidate.followup or gap_question(candidate.section_id)
     return render_question(candidate.trigger, service)
 
 
 def _candidate_context(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
-        return f"[{candidate.key}] section EDB manquante — piste : {gap_question(candidate.section_id)}"
+        hint = candidate.followup or gap_question(candidate.section_id)
+        return f"[{candidate.key}] section EDB à compléter/préciser — piste : {hint}"
     return f"[{candidate.key}] ambiguïté graphe ({candidate.kind}) — gabarit : {_template_question(candidate, service)}"
 
 

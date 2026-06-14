@@ -415,3 +415,37 @@ def test_tie_answer_matches_whole_domain_tokens_only() -> None:
     ]
     assert _match_domains("le credit, clairement", ("credit", "credit-immobilier")) == ["credit"]
     assert _match_domains("les deux", ("credit", "monetique")) == []
+
+
+# -- Chantier 1: live coherent map (#1) ---------------------------------------
+
+
+def test_excluded_domain_node_stays_off_map_after_a_later_precision() -> None:
+    # canal mobile anchors; the user excludes monetique; a later precision must NOT
+    # let sys-moteur (monetique) ride back in as an anchor of the broadened query.
+    session = make_session(["canal", "moteur"])
+    session.handle_message("améliorer notre canal mobile")
+    session.handle_message("non")  # monetique out of scope
+    assert "sys-moteur" not in session.kept_node_ids()
+    # volunteer a precision whose words now surface the moteur as an anchor
+    session.handle_message("le moteur central de paiement est concerné par les délais")
+    assert "monetique" in session.brief.excluded_domains
+    assert "sys-moteur" not in session.kept_node_ids()  # exclusion is a commitment
+
+
+def test_post_challenge_precision_marks_new_nodes_and_keeps_exclusions() -> None:
+    session = make_session(["canal", "moteur", "terminal"])
+    session.handle_message("améliorer notre canal mobile")
+    # simulate a completed challenge: stabilize on sys-canal, snapshot the map
+    session.challenge_done = True
+    session.state = SessionState.SCOPING
+    session.rejected_nodes = {"sys-terminal": "non spécifique"}
+    session.previously_mapped = session.kept_node_ids()
+    assert "sys-terminal" not in session.previously_mapped
+    snapshot = set(session.previously_mapped)
+    # a precision that broadens retrieval must keep sys-terminal excluded
+    session.handle_message("préciser le besoin de paiement")
+    assert "sys-terminal" not in session.kept_node_ids()
+    # any node now on the map but absent from the snapshot is "new"
+    new_nodes = session.kept_node_ids() - snapshot
+    assert new_nodes == session.kept_node_ids() - session.previously_mapped

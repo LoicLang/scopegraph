@@ -96,6 +96,7 @@ class ScopingSession:
         self.last_result: RetrievalResult | None = None
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
         self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
+        self.previously_mapped: set[str] = set()  # the stabilized map at challenge time (new-node diff)
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
     def handle_message(self, text: str) -> Turn:
@@ -174,6 +175,11 @@ class ScopingSession:
             self.gate_rejections += [
                 {"kind": "field", "section_id": d} for d in dropped
             ]
+        if self.challenge_done:
+            # the map is live post-challenge: recompute the governance pull on the
+            # current retrieval against the accumulated exclusions (deterministic).
+            keeps = set(result.node_ids()) - set(self.rejected_nodes)
+            self.pulled = pull_governance(self._service, keeps, set(self.rejected_nodes))
         pool = build_pool(result, self.brief, self.asked, self.edb, profile=self._profile)
         graph_candidates = [c for c in pool if c.kind != "edb_gap"]
         gap_candidates = [c for c in pool if c.kind == "edb_gap"]
@@ -199,6 +205,8 @@ class ScopingSession:
                 cards.extend(claim_cards)
                 self.state = SessionState.SCOPING
                 self._consecutive_graph_questions = 0
+                self.last_result = result
+                self.previously_mapped = self.kept_node_ids()  # baseline for the new-node diff
             except JsonContractError:
                 self.state = SessionState.MAPPING  # next message retries the challenge
                 message = CHALLENGE_FAILED_MESSAGE
@@ -216,6 +224,25 @@ class ScopingSession:
         self.last_result = result
         return Turn(state=self.state, question=question, result=result,
                     brief=self.brief, message=message, cards=cards)
+
+    def kept_node_ids(self) -> set[str]:
+        """The nodes currently on the map: retrieval ∪ pulled, minus accumulated
+        exclusions and excluded-domain nodes. Retrieval drops excluded domains only in
+        the expansion layer (anchors bypass it) — re-apply the rule here so an excluded
+        domain can never ride back in as an anchor of a broadened post-challenge query."""
+        if self.last_result is None:
+            return set()
+        confirmed = set(self.brief.domains) if self.brief else set()
+        excluded = set(self.brief.excluded_domains) if self.brief else set()
+        base = set(self.last_result.node_ids()) | {p.node_id for p in self.pulled}
+        base -= set(self.rejected_nodes)
+        kept = set()
+        for nid in base:
+            node_domains = set(self._service.get_node(nid).domains)
+            if node_domains & excluded and not (node_domains & confirmed):
+                continue  # excluded with no confirmed-domain rescue (mirrors retriever._expand)
+            kept.add(nid)
+        return kept
 
     def _ask(self, pool: list[Candidate]) -> str:
         candidate, question = pick_question(self._provider, pool, self._service)
@@ -240,7 +267,7 @@ class ScopingSession:
         out1 = complete_with_retry(self._provider, load_prompt("challenge_triage"),
                                    triage_user, required_keys=("verdicts",))
         keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
-        self.rejected_nodes = rejects
+        self.rejected_nodes.update(rejects)  # accumulate — exclusions persist across reruns
         self.gate_rejections += [{"kind": "triage", "node_id": d} for d in dropped]
         self.pulled = pull_governance(self._service, set(keeps), set(rejects))
         map_ids = set(keeps) | {p.node_id for p in self.pulled}

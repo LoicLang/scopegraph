@@ -61,6 +61,17 @@ def test_gap_question_uses_the_template_hint():
     assert "succès" in gap_question("objectifs")
 
 
+def test_build_pool_re_offers_asked_section_when_insufficient():
+    edb = EdbState.new()
+    edb.add_entry("objectifs", EdbEntry(source="user", text="vague"))
+    result = _result()
+    brief = ProjectBrief(description="d")
+    asked = {"gap:objectifs"}  # already asked once while empty
+    pool = build_pool(result, brief, asked, edb, insufficient={"objectifs"},
+                      followups={"objectifs": "Chiffrez ?"})
+    assert any(c.section_id == "objectifs" and c.followup == "Chiffrez ?" for c in pool)
+
+
 def test_build_pool_offers_insufficient_filled_section_with_followup():
     edb = EdbState.new()
     edb.add_entry("objectifs", EdbEntry(source="user", text="vague"))

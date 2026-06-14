@@ -192,8 +192,12 @@ class ScopingSession:
                         and not (set(self._service.get_node(p.node_id).domains) & confirmed))
             ]
         # #2: LLM sufficiency judge marks filled-but-vague sections so they re-enter the
-        # pool with a targeted follow-up. Subtracting precision_asked bounds the re-ask to
-        # once per section (convergence) — without a provider this is (set(), {}), a no-op.
+        # pool with a targeted follow-up. Convergence is split: the `asked` gate stops a
+        # section from being asked twice while empty; precision_asked stops an insufficient
+        # section from being re-asked more than once. Subtracting precision_asked here is
+        # the real bound — build_pool lets an insufficient section bypass the `asked` gate,
+        # so this subtraction is what keeps the precision re-ask to one pass per section.
+        # Without a provider this is (set(), {}), a no-op.
         insufficient, followups = judge_section_sufficiency(self._provider, self.edb)
         insufficient -= self.precision_asked
         pool = build_pool(result, self.brief, self.asked, self.edb,
@@ -270,9 +274,11 @@ class ScopingSession:
     def _ask(self, pool: list[Candidate]) -> str:
         candidate, question = pick_question(self._provider, pool, self._service)
         self.asked.add(candidate.key)
-        # #2: re-asking a FILLED gap section is a precision follow-up — record it so the
-        # sufficiency judge cannot re-offer it next round (bounded). An empty section is a
-        # first ask, never precision: gating on the section's truthiness keeps it openable.
+        # #2: re-asking a FILLED gap section is a precision follow-up — record it in
+        # precision_asked, the bound that stops an insufficient section from re-entering
+        # the pool next round (build_pool lets it bypass the `asked` gate, so precision_asked
+        # is what makes the re-ask converge). An empty section is a first ask, never
+        # precision: gating on the section's truthiness keeps it openable.
         if candidate.kind == "edb_gap" and self.edb.sections.get(candidate.section_id):
             self._mark_precision_asked(candidate.section_id)
         self.questions_asked += 1

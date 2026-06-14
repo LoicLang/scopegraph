@@ -486,6 +486,61 @@ def test_initial_brief_is_mined_into_the_edb() -> None:
                for c in turn.cards)
 
 
+def test_insufficient_section_re_ask_reaches_user_end_to_end_then_converges() -> None:
+    # End-to-end: drive the real _map_round so judge → subtract precision_asked → build_pool
+    # → _ask is exercised. The bug: gap:objectifs is in `asked` (asked once while the section
+    # was empty), so the asked-gate dropped it BEFORE the sufficiency re-ask could fire.
+    # Fix: an insufficient section bypasses the asked-gate; precision_asked bounds it to once.
+    # Setup keeps the GRAPH pool empty: single-system graph (no expansion → no graph trigger),
+    # and we start past the challenge (SCOPING) so only EDB gaps surface.
+    # turn 0 runs the challenge so we land in SCOPING (challenge_done): enrich · extract ·
+    # triage · claims · fidelity.
+    provider = MockProvider([
+        {"additions": []},
+        {"entries": []},
+        {"verdicts": []},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": "Défi : le gel bloque T3."},
+        {"issues": []},
+    ])
+    session = make_challenge_session(provider)
+    session.handle_message("refonte du canal")  # consumes enrich+extract+challenge calls
+    assert session.challenge_done and session.state is SessionState.SCOPING
+    # park past the challenge; every askable section filled EXCEPT objectifs (vague), so the
+    # only candidate is objectifs and the GRAPH pool is empty.
+    for sid in ("contexte", "besoin", "utilisateurs", "perimetre",
+                "exigences", "risques", "jalons"):
+        session.edb.add_entry(sid, EdbEntry(source="user", text="ok"))
+    session.edb.add_entry("objectifs", EdbEntry(source="user", text="vague"))
+    session.asked.add("gap:objectifs")  # objectifs was asked once while empty
+    session.questions_asked = 0  # don't let the cap interfere
+    # FIFO for the next round (turn 1 of the re-ask flow): enrich, extract, judge, pick.
+    provider._responses = [
+        {"additions": []},                                   # enrich_brief
+        {"entries": []},                                     # extract_fields (no new field)
+        {"verdicts": [{"section_id": "objectifs", "sufficient": False,
+                       "followup_fr": "Quel KPI cible ?"}]},  # judge_section_sufficiency
+        {"candidate_key": "gap:objectifs", "question": "Quel KPI cible ?"},  # pick_question
+    ]
+    turn = session.handle_message("précisons un peu")
+    # the sufficiency follow-up reached the user through the real pool (asked-gate bypassed)
+    assert turn.question == "Quel KPI cible ?"
+    assert "objectifs" in session.precision_asked  # recorded → bounded
+    # answer it; objectifs is now NOT offered again (converged — at most one precision pass)
+    session.pending = None
+    session.pending_question = None
+    provider._responses = [
+        {"additions": []},                                   # enrich_brief
+        {"entries": []},                                     # extract_fields
+        {"verdicts": [{"section_id": "objectifs", "sufficient": False,
+                       "followup_fr": "Encore ?"}]},          # judge insists it is vague
+    ]
+    follow = session.handle_message("le KPI est -20% d'appels")
+    # precision_asked subtracts objectifs upstream, so build_pool never re-offers it even
+    # though the judge still calls it insufficient — converged at one precision pass.
+    assert follow.question is None
+
+
 def test_insufficient_section_is_re_asked_once_then_closed() -> None:
     service = make_service()
     index = VectorIndex(FakeEmbedder(["canal"]))

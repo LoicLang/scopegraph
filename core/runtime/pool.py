@@ -56,7 +56,12 @@ def build_pool(
                               node_id=pivot.node_id, trigger=pivot))
     for section_id in edb.incomplete_sections(insufficient):
         key = f"gap:{section_id}"
-        if key not in asked:
+        # An insufficient section bypasses the asked-gate: a section first asked while
+        # empty already has gap:<id> in `asked`, so the gate would drop it before the
+        # sufficiency re-ask (a filled-but-vague section) could ever fire. Re-surfacing it
+        # for one precision pass is convergent — the session has already subtracted
+        # precision_asked from `insufficient` upstream, which bounds it to a single re-ask.
+        if key not in asked or section_id in insufficient:
             pool.append(Candidate(kind="edb_gap", key=key, section_id=section_id,
                                   followup=followups.get(section_id, "")))
     return pool

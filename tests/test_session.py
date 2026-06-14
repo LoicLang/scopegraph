@@ -448,4 +448,5 @@ def test_post_challenge_precision_marks_new_nodes_and_keeps_exclusions() -> None
     assert "sys-terminal" not in session.kept_node_ids()
     # any node now on the map but absent from the snapshot is "new"
     new_nodes = session.kept_node_ids() - snapshot
-    assert new_nodes == session.kept_node_ids() - session.previously_mapped
+    assert "sys-terminal" not in new_nodes  # excluded stays out of the new set too
+    assert new_nodes == session.kept_node_ids() - snapshot  # diff is against the challenge-time snapshot

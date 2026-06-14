@@ -96,7 +96,7 @@ class ScopingSession:
         self.last_result: RetrievalResult | None = None
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
         self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
-        self.previously_mapped: set[str] = set()  # the stabilized map at challenge time (new-node diff)
+        self.previously_mapped: set[str] = set()  # stabilized map snapshotted once at challenge completion (new-node diff); not updated post-challenge
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
     def handle_message(self, text: str) -> Turn:
@@ -154,6 +154,7 @@ class ScopingSession:
 
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None
+        just_challenged = False
         if enrich:  # skip when the user added no words (e.g. a chip-removal rerun) — lever 3
             enrich_brief(self._provider, self.brief)
         result = retrieve(
@@ -180,6 +181,13 @@ class ScopingSession:
             # current retrieval against the accumulated exclusions (deterministic).
             keeps = set(result.node_ids()) - set(self.rejected_nodes)
             self.pulled = pull_governance(self._service, keeps, set(self.rejected_nodes))
+            confirmed = set(self.brief.domains) if self.brief else set()
+            excluded = set(self.brief.excluded_domains) if self.brief else set()
+            self.pulled = [
+                p for p in self.pulled
+                if not (set(self._service.get_node(p.node_id).domains) & excluded
+                        and not (set(self._service.get_node(p.node_id).domains) & confirmed))
+            ]
         pool = build_pool(result, self.brief, self.asked, self.edb, profile=self._profile)
         graph_candidates = [c for c in pool if c.kind != "edb_gap"]
         gap_candidates = [c for c in pool if c.kind == "edb_gap"]
@@ -205,8 +213,7 @@ class ScopingSession:
                 cards.extend(claim_cards)
                 self.state = SessionState.SCOPING
                 self._consecutive_graph_questions = 0
-                self.last_result = result
-                self.previously_mapped = self.kept_node_ids()  # baseline for the new-node diff
+                just_challenged = True
             except JsonContractError:
                 self.state = SessionState.MAPPING  # next message retries the challenge
                 message = CHALLENGE_FAILED_MESSAGE
@@ -222,6 +229,8 @@ class ScopingSession:
                 if missing else EDB_COMPLETE_MESSAGE
             )
         self.last_result = result
+        if just_challenged:
+            self.previously_mapped = self.kept_node_ids()
         return Turn(state=self.state, question=question, result=result,
                     brief=self.brief, message=message, cards=cards)
 

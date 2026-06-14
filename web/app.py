@@ -4,6 +4,7 @@ Run locally (real embedder + LLM, requires the embeddings/llm extras):
     SCOPEGRAPH_LLM_PROVIDER=mistral uvicorn --factory web.app:create_app --reload
 """
 
+import os
 import uuid
 from pathlib import Path
 
@@ -110,6 +111,17 @@ def _session_payload(
     }
 
 
+def _maybe_cache(provider: LLMProvider | None) -> LLMProvider | None:
+    """Wrap the provider in a disk cache when SCOPEGRAPH_CACHE_DIR is set — every LLM
+    call replays instantly on a second run (used to record a smooth demo, no dead air)."""
+    cache_dir = os.environ.get("SCOPEGRAPH_CACHE_DIR")
+    if provider is not None and cache_dir:
+        from core.llm.caching import CachingProvider
+
+        return CachingProvider(provider, Path(cache_dir))
+    return provider
+
+
 def create_app(
     graph_dir: Path = GRAPH_DIR,
     embedder: Embedder | None = None,
@@ -126,6 +138,7 @@ def create_app(
     index.build(service, f"{graph_fingerprint(graph_dir)}:{embedder_id(embedder)}")
     if provider is None:  # uvicorn picks up SCOPEGRAPH_LLM_PROVIDER (default: none)
         provider = make_provider()
+    provider = _maybe_cache(provider)  # SCOPEGRAPH_CACHE_DIR → instant replays (dev/demo)
 
     app = FastAPI(title="scopegraph")
     sessions: dict[str, ScopingSession] = {}

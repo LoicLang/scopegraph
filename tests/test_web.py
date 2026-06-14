@@ -62,6 +62,19 @@ def test_blank_text_is_422(client: TestClient) -> None:
     )
 
 
+def test_maybe_cache_wraps_only_when_env_set(tmp_path, monkeypatch) -> None:
+    from core.llm.caching import CachingProvider
+    from core.llm.provider import MockProvider
+    from web.app import _maybe_cache
+
+    inner = MockProvider([])
+    monkeypatch.delenv("SCOPEGRAPH_CACHE_DIR", raising=False)
+    assert _maybe_cache(inner) is inner
+    assert _maybe_cache(None) is None
+    monkeypatch.setenv("SCOPEGRAPH_CACHE_DIR", str(tmp_path))
+    assert isinstance(_maybe_cache(inner), CachingProvider)
+
+
 def test_home_serves_the_page(client: TestClient) -> None:
     response = client.get("/")
     assert response.status_code == 200

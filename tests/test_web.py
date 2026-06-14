@@ -316,3 +316,27 @@ def test_annotations_marks_new_nodes_as_nouveau_after_challenge(tmp_path: Path) 
     assert ann2["sys-mini"].get("provenance") == "nouveau", (
         f"sys-mini should be 'nouveau' but got {ann2.get('sys-mini')}"
     )
+
+
+# -- Task 12: statement card payload carries flags/issues ----------------------
+
+
+def test_card_dict_serializes_statement_flags_and_issues() -> None:
+    """_card_dict must forward payload.flags and payload.issues for a statement card
+    so the UI can surface the amber fidelity strip on the quarantined statement."""
+    from web.app import _card_dict
+    from core.runtime.ledger import Proposal
+    from tests.test_session import make_service
+
+    p = Proposal.statement(
+        text="Le gel court jusqu'au 15 janvier 2026.",
+        flags=["30"],
+        issues=["Date inversée : « jusqu'au » au lieu de « à compter du »."],
+    )
+    p.id = "p1"
+    out = _card_dict(make_service(), p)
+    assert out["kind"] == "statement"
+    assert out["payload"]["flags"] == ["30"]
+    assert out["payload"]["issues"] == [
+        "Date inversée : « jusqu'au » au lieu de « à compter du »."
+    ]

@@ -80,8 +80,18 @@
       </template>
       <template x-for="c in cards" :key="c.id">
         <div class="card">
-          <div class="kind" x-text="c.kind === 'claim' ? 'Affirmation à valider' : 'Élément d\'EDB proposé'"></div>
+          <div class="kind" x-text="c.kind === 'claim' ? 'Affirmation à valider' : c.kind === 'statement' ? 'Énoncé de défi — fidélité à vérifier' : 'Élément d\'EDB proposé'"></div>
           <div x-text="c.text"></div>
+          <template x-if="c.kind === 'statement' && (c.payload && c.payload.issues || []).length">
+            <div>
+              <template x-for="issue in (c.payload && c.payload.issues || [])" :key="issue">
+                <div class="factstrip" x-text="`⚠ Fidélité : ${issue}`"></div>
+              </template>
+            </div>
+          </template>
+          <template x-if="c.kind === 'statement' && (c.payload && c.payload.flags || []).length">
+            <div class="factstrip" x-text="`⚠ Chiffres non sourcés : ${(c.payload && c.payload.flags || []).join(', ')}`"></div>
+          </template>
           <template x-if="(c.provenance || []).length">
             <div class="prov">
               <div class="prov-h">Source (texte du référentiel) :</div>

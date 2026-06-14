@@ -3,7 +3,7 @@ summary: design for judging claim grounding against both cited graph facts and t
 read_when:
   - changing claim grounding or investigating false claim rejections
   - reviewing the Gemini comparison follow-up
-status: approved (Loïc, 2026-06-14)
+status: implemented (2026-06-14)
 ---
 
 # Brief-aware claim grounding
@@ -37,4 +37,3 @@ unchanged.
 - Session test: `_run_challenge` passes the live accumulated brief to the grounding call.
 - Existing unsupported-claim, no-provider, contract-failure, and missing-verdict tests
   remain green.
-

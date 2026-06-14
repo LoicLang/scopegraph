@@ -333,6 +333,31 @@ def test_judge_claim_grounding_flags_unsupported_conclusion():
     assert "KYC" in verdicts[0]["reason_fr"]
 
 
+def test_judge_claim_grounding_receives_graph_and_project_sources():
+    from core.runtime.llm_steps import judge_claim_grounding
+
+    service = _service_with_one_node("Gel monétique à compter du 15 janvier 2026.")
+    brief = ProjectBrief(description="Le pilote est prévu en octobre 2026.")
+    claims = [{
+        "kind": "constraint_applies",
+        "node_ids": ["sys-x"],
+        "target_section": "contraintes",
+        "reason": "le gel concerne le pilote prévu en octobre 2026",
+    }]
+    provider = MockProvider([{
+        "verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}],
+    }])
+
+    verdicts = judge_claim_grounding(provider, claims, service, brief)
+
+    assert verdicts[0]["grounded"] is True
+    user = provider.calls[0][1]
+    assert "Faits du référentiel cités" in user
+    assert "Gel monétique à compter du 15 janvier 2026." in user
+    assert "Contexte projet autorisé" in user
+    assert "Le pilote est prévu en octobre 2026." in user
+
+
 def test_judge_claim_grounding_none_provider_passes_all():
     from core.runtime.llm_steps import judge_claim_grounding
     service = _service_with_one_node("texte")

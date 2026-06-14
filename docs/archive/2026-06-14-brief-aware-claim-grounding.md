@@ -1,5 +1,5 @@
 ---
-summary: TDD implementation plan for passing project context to the claim-grounding judge
+summary: completed TDD implementation plan for passing project context to the claim-grounding judge
 read_when:
   - implementing brief-aware claim grounding
 ---

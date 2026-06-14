@@ -51,13 +51,13 @@ read_when:
     reversed freeze date (`à compter du` → `jusqu'au`), an instant-payment screening rule
     over-applied to BNPL, a mobile-credit overlap inconsistent with the e-commerce scope,
     and several card-limit dependencies not established by the cited nodes.
-  - **New root cause found — grounding conflates graph facts with project applicability.**
-    Three useful Gemini claims were auto-rejected because their reason connected a cited
-    graph fact to a date or need from the brief; `judge_claim_grounding` receives only node
-    provenance, so it treats the legitimate project half as unsupported. Mistral's two
-    auto-rejections were also false negatives. The next contract should split a claim into
-    `graph_fact` (judged only against cited nodes) and `project_link` (judged against the
-    brief), then render the card from both.
+  - **Brief-aware grounding follow-up FIXED:** `judge_claim_grounding` now receives two
+    labelled source categories: cited graph facts and the accumulated user brief. A real
+    Gemini smoke confirmed the boundary: a freeze plus a pilot date alone is still
+    insufficient to claim the pilot is blocked; when the brief explicitly states that the
+    pilot requires a non-regulatory MONAUT change, the combined claim is accepted. This
+    removes false rejections of legitimate project links without allowing the brief to
+    justify invented SI facts.
   - **Statement judging also benefits from Gemini:** Mistral quarantined both statements
     with issues that often referred to text absent from the statement itself. Gemini
     accepted the clean BNPL statement and correctly quarantined the travel statement for
@@ -70,18 +70,14 @@ read_when:
     unattended dossier generation. A model upgrade alone helped substantially, but did
     not replace runtime authority.
 
-## Next chantier — structured claim grounding, then demo
+## Next chantier — question wording, then demo
 
-1. Brainstorm and specify a two-source claim contract: `graph_fact` must be entailed by
-   cited nodes; `project_link` must be entailed by the user brief/accepted EDB. Judge each
-   field against its own source, then render one card. This should remove the false
-   auto-rejections measured with both providers without weakening mandatory grounding.
-2. Stop question premise invention: keep LLM candidate ranking, but either render the
+1. Stop question premise invention: keep LLM candidate ranking, but either render the
    chosen candidate deterministically or gate the generated wording against the brief and
    candidate evidence. Re-test the externalization phrasing seen in both BNPL runs.
-3. Re-run the two fixed-answer scenarios with Gemini. Gate the scripted demo on no
+2. Re-run the two fixed-answer scenarios with Gemini. Gate the scripted demo on no
    false grounding rejection, no invented question premise, and no unsupported statement.
-4. Proceed to W4 dossier rendering only after that focused reliability gate passes.
+3. Proceed to W4 dossier rendering only after that focused reliability gate passes.
 
 ## Previous state (2026-06-14, session 6 — post-fix real-user retest)
 

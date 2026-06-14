@@ -380,7 +380,12 @@ class ScopingSession:
         self.gate_rejections += [{**r, "kind": "claim"} for r in rejected_claims]
         # #3: clause-complete grounding — a claim whose conclusions exceed its cited
         # provenance is auto-rejected (lands in the gate panel, not a card).
-        groundings = judge_claim_grounding(self._provider, valid, self._service)
+        groundings = judge_claim_grounding(
+            self._provider,
+            valid,
+            self._service,
+            self.brief,
+        )
         grounded: list[dict] = []
         for claim, verdict in zip(valid, groundings, strict=True):
             if verdict["grounded"]:

@@ -407,6 +407,7 @@ def test_challenge_runs_when_map_stable_and_fills_ledger_and_edb() -> None:
     # both challenge calls must carry the brief — the model judges relevance TO this project
     assert "refonte du canal" in provider.calls[2][1]  # triage user message (calls[1] is extract)
     assert "refonte du canal" in provider.calls[3][1]  # claims user message
+    assert "refonte du canal" in provider.calls[4][1]  # grounding project context
     assert session.challenge_done is True
     assert session.edb.status("challenge") == "filled"
     pending = session.ledger.pending()

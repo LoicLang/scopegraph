@@ -203,19 +203,28 @@ def judge_section_sufficiency(
 
 
 def judge_claim_grounding(
-    provider: LLMProvider | None, claims: list[dict], service: GraphService
+    provider: LLMProvider | None,
+    claims: list[dict],
+    service: GraphService,
+    brief: ProjectBrief | None = None,
 ) -> list[dict]:
-    """Per-claim faithfulness: is every conclusion of the claim's reason covered by the
-    text of the nodes it cites? Returns a verdict parallel to `claims`:
+    """Per-claim faithfulness against cited graph facts and user project context.
+
+    Returns a verdict parallel to `claims`:
     [{"grounded": bool, "reason_fr": str}]. All grounded without a provider, on contract
     failure, or for an empty list (recall-first: the syntactic gate stays the floor)."""
     if provider is None or not claims:
         return [{"grounded": True, "reason_fr": ""} for _ in claims]
+    project_context = brief.text() if brief is not None else "(contexte projet non fourni)"
     blocks = []
     for i, claim in enumerate(claims):
         facts = node_provenance(service, [str(n) for n in claim.get("node_ids", [])])
         sources = "\n".join(f"- [{f['node_id']}] {f['label']} : {f['text']}" for f in facts)
-        blocks.append(f"[{i}] affirmation : {claim.get('reason', '')}\nsources citées :\n{sources}")
+        blocks.append(
+            f"[{i}] affirmation : {claim.get('reason', '')}\n"
+            f"Faits du référentiel cités :\n{sources}\n"
+            f"Contexte projet autorisé :\n{project_context}"
+        )
     user = "\n\n".join(blocks)
     try:
         out = complete_with_retry(provider, load_prompt("judge_claim_grounding"), user,

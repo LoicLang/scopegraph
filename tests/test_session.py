@@ -673,3 +673,68 @@ def test_rejected_flagged_statement_stays_out_of_edb() -> None:
     statement_card = next(c for c in cards if c.kind == "statement")
     session.reject_proposal(statement_card.id)
     assert session.edb.sections["challenge"] == []
+
+
+# -- Chantier 5: the five audit fixes hold together end-to-end ----------------
+
+
+def test_audit_fixes_hold_end_to_end() -> None:
+    # One driven session, map → exclusion → precision → challenge, asserting the four
+    # load-bearing audit properties chain together (the fifth, #2 sufficiency, has its
+    # own focused end-to-end test above). FIFOs verified against the real call order in
+    # _map_round / _run_challenge — extracted fields become ledger CARDS (the EDB stays
+    # empty on turn 1), so judge_section_sufficiency early-returns with NO LLM call and
+    # the opener consumes exactly enrich · extract · pick.
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index)  # provider attached per phase
+
+    # #5 — the opener's milestone is mined; it lands as a ledger CARD (not a direct EDB
+    # entry), so assert against turn.cards.
+    session._provider = MockProvider([
+        {"additions": []},  # enrich_brief
+        {"entries": [{"section_id": "jalons", "text": "pilote octobre 2026"}]},  # extract
+        {"candidate_key": "pivot:monetique", "question": "Monétique ?"},  # pick_question
+    ])
+    turn = session.handle_message("améliorer notre canal mobile, pilote octobre 2026")
+    assert len(session._provider.calls) == 3  # no sufficiency call: EDB still empty (cards only)
+    assert any(c.payload.get("section_id") == "jalons" and "octobre 2026" in c.text
+               for c in turn.cards)  # #5: the milestone is mined into a card
+    assert not session.edb.sections["jalons"]  # extracted fields are cards, not EDB entries yet
+
+    # #1 — exclude monetique (deterministic), then volunteer a precision that names the
+    # moteur de paiement; the excluded domain must NOT ride back onto the map.
+    session._provider = None
+    session.handle_message("non")  # excludes the pending monetique pivot
+    assert "monetique" in session.brief.excluded_domains
+    assert "sys-moteur" not in session.kept_node_ids()
+    session.handle_message("préciser les délais du moteur central de paiement")
+    assert "monetique" in session.brief.excluded_domains  # exclusion is a commitment
+    assert "sys-moteur" not in session.kept_node_ids()  # #1: excluded node stays off the map
+    confirmed = set(session.brief.domains)
+    excluded = set(session.brief.excluded_domains)
+    for nid in session.kept_node_ids():
+        node_domains = set(service.get_node(nid).domains)
+        assert not (node_domains & excluded and not (node_domains & confirmed))
+
+    # #3 + #4 — run the challenge over the live map: an ungrounded claim is rejected (not
+    # carded), and a flagged statement is quarantined (not auto-stored in the EDB).
+    session._provider = MockProvider([
+        {"verdicts": []},  # triage: keep all
+        {"pulled_justifications": [], "domains": [], "claims": [
+            {"kind": "constraint_applies", "node_ids": ["sys-canal"],
+             "target_section": "contraintes", "reason": "impose un audit KYC non cité"}],
+         "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
+    ])
+    _msg, cards = session._run_challenge(session.last_result)
+    # #3: the ungrounded claim lands in the gate panel tagged kind=="claim", NOT a card.
+    assert all(c.kind != "claim" for c in cards)
+    assert any(r.get("kind") == "claim" and "KYC" in r.get("reason_rejected", "")
+               for r in session.gate_rejections)
+    # #4: the flagged statement is quarantined — not in the EDB, present as a statement card.
+    assert session.edb.sections["challenge"] == []
+    statement_cards = [c for c in cards if c.kind == "statement"]
+    assert statement_cards and statement_cards[0].payload["issues"]

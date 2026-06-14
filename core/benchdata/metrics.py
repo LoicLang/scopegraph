@@ -19,11 +19,7 @@ def conversation_metrics(session, expected_ids: set[str]) -> dict:
     claims_valid = sum(1 for p in session.ledger.proposals.values() if p.kind == "claim")
     claims_rejected = sum(1 for r in session.gate_rejections if r.get("kind") == "claim")
 
-    kept_ids: set[str] = set()
-    if session.last_result is not None:
-        kept_ids = set(session.last_result.node_ids())
-    kept_ids |= {p.node_id for p in session.pulled}
-    kept_ids -= set(session.rejected_nodes)
+    kept_ids = session.kept_node_ids()  # excluded domains honored — consistent with the UI map
     recall = len(expected_ids & kept_ids) / len(expected_ids) if expected_ids else 0.0
 
     return {

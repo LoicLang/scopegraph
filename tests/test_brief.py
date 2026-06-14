@@ -10,6 +10,18 @@ def test_text_concatenates_description_and_qa() -> None:
     assert "oui" in text
 
 
+def test_query_text_omits_excluded_pivot_question_but_keeps_answer() -> None:
+    brief = ProjectBrief(description="hausse temporaire de plafond carte")
+    brief.qa.append(QA(
+        question="Le projet touche-t-il les bénéficiaires et virements ?",
+        answer="Non, uniquement les plafonds carte.",
+        include_question_in_query=False,
+    ))
+    assert "bénéficiaires" not in brief.query_text()
+    assert "uniquement les plafonds carte" in brief.query_text()
+    assert "bénéficiaires" in brief.text()  # the audit transcript stays complete
+
+
 def test_defaults_are_empty() -> None:
     brief = ProjectBrief(description="x")
     assert brief.qa == []

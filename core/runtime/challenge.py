@@ -99,6 +99,12 @@ def render_subgraph(result, service: GraphService) -> str:
     return "\n".join(lines + _edge_lines(service, ids))
 
 
+def render_node_set(node_ids: set[str], service: GraphService) -> str:
+    """Plain-text rendering of an explicit node subset and its internal edges."""
+    lines = [_node_line(service.get_node(node_id)) for node_id in sorted(node_ids)]
+    return "\n".join(lines + _edge_lines(service, node_ids))
+
+
 def render_stabilized(
     keeps: dict[str, str], pulled: list[PulledNode], service: GraphService
 ) -> str:

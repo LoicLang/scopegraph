@@ -12,6 +12,7 @@ Usage:
     pip install -e ".[embeddings,llm]"
     DEEPSEEK_API_KEY=... ./scripts/conversation-eval --provider deepseek --n 3
     ./scripts/conversation-eval --provider mistral          # all 11 scenarios
+    ./scripts/conversation-eval --provider gemini --no-cache
     ./scripts/conversation-eval --no-cache
 
 Every LLM call (app AND persona) is cached on disk at temperature 0, so re-runs are
@@ -50,8 +51,12 @@ que tu ne connais pas, dis-le et renvoie la balle. Réponds en JSON : {{"answer"
 
 def make_bench_provider(name: str):
     load_dotenv()
-    env_var = {"deepseek": "DEEPSEEK_API_KEY", "mistral": "MISTRAL_API_KEY",
-               "grok": "GROK_API_KEY"}[name]
+    env_var = {
+        "deepseek": "DEEPSEEK_API_KEY",
+        "gemini": "GEMINI_API_KEY",
+        "grok": "GROK_API_KEY",
+        "mistral": "MISTRAL_API_KEY",
+    }[name]
     api_key = os.environ.get(env_var)
     if not api_key:
         sys.exit(f"missing {env_var} — set it in .env, export it, or pick another --provider")
@@ -63,6 +68,10 @@ def make_bench_provider(name: str):
         from core.llm.grok import GrokProvider
 
         return GrokProvider(api_key=api_key)
+    if name == "gemini":
+        from core.llm.gemini import GeminiProvider
+
+        return GeminiProvider(api_key=api_key)
     from core.llm.mistral import MistralProvider
 
     return MistralProvider(api_key=api_key)
@@ -136,7 +145,7 @@ def behavior_probes(session, brief_field_cards: int) -> dict:
 def main() -> None:
     sys.stdout.reconfigure(line_buffering=True)
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", choices=["deepseek", "mistral", "grok"],
+    parser.add_argument("--provider", choices=["deepseek", "gemini", "mistral", "grok"],
                         default="deepseek")
     parser.add_argument("--n", type=int, default=len(SCENARIOS), metavar="N",
                         help="run the first N scenarios (default: all 11)")

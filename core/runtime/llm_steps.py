@@ -84,6 +84,36 @@ def extract_fields(
     return entries, dropped
 
 
+def extract_excluded_domains(
+    provider: LLMProvider | None,
+    text: str,
+    service: GraphService,
+) -> list[str]:
+    """Maps explicit exclusions to known domain slugs."""
+    if provider is None:
+        return []
+    known = service.known_domains()
+    system = load_prompt("extract_excluded_domains").replace(
+        "{domains}",
+        ", ".join(sorted(known)),
+    )
+    try:
+        out = complete_with_retry(
+            provider,
+            system,
+            text,
+            required_keys=("excluded_domains",),
+        )
+    except JsonContractError:
+        return []
+    excluded: list[str] = []
+    for raw_domain in out.get("excluded_domains", []):
+        domain = str(raw_domain)
+        if domain in known and domain not in excluded:
+            excluded.append(domain)
+    return excluded
+
+
 def interpret_pivot_answer(
     provider: LLMProvider | None, question: str, answer: str, domain: str
 ) -> str | None:
@@ -208,6 +238,64 @@ def judge_claim_grounding(
     return verdicts
 
 
+def render_grounded_challenge(
+    provider: LLMProvider | None,
+    claims: list[dict],
+    service: GraphService,
+    brief: ProjectBrief,
+) -> str:
+    """Renders challenge prose from claims that already passed every grounding gate."""
+    reasons = [
+        str(claim.get("reason", "")).strip().rstrip(".")
+        for claim in claims
+        if str(claim.get("reason", "")).strip()
+    ]
+    fallback = (
+        f"Défi de cadrage : {' ; '.join(reasons)}."
+        if reasons
+        else "Défi de cadrage : aucun point supplémentaire n'est établi par les éléments fondés."
+    )
+    if provider is None:
+        return fallback
+    blocks = []
+    for index, claim in enumerate(claims):
+        facts = node_provenance(service, [str(node_id) for node_id in claim.get("node_ids", [])])
+        sources = "\n".join(
+            f"- [{fact['node_id']}] {fact['label']} : {fact['text']}"
+            for fact in facts
+        )
+        blocks.append(
+            f"[{index}] point fondé : {claim.get('reason', '')}\n"
+            f"sources citées :\n{sources or '- (aucune)'}"
+        )
+    user = (
+        f"Brief du projet :\n{brief.text()}\n\n"
+        "Points déjà validés par les gates :\n"
+        f"{'\n\n'.join(blocks) or '(aucun point validé)'}"
+    )
+    try:
+        out = complete_with_retry(
+            provider,
+            load_prompt("render_grounded_challenge"),
+            user,
+            required_keys=("challenge_statement",),
+        )
+    except JsonContractError:
+        return fallback
+    raw_statement = out.get("challenge_statement", "")
+    if isinstance(raw_statement, dict):
+        raw_statement = next(
+            (
+                value
+                for value in raw_statement.values()
+                if isinstance(value, str) and value.strip()
+            ),
+            "",
+        )
+    statement = str(raw_statement).strip()
+    return statement or fallback
+
+
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
         # #2: an insufficient filled section carries a targeted precision follow-up; the
@@ -223,17 +311,44 @@ def _candidate_context(candidate: Candidate, service: GraphService | None) -> st
     return f"[{candidate.key}] ambiguïté graphe ({candidate.kind}) — gabarit : {_template_question(candidate, service)}"
 
 
+def _edb_context(edb: EdbState | None) -> str:
+    if edb is None:
+        return "(aucun contenu accepté)"
+    lines = [
+        f"- {section_id}: {' | '.join(entry.text for entry in entries)}"
+        for section_id, entries in edb.sections.items()
+        if entries
+    ]
+    return "\n".join(lines) or "(aucun contenu accepté)"
+
+
 def pick_question(
     provider: LLMProvider | None,
     pool: list[Candidate],
     service: GraphService | None,
+    *,
+    brief: ProjectBrief | None = None,
+    edb: EdbState | None = None,
 ) -> tuple[Candidate, str]:
     """LLM choice gated to the pool; templates are the permanent fallback (spec §4.4)."""
     assert pool, "pick_question requires a non-empty pool"
     fallback = (pool[0], _template_question(pool[0], service))
     if provider is None:
         return fallback
-    user = "\n".join(_candidate_context(c, service) for c in pool)
+    project = brief.text() if brief is not None else "(brief non fourni)"
+    confirmed = ", ".join(brief.domains) if brief and brief.domains else "(aucun)"
+    excluded = (
+        ", ".join(brief.excluded_domains)
+        if brief and brief.excluded_domains else "(aucun)"
+    )
+    candidates = "\n".join(_candidate_context(c, service) for c in pool)
+    user = (
+        f"Brief complet :\n{project}\n\n"
+        f"Domaines confirmés : {confirmed}\n"
+        f"Domaines exclus : {excluded}\n\n"
+        f"EDB acceptée :\n{_edb_context(edb)}\n\n"
+        f"Candidates autorisées :\n{candidates}"
+    )
     try:
         out = complete_with_retry(
             provider, load_prompt("pick_question"), user,
@@ -242,7 +357,14 @@ def pick_question(
     except JsonContractError:
         return fallback
     by_key = {c.key: c for c in pool}
-    candidate = by_key.get(str(out["candidate_key"]))
+    selected_key = str(out["candidate_key"])
+    if selected_key == "skip_graph":
+        gap = next((candidate for candidate in pool if candidate.kind == "edb_gap"), None)
+        return (
+            (gap, _template_question(gap, service))
+            if gap is not None else fallback
+        )
+    candidate = by_key.get(selected_key)
     question = str(out["question"]).strip()
     if candidate is None or not question:
         return fallback  # gated: an id outside the pool is an LLM error, not a crash

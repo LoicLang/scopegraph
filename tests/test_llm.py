@@ -55,10 +55,47 @@ def test_importing_provider_modules_does_not_import_sdks():
     import sys
 
     import core.llm.deepseek  # noqa: F401
+    import core.llm.gemini  # noqa: F401
     import core.llm.mistral  # noqa: F401
 
+    assert "google.genai" not in sys.modules
     assert "mistralai" not in sys.modules
     assert "openai" not in sys.modules
+
+
+def test_gemini_calls_official_sdk_for_json(monkeypatch):
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class _Models:
+        def generate_content(self, **kwargs):
+            captured.update(kwargs)
+            return types.SimpleNamespace(text='{"ok": true}')
+
+    class _Client:
+        def __init__(self, api_key):
+            captured["api_key"] = api_key
+            self.models = _Models()
+
+    fake_genai = types.ModuleType("google.genai")
+    fake_genai.Client = _Client
+    fake_google = types.ModuleType("google")
+    fake_google.genai = fake_genai
+    monkeypatch.setitem(sys.modules, "google", fake_google)
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+
+    from core.llm.gemini import GeminiProvider
+
+    out = GeminiProvider(api_key="k").complete_json("sys", "user")
+    assert out == {"ok": True}
+    assert captured["api_key"] == "k"
+    assert captured["model"] == "gemini-3.5-flash"
+    assert captured["contents"] == "user"
+    assert captured["config"]["system_instruction"] == "sys"
+    assert captured["config"]["temperature"] == 0
+    assert captured["config"]["response_mime_type"] == "application/json"
 
 
 def test_mistral_missing_sdk_raises_clear_error(monkeypatch):
@@ -145,6 +182,24 @@ def test_factory_resolves_grok(monkeypatch):
     monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "grok")
     monkeypatch.setenv("GROK_API_KEY", "k")
     assert type(make_provider()).__name__ == "GrokProvider"
+
+
+def test_factory_resolves_gemini(monkeypatch):
+    import sys
+    import types
+
+    fake_genai = types.ModuleType("google.genai")
+    fake_genai.Client = lambda api_key: types.SimpleNamespace(models=None)
+    fake_google = types.ModuleType("google")
+    fake_google.genai = fake_genai
+    monkeypatch.setitem(sys.modules, "google", fake_google)
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+
+    from core.llm.factory import make_provider
+
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "gemini")
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    assert type(make_provider()).__name__ == "GeminiProvider"
 
 
 def test_load_dotenv_fills_missing_vars_without_overriding(monkeypatch, tmp_path):

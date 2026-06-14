@@ -1,5 +1,5 @@
 ---
-summary: TDD implementation plan for Gemini 3.5 Flash, context-aware questions, exclusion-safe retrieval, delta triage, and matched retesting
+summary: completed TDD implementation plan for Gemini 3.5 Flash, context-aware questions, exclusion-safe retrieval, delta triage, and matched retesting
 read_when:
   - implementing the approved context-aware interview and Gemini design
   - reviewing the Mistral/Gemini comparison work

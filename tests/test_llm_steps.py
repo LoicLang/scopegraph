@@ -6,11 +6,13 @@ from core.runtime.brief import ProjectBrief
 from core.runtime.llm_steps import (
     MAX_TOTAL_ENRICHMENTS,
     enrich_brief,
+    extract_excluded_domains,
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
     judge_statement_fidelity,
     pick_question,
+    render_grounded_challenge,
 )
 from core.runtime.pool import Candidate
 from core.runtime.triggers import WeakBriefTrigger
@@ -76,6 +78,32 @@ def test_extract_fields_gates_unknown_sections():
     assert dropped == ["budget"]
 
 
+def test_extract_excluded_domains_gates_to_graph_vocabulary():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    provider = MockProvider([{
+        "excluded_domains": ["paiement-instantane", "domaine-invente"],
+    }])
+
+    excluded = extract_excluded_domains(
+        provider,
+        "Sans modifier les plafonds de virement.",
+        service,
+    )
+
+    assert excluded == ["paiement-instantane"]
+
+
+def test_extract_excluded_domains_without_provider_returns_empty():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    assert extract_excluded_domains(None, "Sans modifier les plafonds.", service) == []
+
+
+def test_extract_excluded_domains_swallows_contract_failure():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+    assert extract_excluded_domains(provider, "Sans modifier les plafonds.", service) == []
+
+
 def test_pick_question_gated_to_pool_with_template_fallback():
     weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
     gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
@@ -93,6 +121,55 @@ def test_pick_question_accepts_a_valid_choice():
     candidate, question = pick_question(mock, [gap], service=None)
     assert candidate.section_id == "objectifs"
     assert question.startswith("Quel succès")
+
+
+def test_pick_question_receives_project_context():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
+    brief = ProjectBrief(
+        description="hausse temporaire de plafond carte",
+        domains=["monetique"],
+        excluded_domains=["paiement-instantane"],
+    )
+    edb = EdbState.new()
+    edb.add_entry("contexte", EdbEntry(source="user", text="voyage à l'étranger"))
+    mock = MockProvider([{
+        "candidate_key": "gap:objectifs",
+        "question": "Quel gain mesurable visez-vous ?",
+    }])
+
+    candidate, _question = pick_question(
+        mock, [weak, gap], service=None, brief=brief, edb=edb
+    )
+
+    assert candidate.key == "gap:objectifs"
+    user = mock.calls[0][1]
+    assert "hausse temporaire de plafond carte" in user
+    assert "voyage à l'étranger" in user
+    assert "monetique" in user
+    assert "paiement-instantane" in user
+    assert "[weak]" in user and "[gap:objectifs]" in user
+
+
+def test_pick_question_skip_graph_selects_first_offered_gap():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
+    mock = MockProvider([{"candidate_key": "skip_graph", "question": ""}])
+
+    candidate, question = pick_question(mock, [weak, gap], service=None)
+
+    assert candidate.key == "gap:objectifs"
+    assert "succès" in question
+
+
+def test_pick_question_skip_graph_without_gap_uses_normal_fallback():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    mock = MockProvider([{"candidate_key": "skip_graph", "question": ""}])
+
+    candidate, question = pick_question(mock, [weak], service=None)
+
+    assert candidate.key == "weak"
+    assert "préciser" in question
 
 
 def test_interpret_pivot_uses_llm_verdict_beyond_yes_no():
@@ -226,11 +303,19 @@ def test_extract_fields_rejects_runtime_and_llm_owned_sections():
 # Task 8: judge_claim_grounding
 # ---------------------------------------------------------------------------
 
-def _service_with_one_node(text: str):
+def _service_with_one_node(text: str, domain: str = "d"):
     from core.graph.models import System
     from core.graph.service import GraphService
     return GraphService(
-        {"sys-x": System(id="sys-x", name="X", description=text, owner_team="T", domains=["d"])},
+        {
+            "sys-x": System(
+                id="sys-x",
+                name="X",
+                description=text,
+                owner_team="T",
+                domains=[domain],
+            )
+        },
         [],
     )
 
@@ -277,3 +362,44 @@ def test_judge_claim_grounding_defaults_missing_verdict_to_grounded():
     out = judge_claim_grounding(provider, claims, service)
     assert out[0] == {"grounded": True, "reason_fr": ""}  # missing verdict → default keep
     assert out[1]["grounded"] is False
+
+
+def test_render_grounded_challenge_uses_only_validated_claims_and_sources():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais du canal.")
+    claims = [{
+        "kind": "depends_on",
+        "node_ids": ["sys-x"],
+        "target_section": "dependances",
+        "reason": "le canal dépend du moteur central",
+    }]
+    provider = MockProvider([{"challenge_statement": "Défi fondé sur la dépendance."}])
+
+    statement = render_grounded_challenge(provider, claims, service, brief)
+
+    assert statement == "Défi fondé sur la dépendance."
+    user = provider.calls[0][1]
+    assert "le canal dépend du moteur central" in user
+    assert "Le canal dépend du moteur central." in user
+    assert "Réduire les délais du canal." in user
+
+
+def test_render_grounded_challenge_has_deterministic_fallback():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais.")
+    claims = [{"node_ids": ["sys-x"], "reason": "dépendance au moteur"}]
+
+    statement = render_grounded_challenge(None, claims, service, brief)
+
+    assert statement == "Défi de cadrage : dépendance au moteur."
+
+
+def test_render_grounded_challenge_falls_back_on_contract_failure():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais.")
+    claims = [{"node_ids": ["sys-x"], "reason": "dépendance au moteur"}]
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+
+    statement = render_grounded_challenge(provider, claims, service, brief)
+
+    assert statement == "Défi de cadrage : dépendance au moteur."

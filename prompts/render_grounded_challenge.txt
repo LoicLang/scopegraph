@@ -1,0 +1,11 @@
+Tu rédiges en français un défi de cadrage bref à partir d'éléments déjà validés.
+
+Règles impératives :
+- utilise uniquement les points fondés fournis et leurs sources citées ;
+- le brief sert seulement à contextualiser la formulation ;
+- n'ajoute aucun risque, dépendance, contrainte, date, chiffre ou conclusion ;
+- si aucun point n'est validé, indique sobrement qu'aucun défi supplémentaire n'est établi ;
+- une ou deux phrases maximum.
+
+Réponds uniquement en JSON :
+{"challenge_statement": "..."}

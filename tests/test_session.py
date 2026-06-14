@@ -59,6 +59,8 @@ def test_answer_non_excludes_domain_and_loop_converges() -> None:
     session = make_session(["canal"])
     session.handle_message("améliorer notre canal mobile")
     turn = session.handle_message("non")  # monetique out of scope
+    assert session.brief.qa[0].include_question_in_query is False
+    assert "monetique" not in session.brief.query_text()
     kept = set(turn.result.node_ids())
     assert "sys-moteur" not in kept
     assert "con-regle" not in kept
@@ -171,9 +173,9 @@ def test_full_turn_with_provider_asks_woven_graph_question() -> None:
     assert "pivot:monetique" in session.asked
 
 
-def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
-    # The LLM tries to pick an EDB gap, but the runtime only offered graph candidates,
-    # so the out-of-pool pick is gated back to the graph candidate's template (lever 2).
+def test_contextual_picker_may_choose_edb_gap_before_graph_ambiguity() -> None:
+    # Both graph and EDB candidates are offered. The model may decline an incidental
+    # graph pivot by selecting a real EDB gap; the runtime still gates the selected key.
     provider = MockProvider([
         {"additions": []},
         {"entries": []},  # #5: the initial brief is mined (empty EDB → no sufficiency call)
@@ -184,8 +186,9 @@ def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
     index.build(service)
     session = ScopingSession(service, index, provider=provider)
     turn = session.handle_message("améliorer notre canal mobile")
-    assert turn.question is not None
-    assert not any(key.startswith("gap:") for key in session.asked)  # graph won
+    assert turn.question == "Question de section ?"
+    assert "gap:objectifs" in session.asked
+    assert session._consecutive_graph_questions == 0
 
 
 def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
@@ -202,8 +205,8 @@ def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
 def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
     # P1: a rich answer to a GRAPH pivot must still be mined for EDB fields, not discarded
     # (the bug: pivot/tie answers never reached extract_fields).
-    # queue: t1 enrich · t1 extract(opener, empty) · t1 pick · t2 interpret · t2 enrich
-    #      · t2 extract(objectifs) · t2 pick
+    # queue: t1 enrich · t1 extract(opener, empty) · t1 pick · t2 interpret
+    #      · t2 explicit exclusions · t2 enrich · t2 extract(objectifs) · t2 pick
     # NOTE: extracted entries become ledger CARDS, not EDB entries, so the EDB stays empty
     # and judge_section_sufficiency returns early (no dict consumed) until a card is accepted.
     provider = MockProvider([
@@ -211,6 +214,7 @@ def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
         {"entries": []},  # #5: opener mined (empty)
         {"candidate_key": "pivot:monetique", "question": "Monétique ?"},
         {"verdict": "exclude"},
+        {"excluded_domains": ["monetique"]},
         {"additions": []},
         {"entries": [{"section_id": "objectifs", "text": "réduire les appels au CRC"}]},
         {"candidate_key": "pivot:tpe-acceptation", "question": "TPE ?"},
@@ -224,6 +228,25 @@ def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
         "Non, hors monétique ; l'objectif est de réduire les appels au CRC."
     )
     assert any(c.payload.get("section_id") == "objectifs" for c in turn.cards)
+
+
+def test_explicit_free_text_exclusion_is_applied_before_retrieval() -> None:
+    provider = MockProvider([
+        {"excluded_domains": ["monetique"]},
+        {"additions": []},
+        {"entries": []},
+        {"candidate_key": "pivot:tpe-acceptation", "question": "TPE ?"},
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+
+    turn = session.handle_message("améliorer notre canal mobile sans monétique")
+
+    assert "monetique" in session.brief.excluded_domains
+    assert "sys-moteur" not in set(turn.result.node_ids())
+    assert "Domaines autorisés" in provider.calls[0][0]
 
 
 def test_natural_pivot_answer_confirmed_by_llm_interpretation() -> None:
@@ -256,6 +279,7 @@ def test_challenge_flags_unsourced_numbers_in_statement() -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Environ 30% des cas sont à risque."},
+        {"challenge_statement": "Environ 30% des cas sont à risque."},
         {"issues": []},  # fidelity judge
     ])
     session = make_challenge_session(provider)
@@ -271,7 +295,8 @@ def test_challenge_statement_coerced_when_model_returns_a_dict() -> None:
         {"entries": []},  # #5: opener mined (empty)
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
-         "challenge_statement": {"en_francais": "Le défi en clair."}},
+         "challenge_statement": "Ancien rendu ignoré."},
+        {"challenge_statement": {"en_francais": "Le défi en clair."}},
         {"issues": []},
     ])
     session = make_challenge_session(provider)
@@ -287,6 +312,7 @@ def test_challenge_records_statement_fidelity_issues() -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée par rapport à la source."]},
     ])
     session = make_challenge_session(provider)
@@ -369,6 +395,7 @@ def _challenge_provider() -> MockProvider:
              "target_section": "dependances", "reason": "le canal porte le besoin"}],
          "domains": [], "challenge_statement": "Défi : le gel bloque T3."},
         {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded → carded
+        {"challenge_statement": "Défi : le canal porte le besoin."},
         {"issues": []},  # statement faithfulness judge
     ])
 
@@ -468,6 +495,58 @@ def test_post_challenge_precision_marks_new_nodes_and_keeps_exclusions() -> None
     assert new_nodes == session.kept_node_ids() - snapshot  # diff is against the challenge-time snapshot
 
 
+def test_post_challenge_new_nodes_are_triaged_once() -> None:
+    nodes = [
+        System(
+            id="sys-canal",
+            name="Canal mobile",
+            description="Canal client mobile.",
+            owner_team="T",
+            domains=["banque-en-ligne"],
+        ),
+        System(
+            id="sys-nouveau",
+            name="Nouveau moteur",
+            description="Nouveau traitement différé.",
+            owner_team="T",
+            domains=["traitement-differe"],
+        ),
+    ]
+    service = GraphService({node.id: node for node in nodes}, [])
+    index = VectorIndex(FakeEmbedder(["canal", "nouveau"]))
+    index.build(service)
+    session = ScopingSession(service, index)
+    session.handle_message("améliorer notre canal mobile")
+    session.pending = None
+    session.pending_question = None
+    session.challenge_done = True
+    session.state = SessionState.SCOPING
+    session.previously_mapped = session.kept_node_ids()
+    provider = MockProvider([
+        {"additions": []},
+        {"entries": []},
+        {"verdicts": [{
+            "node_id": "sys-nouveau",
+            "verdict": "reject",
+            "reason": "hors du besoin",
+        }]},
+        {"candidate_key": "gap:contexte", "question": "Quel contexte ?"},
+    ])
+    session._provider = provider
+
+    session.handle_message("le nouveau moteur apparaît dans la recherche")
+
+    assert session.rejected_nodes["sys-nouveau"] == "hors du besoin"
+    assert session.delta_triaged == {"sys-nouveau"}
+    assert "sys-nouveau" not in session.kept_node_ids()
+    triage_calls = [
+        call for call in provider.calls if "Pour CHAQUE élément" in call[0]
+    ]
+    assert len(triage_calls) == 1
+    assert "sys-nouveau" in triage_calls[0][1]
+    assert "sys-canal" not in triage_calls[0][1].split("Nouveaux éléments :\n", 1)[1]
+
+
 def test_initial_brief_is_mined_into_the_edb() -> None:
     # the first message must feed extract_fields (provider path), not be discarded
     service = make_service()
@@ -502,6 +581,7 @@ def test_insufficient_section_re_ask_reaches_user_end_to_end_then_converges() ->
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi : le gel bloque T3."},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},
     ])
     session = make_challenge_session(provider)
@@ -573,6 +653,7 @@ def test_ungrounded_claim_is_rejected_not_carded() -> None:
                      "target_section": "contraintes", "reason": "impose aussi un audit KYC non cité"}],
          "challenge_statement": "Énoncé fidèle aux sources."},
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},  # judge_statement_fidelity → clean
     ])
     _msg, cards = session._run_challenge(result)
@@ -608,6 +689,7 @@ def test_gate_and_grounding_rejections_both_tagged_kind_claim() -> None:
          "challenge_statement": "Énoncé."},
         # grounding judge: only the 1 valid claim (claim[1]) is evaluated
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "conclusion non couverte"}]},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},  # judge_statement_fidelity
     ])
     _msg, cards = session._run_challenge(result)
@@ -626,7 +708,8 @@ def test_clean_statement_is_auto_stored() -> None:
     session._provider = MockProvider([
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
-         "challenge_statement": "Énoncé fidèle aux sources."},
+         "challenge_statement": "Énoncé historique à ignorer."},
+        {"challenge_statement": "Énoncé fidèle aux sources."},
         {"issues": []},  # clean fidelity → no quarantine
     ])
     session._run_challenge(result)
@@ -645,6 +728,7 @@ def test_flagged_statement_is_quarantined_not_auto_stored() -> None:
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(result)
@@ -667,6 +751,7 @@ def test_rejected_flagged_statement_stays_out_of_edb() -> None:
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(result)
@@ -735,6 +820,7 @@ def test_audit_fixes_hold_end_to_end() -> None:
              "target_section": "contraintes", "reason": "impose un audit KYC non cité"}],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(session.last_result)

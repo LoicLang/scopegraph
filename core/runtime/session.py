@@ -26,6 +26,7 @@ from core.runtime.challenge import (
     gate_triage,
     node_provenance,
     pull_governance,
+    render_node_set,
     render_stabilized,
     render_subgraph,
     statement_fact_flags,
@@ -33,6 +34,7 @@ from core.runtime.challenge import (
 from core.runtime.ledger import Ledger, Proposal
 from core.runtime.llm_steps import (
     enrich_brief,
+    extract_excluded_domains,
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
@@ -40,6 +42,7 @@ from core.runtime.llm_steps import (
     judge_section_sufficiency,
     judge_statement_fidelity,
     pick_question,
+    render_grounded_challenge,
 )
 from core.runtime.pool import Candidate, build_pool
 from core.runtime.triggers import DomainTieTrigger, PivotTrigger
@@ -99,6 +102,7 @@ class ScopingSession:
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
         self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
         self.previously_mapped: set[str] = set()  # stabilized map snapshotted once at challenge completion (new-node diff); not updated post-challenge
+        self.delta_triaged: set[str] = set()  # post-challenge retrieval nodes already triaged
         self.precision_asked: set[str] = set()  # sections already re-asked for precision (convergence)
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
@@ -129,7 +133,7 @@ class ScopingSession:
         EDB fields separately, in _map_round — orthogonal to domain resolution)."""
         assert self.brief is not None
         question = self.pending_question or ""
-        self.brief.qa.append(QA(question=question, answer=answer))
+        include_question_in_query = True
         match candidate.trigger:
             case DomainTieTrigger(domain_a=domain_a, domain_b=domain_b):
                 domains = (domain_a, domain_b)
@@ -154,11 +158,25 @@ class ScopingSession:
                     self.brief.domains.append(domain)
                 elif verdict == "exclude" and domain not in self.brief.excluded_domains:
                     self.brief.excluded_domains.append(domain)
+                    include_question_in_query = False
                 # unclear → the QA text alone enriches the brief; never re-asked
+        self.brief.qa.append(QA(
+            question=question,
+            answer=answer,
+            include_question_in_query=include_question_in_query,
+        ))
 
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None
         just_challenged = False
+        if free_text is not None and _has_explicit_exclusion(free_text):
+            for domain in extract_excluded_domains(
+                self._provider,
+                free_text,
+                self._service,
+            ):
+                if domain not in self.brief.domains and domain not in self.brief.excluded_domains:
+                    self.brief.excluded_domains.append(domain)
         if enrich:  # skip when the user added no words (e.g. a chip-removal rerun) — lever 3
             enrich_brief(self._provider, self.brief)
         result = retrieve(
@@ -181,6 +199,7 @@ class ScopingSession:
                 {"kind": "field", "section_id": d} for d in dropped
             ]
         if self.challenge_done:
+            self._triage_new_nodes(result)
             # the map is live post-challenge: recompute the governance pull on the
             # current retrieval against the accumulated exclusions (deterministic).
             keeps = set(result.node_ids()) - set(self.rejected_nodes)
@@ -209,16 +228,12 @@ class ScopingSession:
         message: str | None = None
         can_ask = self.questions_asked < config.MAX_QUESTIONS
         if graph_candidates and can_ask:
-            # lever 2: a graph ambiguity is resolved before any EDB gap (the LLM only
-            # picks among graph candidates). P3: but interleave a discovery gap after
-            # MAX_CONSECUTIVE_GRAPH_QUESTIONS in a row, so the interview discovers the
-            # project instead of looping on "is domain X in scope?".
+            # The contextual picker may prefer an EDB gap over an incidental graph
+            # ambiguity. The runtime still bounds graph-question streaks deterministically.
             if self._consecutive_graph_questions >= MAX_CONSECUTIVE_GRAPH_QUESTIONS and gap_candidates:
                 question = self._ask(gap_candidates)
-                self._consecutive_graph_questions = 0
             else:
-                question = self._ask(graph_candidates)
-                self._consecutive_graph_questions += 1
+                question = self._ask(pool)
         elif (self.state is SessionState.MAPPING and not self.challenge_done
               and self._provider is not None):
             try:
@@ -233,7 +248,6 @@ class ScopingSession:
                 message = CHALLENGE_FAILED_MESSAGE
         elif pool and can_ask:  # EDB gaps only (graph exhausted)
             question = self._ask(pool)
-            self._consecutive_graph_questions = 0
         if question is None and message is None:
             # lever 1: never a silent turn — acknowledge and state what remains.
             # incomplete_sections() with no insufficient arg == missing_sections() (no-provider
@@ -273,7 +287,13 @@ class ScopingSession:
         self.precision_asked.add(section_id)
 
     def _ask(self, pool: list[Candidate]) -> str:
-        candidate, question = pick_question(self._provider, pool, self._service)
+        candidate, question = pick_question(
+            self._provider,
+            pool,
+            self._service,
+            brief=self.brief,
+            edb=self.edb,
+        )
         self.asked.add(candidate.key)
         # #2: re-asking a FILLED gap section is a precision follow-up — record it in
         # precision_asked, the bound that stops an insufficient section from re-entering
@@ -285,7 +305,51 @@ class ScopingSession:
         self.questions_asked += 1
         self.pending = candidate
         self.pending_question = question
+        if candidate.kind == "edb_gap":
+            self._consecutive_graph_questions = 0
+        else:
+            self._consecutive_graph_questions += 1
         return question
+
+    def _triage_new_nodes(self, result: RetrievalResult) -> None:
+        if self._provider is None:
+            return
+        new_ids = (
+            set(result.node_ids())
+            - self.previously_mapped
+            - set(self.rejected_nodes)
+            - self.delta_triaged
+        )
+        if not new_ids:
+            return
+        today = datetime.date.today().isoformat()
+        user = (
+            "Date du jour (à n'utiliser que pour situer une échéance relative "
+            "comme « avant la fin de l'année », jamais pour inventer une date) : "
+            f"{today}.\nBrief du projet :\n{self.brief.text()}\n\n"
+            "Nouveaux éléments :\n"
+            f"{render_node_set(new_ids, self._service)}"
+        )
+        try:
+            out = complete_with_retry(
+                self._provider,
+                load_prompt("challenge_triage"),
+                user,
+                required_keys=("verdicts",),
+            )
+        except JsonContractError:
+            self.gate_rejections.append({
+                "kind": "delta_triage",
+                "node_ids": sorted(new_ids),
+                "reason_rejected": "échec du triage modèle ; éléments conservés",
+            })
+            return
+        _keeps, rejects, dropped = gate_triage(out["verdicts"], new_ids)
+        self.rejected_nodes.update(rejects)
+        self.gate_rejections += [
+            {"kind": "triage", "node_id": node_id} for node_id in dropped
+        ]
+        self.delta_triaged.update(new_ids)
 
     def _run_challenge(self, result: RetrievalResult) -> tuple[str, list[Proposal]]:
         """Two-message challenge (spec §5). Returns (statement, new claim cards)."""
@@ -333,7 +397,12 @@ class ScopingSession:
                 target_section=claim["target_section"], reason=claim["reason"]))
             cards.append(self.ledger.get(pid))
         self.proposed_domains = gate_domains(out2.get("domains", []), self._service)
-        statement = _coerce_text(out2["challenge_statement"])
+        statement = render_grounded_challenge(
+            self._provider,
+            grounded,
+            self._service,
+            self.brief,
+        )
         # P2: flag any number in the free-prose statement absent from its sources, and
         # #2: an LLM faithfulness pass for the semantic drift the number guard misses.
         source_texts = [f["text"] for f in node_provenance(self._service, sorted(map_ids))]
@@ -383,20 +452,20 @@ class ScopingSession:
         return self._map_round(enrich=False)
 
 
-def _coerce_text(value) -> str:
-    """A model may wrap the statement in a dict (e.g. {'en_francais': '...'}); pull the
-    inner string rather than leaking the dict repr into the EDB/UI."""
-    if isinstance(value, str):
-        return value
-    if isinstance(value, dict):
-        for inner in value.values():
-            if isinstance(inner, str) and inner.strip():
-                return inner
-    return str(value)
-
-
 def _tokens(text: str) -> set[str]:
     return {token.strip(".,!?;:()«»\"'").lower() for token in text.split()}
+
+
+def _has_explicit_exclusion(text: str) -> bool:
+    padded = f" {text.casefold()} "
+    return (
+        " sans " in padded
+        or " hors périmètre" in padded
+        or " hors du périmètre" in padded
+        or " hors " in padded
+        or (" ne " in padded and " pas " in padded)
+        or " ni " in padded
+    )
 
 
 def _match_domains(answer: str, candidates: tuple[str, ...]) -> list[str]:

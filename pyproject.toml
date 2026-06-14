@@ -28,6 +28,7 @@ embeddings = [
     "sentence-transformers",
 ]
 llm = [
+    "google-genai>=1.0",
     "mistralai>=1.0",
     "openai>=1.40",
 ]

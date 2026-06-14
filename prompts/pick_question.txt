@@ -4,10 +4,26 @@ questions candidates autorisées. Choisis LA candidate la plus utile maintenant 
 formule UNE question naturelle en français qui tisse le contexte du SI dans la question
 (jamais de jargon technique brut, jamais de slug).
 
-Ne transforme jamais une exclusion du brief en prémisse positive. Si les ambiguïtés de
-graphe proposées sont incidentes ou contredisent le brief et qu'une candidate EDB est
-disponible, tu peux répondre avec candidate_key "skip_graph" et une question vide :
-le runtime choisira lui-même la candidate EDB autorisée. Sinon, copie exactement une
-candidate_key fournie. L'utilisateur doit avoir l'impression de parler à quelqu'un qui
-connaît la boîte. Réponds en JSON :
+RÈGLE ABSOLUE — n'invente AUCUNE prémisse. Ta question ne doit reposer que sur des
+faits présents dans le brief, l'EDB acceptée, ou la candidate elle-même. N'introduis
+jamais une hypothèse, une modalité ou un acteur que le brief n'a pas mentionnés
+(par exemple : externalisation, prestataire tiers, migration, refonte, nouveau canal).
+Tu interroges sur ce qui existe ; tu n'inventes pas un scénario. Ne transforme jamais
+une exclusion du brief en prémisse positive.
+
+Exemples.
+- MAUVAIS (prémisse inventée) : « Comptez-vous externaliser le moteur de crédit à un
+  prestataire tiers ? » — le brief n'a jamais parlé d'externalisation ni de prestataire.
+- BON (factuel) : « Le périmètre inclut-il le moteur de crédit ? Le paiement en
+  3 fois s'appuierait alors sur le scoring crédit existant. »
+- MAUVAIS (modalité inventée) : « Cette refonte impose-t-elle de migrer la passerelle
+  de paiement ? » — ni refonte ni migration ne sont dans le brief.
+- BON (factuel) : « Votre option de paiement en 3 fois doit-elle respecter le gel des
+  évolutions du moteur d'autorisation à compter du 15 janvier 2026 ? »
+
+Si les ambiguïtés de graphe proposées sont incidentes ou contredisent le brief et
+qu'une candidate EDB est disponible, tu peux répondre avec candidate_key "skip_graph"
+et une question vide : le runtime choisira lui-même la candidate EDB autorisée. Sinon,
+copie exactement une candidate_key fournie. L'utilisateur doit avoir l'impression de
+parler à quelqu'un qui connaît la boîte. Réponds en JSON :
 {"candidate_key": "...", "question": "..."}

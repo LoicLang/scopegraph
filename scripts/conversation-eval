@@ -86,16 +86,20 @@ def persona_answer(provider, persona_system: str, transcript: list[tuple[str, st
     return str(out["answer"]).strip() or "Je ne sais pas, à vous de me dire."
 
 
-def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, int, int]:
+def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, int, int, list[str]]:
     """Drive a full conversation; a cooperative persona accepts every proposal.
 
-    Returns (session, turns, brief_field_cards) — brief_field_cards is how many EDB
-    field cards the OPENER alone produced (#5: the initial brief is mined)."""
+    Returns (session, turns, brief_field_cards, questions) — brief_field_cards is how many
+    EDB field cards the OPENER alone produced (#5: the initial brief is mined); questions
+    is every question the app posed (for premise-invention review)."""
     session = ScopingSession(service, index, provider=provider)
     persona_system = PERSONA_SYSTEM.format(brief=brief)
     transcript: list[tuple[str, str]] = []
+    questions: list[str] = []
     turn = session.handle_message(brief)
     brief_field_cards = sum(1 for c in turn.cards if c.kind == "field")  # #5
+    if turn.question:
+        questions.append(turn.question)
     transcript.append(("app", turn.question or turn.message or ""))
     turns = 0
     while turns < TURN_CAP:
@@ -108,11 +112,13 @@ def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, 
         answer = persona_answer(provider, persona_system, transcript)
         transcript.append(("user", answer))
         turn = session.handle_message(answer)
+        if turn.question:
+            questions.append(turn.question)
         transcript.append(("app", turn.question or turn.message or ""))
         turns += 1
     for proposal in list(session.ledger.pending()):
         session.accept_proposal(proposal.id)
-    return session, turns, brief_field_cards
+    return session, turns, brief_field_cards, questions
 
 
 def behavior_probes(session, brief_field_cards: int) -> dict:
@@ -169,7 +175,7 @@ def main() -> None:
     p_mined, p_filtered, p_precision, p_quarantined = 0, 0, 0, 0
     for name, brief, expected, _trap in SCENARIOS[: args.n]:
         try:
-            session, turns, brief_cards = run_scenario(provider, service, index, brief)
+            session, turns, brief_cards, questions = run_scenario(provider, service, index, brief)
         except JsonContractError as exc:
             print(f"  {name:30s} CONVERSATION FAILED: {exc}")
             continue
@@ -198,6 +204,8 @@ def main() -> None:
               f" | #4 quarantined {b['statement_quarantined']}")
         if m["statement_flags"] or m["statement_issues"]:
             print(f"    statement: flags={m['statement_flags']} issues={m['statement_issues']}")
+        for q in questions:
+            print(f"      Q: {q}")
 
     count = max(len(completions), 1)
     print(f"\n==> EDB {sum(completions) / count:.0%} | recall {sum(recalls) / count:.0%}"

@@ -72,9 +72,23 @@ read_when:
 
 ## Next chantier — question wording, then demo
 
-1. Stop question premise invention: keep LLM candidate ranking, but either render the
-   chosen candidate deterministically or gate the generated wording against the brief and
-   candidate evidence. Re-test the externalization phrasing seen in both BNPL runs.
+1. ~~Stop question premise invention~~ DONE (2026-06-14, few-shot, cheapest path tried
+   first per "measure before escalating"): `prompts/pick_question.txt` now carries an
+   explicit "n'invente AUCUNE prémisse" rule + 2 bad/good examples anchored on the
+   externalization defect. The LLM still selects AND phrases (no architecture change),
+   it is just taught by example. **Measured on Gemini 3.5 Flash, 8 scenarios (S1–S8),
+   ~40 questions: 0 invented premises** (externalization/prestataire/migration/refonte),
+   while phrasing stays natural ("le périmètre inclut-il le moteur de crédit ? un contrat
+   de crédit serait alors concerné"). The deterministic-render (A) and validation-gate (B)
+   options were therefore NOT needed; keep them in reserve if a stronger test regresses.
+   Bench gained per-question capture + behaviour probes (`scripts/conversation-eval`,
+   bench-only). Sweep stopped at S8 to limit API cost; the read is already conclusive.
+   - **New finding (separate bug, not premise invention): slug exposure in the tie
+     template.** S6 rendered « Le projet relève-t-il plutôt de « paiement-instantane »
+     ou de « dsp2-open-banking » ? » — raw domain slugs with hyphens. This question is
+     rendered deterministically by `DomainTieTrigger` in `core/runtime/questions.py`
+     (`render_question`), NOT by the LLM, so the prompt's "jamais de slug" rule can't
+     reach it. Fix: humanize domain slugs when rendering tie/pivot templates.
 2. Re-run the two fixed-answer scenarios with Gemini. Gate the scripted demo on no
    false grounding rejection, no invented question premise, and no unsupported statement.
 3. Proceed to W4 dossier rendering only after that focused reliability gate passes.

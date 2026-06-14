@@ -8,7 +8,68 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-14, session 5 — real-user audit)
+## Current state (2026-06-14, session 6 — post-fix real-user retest)
+
+- **Post-fix real-user retest (2026-06-14, uncached `mistral-small-latest`): the five
+  fixes improve safety, but unattended scoping is still not trustworthy.** Two projects
+  were driven manually through the real HTTP application/runtime: the original BNPL
+  regression and a novel temporary-card-limit pilot.
+  - **Confirmed fixed:** the opening brief is mined into field cards; explicit
+    `hors périmètre` entries survive; previously rejected nodes stay rejected across
+    post-challenge detail turns; the claim-grounding pass visibly auto-rejected two
+    unsupported claims in each scenario; both flawed challenge statements were
+    quarantined as statement cards and could be rejected before entering the EDB.
+  - **Question relevance remains the largest conversation defect.** BNPL produced two
+    clearly off-topic questions out of five (instant payments and TPE). The novel
+    card-limit brief produced two contradictory/off-topic questions first
+    (beneficiaries/RIB, then consumer credit) and a peripheral archival question later.
+    Confirmed mechanism: `pick_question` receives candidate templates but not the project
+    brief or current EDB, while graph pivots are hard-prioritized over EDB gaps. A stronger
+    model cannot infer project relevance from context it never receives.
+  - **Negative concepts still poison later retrieval.** `ProjectBrief.text()` appends both
+    every question and answer, so an irrelevant question about beneficiaries/transfers
+    becomes positive retrieval vocabulary even after the answer excludes it. The opening
+    extractor also kept the novel brief's `sans changer ... virement` clause inside a
+    `besoin` card instead of creating a domain-level exclusion.
+  - **Map coherence is fixed for known exclusions, not for unseen siblings.** The BNPL
+    final map no longer reintroduced instant-payment features, but still retained the
+    unrelated `proj-api-beneficiaires`. The novel final map reintroduced
+    `feat-mobile-virement-ip` after the challenge despite repeated transfer exclusions:
+    it was a newly retrieved node, had never been individually rejected, and
+    `paiement-instantane` had not been recorded in `excluded_domains`. The current
+    "new nodes are flagged, not re-triaged" policy therefore leaves a semantic leak.
+  - **Clause-complete grounding helps but is not clause-complete in practice.** Besides
+    the two auto-rejections per scenario, manual review still rejected 3/8 offered BNPL
+    claims and 8/14 offered card-limit claims. Misses included `à compter du` rewritten as
+    `jusqu'au`, consuming an API described as exposing one, and assigning card-tenure data
+    to the client repository. The generator and semantic judge are the same small model,
+    and missing/failed verdicts default to keep.
+  - **The useful product signal is real:** both challenges found decisive existing context
+    a naive prompt could miss, notably `feat-aut-controle-plafonds`,
+    `sys-moteur-autorisation`, SCA reuse, traceability, fraud scoring, PCI/AI Act, and the
+    monetique freeze. The runtime ended with complete EDBs and no pending cards, but W4
+    dossier generation is still absent (`dossier: null`, "prêt pour la rédaction (W4)").
+  - **Recommended next reliability order:** (1) pass brief + EDB + exclusions into question
+    ranking and permit a relevance veto over graph pivots; (2) stop excluded question text
+    from enriching retrieval and extract polarity/domain exclusions before first retrieval;
+    (3) delta-triage newly retrieved post-challenge nodes; (4) generate the prose challenge
+    only from claims that passed grounding; (5) route grounding/fidelity to a separate,
+    stronger judge. Model upgrade alone is not the fix.
+  - **Automated corroboration — real-LLM `conversation-eval`, 11 scenarios
+    (`mistral-small-latest`, cached, temp 0, 0 conversation failures):** mean EDB 78 %,
+    mean recall 75 % but **bimodal** — S4/S9/S10/S5 ≥100 %, but S3 0 % and S1 22 % (S1 was
+    11 % pre-fix). The bimodality is the same conversational recall collapse the session-6
+    retest pins on question relevance (off-topic questions enrich retrieval). All five
+    mechanisms fire in the real runs: #5 11/11 briefs mined; #1 **29 excluded-domain nodes
+    filtered** by `kept_node_ids`; #2 11 precision re-asks; #3 9 claims auto-rejected
+    (gate+grounding); #4 11/11 statements quarantined. **Every one of the 11 challenge
+    statements carried judge-flagged fidelity issues** — the prose statement systematically
+    over-generalizes the seed (e.g. a retail-only 15 000 € cap stated as global; the
+    « à compter du 15 janvier » inversion), so quarantine fires every time. This is the
+    measured case for recommendations (4) generate the prose challenge only from grounded
+    claims and (5) a separate stronger judge. Per-behavior probes added to
+    `scripts/conversation-eval` (bench-only, never in CI). The five fixes raise the safety
+    floor; they do not yet make unattended scoping trustworthy — the session-6 order stands.
 
 - **Fresh real-user test (2026-06-14, uncached Mistral, BNPL brief): mixed verdict.**
   A PM role-play scoped a 3-installment e-commerce card payment pilot through the live

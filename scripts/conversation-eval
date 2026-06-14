@@ -77,12 +77,16 @@ def persona_answer(provider, persona_system: str, transcript: list[tuple[str, st
     return str(out["answer"]).strip() or "Je ne sais pas, à vous de me dire."
 
 
-def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, int]:
-    """Drive a full conversation; a cooperative persona accepts every proposal."""
+def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, int, int]:
+    """Drive a full conversation; a cooperative persona accepts every proposal.
+
+    Returns (session, turns, brief_field_cards) — brief_field_cards is how many EDB
+    field cards the OPENER alone produced (#5: the initial brief is mined)."""
     session = ScopingSession(service, index, provider=provider)
     persona_system = PERSONA_SYSTEM.format(brief=brief)
     transcript: list[tuple[str, str]] = []
     turn = session.handle_message(brief)
+    brief_field_cards = sum(1 for c in turn.cards if c.kind == "field")  # #5
     transcript.append(("app", turn.question or turn.message or ""))
     turns = 0
     while turns < TURN_CAP:
@@ -99,7 +103,34 @@ def run_scenario(provider, service, index, brief: str) -> tuple[ScopingSession, 
         turns += 1
     for proposal in list(session.ledger.pending()):
         session.accept_proposal(proposal.id)
-    return session, turns
+    return session, turns, brief_field_cards
+
+
+def behavior_probes(session, brief_field_cards: int) -> dict:
+    """Per-scenario evidence that the five 2026-06-14 audit fixes fired in this real run.
+
+    All computed from end-state; the bench accepts every proposal, so a rejected claim
+    is one the gate/grounding refused (never offered), and a statement proposal is a
+    flagged statement that was quarantined through the ledger instead of auto-stored."""
+    confirmed = set(session.brief.domains) if session.brief else set()
+    excluded = set(session.brief.excluded_domains) if session.brief else set()
+    kept = session.kept_node_ids()
+    raw = set(session.last_result.node_ids()) if session.last_result else set()
+    raw |= {p.node_id for p in session.pulled}
+    # #1: nodes retrieval surfaced but the excluded-domain re-filter kept off the map.
+    filtered = 0
+    for nid in raw - kept:
+        doms = set(session._service.get_node(nid).domains)
+        if doms & excluded and not (doms & confirmed):
+            filtered += 1
+    statement_proposals = [p for p in session.ledger.proposals.values() if p.kind == "statement"]
+    return {
+        "brief_mined_cards": brief_field_cards,                       # #5
+        "excluded_domains": len(excluded),                           # #1 context
+        "excluded_filtered": filtered,                              # #1: the re-filter's catch
+        "precision_followups": len(session.precision_asked),        # #2
+        "statement_quarantined": len(statement_proposals),          # #4
+    }
 
 
 def main() -> None:
@@ -125,13 +156,16 @@ def main() -> None:
 
     completions, recalls, graphs, gaps, turn_counts = [], [], [], [], []
     flagged, judged = 0, 0
+    claims_v, claims_r = 0, 0
+    p_mined, p_filtered, p_precision, p_quarantined = 0, 0, 0, 0
     for name, brief, expected, _trap in SCENARIOS[: args.n]:
         try:
-            session, turns = run_scenario(provider, service, index, brief)
+            session, turns, brief_cards = run_scenario(provider, service, index, brief)
         except JsonContractError as exc:
             print(f"  {name:30s} CONVERSATION FAILED: {exc}")
             continue
         m = conversation_metrics(session, set(expected))
+        b = behavior_probes(session, brief_cards)
         completions.append(m["edb_completion"])
         recalls.append(m["expected_recall"])
         graphs.append(m["graph_questions"])
@@ -139,10 +173,20 @@ def main() -> None:
         turn_counts.append(turns)
         flagged += bool(m["statement_flags"])
         judged += bool(m["statement_issues"])
+        claims_v += m["claims_valid"]
+        claims_r += m["claims_rejected"]
+        p_mined += b["brief_mined_cards"]
+        p_filtered += b["excluded_filtered"]
+        p_precision += b["precision_followups"]
+        p_quarantined += b["statement_quarantined"]
         print(f"  {name:30s} turns {turns:2d} | EDB {m['edb_completion']:.0%}"
               f" | recall {m['expected_recall']:.0%} | Qg/Qgap {m['graph_questions']}/{m['gap_questions']}"
               f" | claims {m['claims_valid']}v/{m['claims_rejected']}r"
               f" | flags {len(m['statement_flags'])} | issues {len(m['statement_issues'])}")
+        print(f"    fixes → #5 brief-mined {b['brief_mined_cards']} cards"
+              f" | #1 excl {b['excluded_domains']}d→filtered {b['excluded_filtered']}"
+              f" | #2 precision re-asks {b['precision_followups']}"
+              f" | #4 quarantined {b['statement_quarantined']}")
         if m["statement_flags"] or m["statement_issues"]:
             print(f"    statement: flags={m['statement_flags']} issues={m['statement_issues']}")
 
@@ -151,6 +195,9 @@ def main() -> None:
           f" | mean Qgraph {sum(graphs) / count:.1f} / Qgap {sum(gaps) / count:.1f}"
           f" | mean turns {sum(turn_counts) / count:.1f}"
           f" | statements with flags {flagged}/{count}, with judge-issues {judged}/{count}")
+    print(f"==> claims {claims_v}v/{claims_r}r (grounding+gate auto-rejections = manual triage saved)"
+          f" | #5 brief-mined {p_mined} cards | #1 excluded-filtered {p_filtered}"
+          f" | #2 precision re-asks {p_precision} | #4 statements quarantined {p_quarantined}")
 
 
 if __name__ == "__main__":

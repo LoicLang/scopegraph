@@ -184,8 +184,8 @@ def judge_claim_grounding(
     blocks = []
     for i, claim in enumerate(claims):
         facts = node_provenance(service, [str(n) for n in claim.get("node_ids", [])])
-        sources = " | ".join(f["text"] for f in facts)
-        blocks.append(f"[{i}] affirmation : {claim.get('reason', '')}\nsources citées : {sources}")
+        sources = "\n".join(f"- [{f['node_id']}] {f['label']} : {f['text']}" for f in facts)
+        blocks.append(f"[{i}] affirmation : {claim.get('reason', '')}\nsources citées :\n{sources}")
     user = "\n\n".join(blocks)
     try:
         out = complete_with_retry(provider, load_prompt("judge_claim_grounding"), user,

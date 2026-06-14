@@ -259,3 +259,21 @@ def test_judge_claim_grounding_empty_claims_is_empty():
     from core.runtime.llm_steps import judge_claim_grounding
     service = _service_with_one_node("texte")
     assert judge_claim_grounding(MockProvider([]), [], service) == []
+
+
+def test_judge_claim_grounding_swallows_contract_failure():
+    from core.runtime.llm_steps import judge_claim_grounding
+    service = _service_with_one_node("texte")
+    claims = [{"node_ids": ["sys-x"], "reason": "r"}]
+    provider = MockProvider([{"bad": 1}, {"still": 2}])  # fails after the one retry
+    assert judge_claim_grounding(provider, claims, service) == [{"grounded": True, "reason_fr": ""}]
+
+
+def test_judge_claim_grounding_defaults_missing_verdict_to_grounded():
+    from core.runtime.llm_steps import judge_claim_grounding
+    service = _service_with_one_node("texte")
+    claims = [{"node_ids": ["sys-x"], "reason": "a"}, {"node_ids": ["sys-x"], "reason": "b"}]
+    provider = MockProvider([{"verdicts": [{"index": 1, "grounded": False, "reason_fr": "non couvert"}]}])
+    out = judge_claim_grounding(provider, claims, service)
+    assert out[0] == {"grounded": True, "reason_fr": ""}  # missing verdict → default keep
+    assert out[1]["grounded"] is False

@@ -579,3 +579,38 @@ def test_ungrounded_claim_is_rejected_not_carded() -> None:
     assert all(c.kind != "claim" for c in cards)  # ungrounded claim is NOT carded
     assert any(r.get("kind") == "claim" and "KYC" in r.get("reason_rejected", "")
                for r in session.gate_rejections)
+
+
+def test_gate_and_grounding_rejections_both_tagged_kind_claim() -> None:
+    # Fix #3 consistency: gate_claims-rejected AND grounding-rejected claims must BOTH
+    # land in gate_rejections with kind == "claim".  The previous bug spread **r last so
+    # the claim's own 'kind' (e.g. "bogus") overwrote the "claim" tag, making
+    # metrics.claims_rejected undercount every gate_claims rejection.
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index)  # template mode for setup
+    session.handle_message("améliorer le canal mobile")
+    result = session.last_result
+    # Two claims from the model:
+    #   claim[0] — kind="bogus" → fails gate_claims (unknown kind) → syntactic reject
+    #   claim[1] — kind="constraint_applies", valid node → passes gate_claims,
+    #              but grounding judge marks it grounded=False → grounding reject
+    session._provider = MockProvider([
+        {"verdicts": []},  # triage: keep all
+        {"pulled_justifications": [], "domains": [],
+         "claims": [
+             {"kind": "bogus", "node_ids": ["sys-canal"],
+              "target_section": "contraintes", "reason": "claim invalide"},
+             {"kind": "constraint_applies", "node_ids": ["sys-canal"],
+              "target_section": "contraintes", "reason": "claim valide mais non couvert"},
+         ],
+         "challenge_statement": "Énoncé."},
+        # grounding judge: only the 1 valid claim (claim[1]) is evaluated
+        {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "conclusion non couverte"}]},
+        {"issues": []},  # judge_statement_fidelity
+    ])
+    _msg, cards = session._run_challenge(result)
+    assert cards == []  # neither claim is carded
+    claim_rejections = [r for r in session.gate_rejections if r.get("kind") == "claim"]
+    assert len(claim_rejections) == 2  # both the gate-rejected and the grounding-rejected claim

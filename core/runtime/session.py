@@ -313,7 +313,7 @@ class ScopingSession:
                                        "pulled_justifications", "claims",
                                        "domains", "challenge_statement"))
         valid, rejected_claims = gate_claims(out2, map_ids, self._service)
-        self.gate_rejections += [{"kind": "claim", **r} for r in rejected_claims]
+        self.gate_rejections += [{**r, "kind": "claim"} for r in rejected_claims]
         # #3: clause-complete grounding — a claim whose conclusions exceed its cited
         # provenance is auto-rejected (lands in the gate panel, not a card).
         groundings = judge_claim_grounding(self._provider, valid, self._service)

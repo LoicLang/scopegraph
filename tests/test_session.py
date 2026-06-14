@@ -205,8 +205,8 @@ def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:
 def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
     # P1: a rich answer to a GRAPH pivot must still be mined for EDB fields, not discarded
     # (the bug: pivot/tie answers never reached extract_fields).
-    # queue: t1 enrich · t1 extract(opener, empty) · t1 pick · t2 interpret · t2 enrich
-    #      · t2 extract(objectifs) · t2 pick
+    # queue: t1 enrich · t1 extract(opener, empty) · t1 pick · t2 interpret
+    #      · t2 explicit exclusions · t2 enrich · t2 extract(objectifs) · t2 pick
     # NOTE: extracted entries become ledger CARDS, not EDB entries, so the EDB stays empty
     # and judge_section_sufficiency returns early (no dict consumed) until a card is accepted.
     provider = MockProvider([
@@ -214,6 +214,7 @@ def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
         {"entries": []},  # #5: opener mined (empty)
         {"candidate_key": "pivot:monetique", "question": "Monétique ?"},
         {"verdict": "exclude"},
+        {"excluded_domains": ["monetique"]},
         {"additions": []},
         {"entries": [{"section_id": "objectifs", "text": "réduire les appels au CRC"}]},
         {"candidate_key": "pivot:tpe-acceptation", "question": "TPE ?"},
@@ -227,6 +228,25 @@ def test_pivot_answer_prose_is_extracted_into_edb_cards() -> None:
         "Non, hors monétique ; l'objectif est de réduire les appels au CRC."
     )
     assert any(c.payload.get("section_id") == "objectifs" for c in turn.cards)
+
+
+def test_explicit_free_text_exclusion_is_applied_before_retrieval() -> None:
+    provider = MockProvider([
+        {"excluded_domains": ["monetique"]},
+        {"additions": []},
+        {"entries": []},
+        {"candidate_key": "pivot:tpe-acceptation", "question": "TPE ?"},
+    ])
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index, provider=provider)
+
+    turn = session.handle_message("améliorer notre canal mobile sans monétique")
+
+    assert "monetique" in session.brief.excluded_domains
+    assert "sys-moteur" not in set(turn.result.node_ids())
+    assert "Domaines autorisés" in provider.calls[0][0]
 
 
 def test_natural_pivot_answer_confirmed_by_llm_interpretation() -> None:

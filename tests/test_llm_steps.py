@@ -6,6 +6,7 @@ from core.runtime.brief import ProjectBrief
 from core.runtime.llm_steps import (
     MAX_TOTAL_ENRICHMENTS,
     enrich_brief,
+    extract_excluded_domains,
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
@@ -74,6 +75,32 @@ def test_extract_fields_gates_unknown_sections():
     entries, dropped = extract_fields(mock, "réponse libre", EdbState.new())
     assert [e["section_id"] for e in entries] == ["objectifs"]
     assert dropped == ["budget"]
+
+
+def test_extract_excluded_domains_gates_to_graph_vocabulary():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    provider = MockProvider([{
+        "excluded_domains": ["paiement-instantane", "domaine-invente"],
+    }])
+
+    excluded = extract_excluded_domains(
+        provider,
+        "Sans modifier les plafonds de virement.",
+        service,
+    )
+
+    assert excluded == ["paiement-instantane"]
+
+
+def test_extract_excluded_domains_without_provider_returns_empty():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    assert extract_excluded_domains(None, "Sans modifier les plafonds.", service) == []
+
+
+def test_extract_excluded_domains_swallows_contract_failure():
+    service = _service_with_one_node("Traitement des virements.", domain="paiement-instantane")
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+    assert extract_excluded_domains(provider, "Sans modifier les plafonds.", service) == []
 
 
 def test_pick_question_gated_to_pool_with_template_fallback():
@@ -275,11 +302,19 @@ def test_extract_fields_rejects_runtime_and_llm_owned_sections():
 # Task 8: judge_claim_grounding
 # ---------------------------------------------------------------------------
 
-def _service_with_one_node(text: str):
+def _service_with_one_node(text: str, domain: str = "d"):
     from core.graph.models import System
     from core.graph.service import GraphService
     return GraphService(
-        {"sys-x": System(id="sys-x", name="X", description=text, owner_team="T", domains=["d"])},
+        {
+            "sys-x": System(
+                id="sys-x",
+                name="X",
+                description=text,
+                owner_team="T",
+                domains=[domain],
+            )
+        },
         [],
     )
 

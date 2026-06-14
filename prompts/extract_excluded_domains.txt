@@ -1,0 +1,12 @@
+Tu identifies uniquement les domaines que l'utilisateur exclut explicitement du périmètre.
+
+Domaines autorisés : {domains}
+
+Règles :
+- retourne seulement des slugs présents dans la liste autorisée ;
+- n'infère aucune exclusion implicite ;
+- une simple mention d'un domaine ne signifie pas qu'il est exclu ;
+- si aucune exclusion explicite ne correspond, retourne une liste vide.
+
+Réponds uniquement en JSON :
+{"excluded_domains": ["slug-domaine"]}

@@ -33,6 +33,7 @@ from core.runtime.challenge import (
 from core.runtime.ledger import Ledger, Proposal
 from core.runtime.llm_steps import (
     enrich_brief,
+    extract_excluded_domains,
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
@@ -165,6 +166,14 @@ class ScopingSession:
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None
         just_challenged = False
+        if free_text is not None and _has_explicit_exclusion(free_text):
+            for domain in extract_excluded_domains(
+                self._provider,
+                free_text,
+                self._service,
+            ):
+                if domain not in self.brief.domains and domain not in self.brief.excluded_domains:
+                    self.brief.excluded_domains.append(domain)
         if enrich:  # skip when the user added no words (e.g. a chip-removal rerun) — lever 3
             enrich_brief(self._provider, self.brief)
         result = retrieve(
@@ -408,6 +417,18 @@ def _coerce_text(value) -> str:
 
 def _tokens(text: str) -> set[str]:
     return {token.strip(".,!?;:()«»\"'").lower() for token in text.split()}
+
+
+def _has_explicit_exclusion(text: str) -> bool:
+    padded = f" {text.casefold()} "
+    return (
+        " sans " in padded
+        or " hors périmètre" in padded
+        or " hors du périmètre" in padded
+        or " hors " in padded
+        or (" ne " in padded and " pas " in padded)
+        or " ni " in padded
+    )
 
 
 def _match_domains(answer: str, candidates: tuple[str, ...]) -> list[str]:

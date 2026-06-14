@@ -84,6 +84,36 @@ def extract_fields(
     return entries, dropped
 
 
+def extract_excluded_domains(
+    provider: LLMProvider | None,
+    text: str,
+    service: GraphService,
+) -> list[str]:
+    """Maps explicit exclusions to known domain slugs."""
+    if provider is None:
+        return []
+    known = service.known_domains()
+    system = load_prompt("extract_excluded_domains").replace(
+        "{domains}",
+        ", ".join(sorted(known)),
+    )
+    try:
+        out = complete_with_retry(
+            provider,
+            system,
+            text,
+            required_keys=("excluded_domains",),
+        )
+    except JsonContractError:
+        return []
+    excluded: list[str] = []
+    for raw_domain in out.get("excluded_domains", []):
+        domain = str(raw_domain)
+        if domain in known and domain not in excluded:
+            excluded.append(domain)
+    return excluded
+
+
 def interpret_pivot_answer(
     provider: LLMProvider | None, question: str, answer: str, domain: str
 ) -> str | None:

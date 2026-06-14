@@ -20,32 +20,42 @@ class EdbSectionSpec:
     title_fr: str
     owner: Owner
     prompt_hint_fr: str  # the deterministic fallback question for gap candidates
+    sufficiency_fr: str = ""  # what makes the section precise enough (drives the LLM judge)
 
 
 EDB_TEMPLATE_V1: tuple[EdbSectionSpec, ...] = (
     EdbSectionSpec("contexte", "Contexte & raison d'être", "mixed",
-                   "Dans quel contexte ce besoin apparaît-il (origine, déclencheur) ?"),
+                   "Dans quel contexte ce besoin apparaît-il (origine, déclencheur) ?",
+                   "Un déclencheur concret est nommé (événement, contrainte, opportunité datée)."),
     EdbSectionSpec("besoin", "Expression du besoin", "user",
-                   "Quel problème métier ce projet doit-il résoudre, en une phrase ?"),
+                   "Quel problème métier ce projet doit-il résoudre, en une phrase ?",
+                   "Le problème métier est formulé précisément, pas en généralités."),
     EdbSectionSpec("utilisateurs", "Utilisateurs & parties prenantes", "mixed",
-                   "Qui utilisera le résultat, et qui sponsorise le projet ?"),
+                   "Qui utilisera le résultat, et qui sponsorise le projet ?",
+                   "Le sponsor ET les utilisateurs finaux sont nommés."),
     EdbSectionSpec("objectifs", "Objectifs & critères de réussite", "user",
-                   "À quelles conditions ce projet sera-t-il un succès ?"),
+                   "À quelles conditions ce projet sera-t-il un succès ?",
+                   "Au moins un critère de réussite mesurable (un chiffre, une cible, un seuil)."),
     EdbSectionSpec("perimetre", "Périmètre in / hors périmètre", "mixed",
-                   "Qu'est-ce qui est explicitement dans — et hors — du périmètre ?"),
+                   "Qu'est-ce qui est explicitement dans — et hors — du périmètre ?",
+                   "Le dans-périmètre ET le hors-périmètre sont tous deux explicités."),
     EdbSectionSpec("exigences", "Exigences fonctionnelles et non-fonctionnelles", "mixed",
-                   "Quelles exigences fortes (fonctionnelles ou non) faut-il poser dès maintenant ?"),
+                   "Quelles exigences fortes (fonctionnelles ou non) faut-il poser dès maintenant ?",
+                   "Les exigences non-fonctionnelles sont chiffrées quand cela a un sens (volumétrie, SLA, délai)."),
     EdbSectionSpec("dependances", "Dépendances & systèmes impactés", "graph",
-                   "Des dépendances connues à signaler ?"),
+                   "Des dépendances connues à signaler ?",
+                   "Les systèmes impactés connus sont listés."),
     EdbSectionSpec("contraintes", "Contraintes héritées", "graph",
-                   "Des contraintes (réglementaires, gels, standards) à signaler ?"),
+                   "Des contraintes (réglementaires, gels, standards) à signaler ?",
+                   "Les contraintes réglementaires/gels/standards pertinents sont listés."),
     EdbSectionSpec("risques", "Risques initiaux", "mixed",
-                   "Quels risques voyez-vous à ce stade ?"),
+                   "Quels risques voyez-vous à ce stade ?",
+                   "Au moins un risque concret avec son origine est nommé."),
     EdbSectionSpec("jalons", "Jalons / échéance cible", "mixed",
-                   "Y a-t-il une échéance cible ou des jalons imposés ?"),
-    EdbSectionSpec("challenge", "Challenge & arbitrages ouverts", "llm",
-                   ""),
-    EdbSectionSpec("carte", "Context Map", "runtime", ""),
+                   "Y a-t-il une échéance cible ou des jalons imposés ?",
+                   "Une échéance ou un jalon daté est précisé."),
+    EdbSectionSpec("challenge", "Challenge & arbitrages ouverts", "llm", "", ""),
+    EdbSectionSpec("carte", "Context Map", "runtime", "", ""),
 )
 
 _SPEC_BY_ID = {section.id: section for section in EDB_TEMPLATE_V1}
@@ -82,6 +92,14 @@ class EdbState:
     def missing_sections(self) -> list[str]:
         """Askable sections still empty, in template order (the gap candidates)."""
         return [sid for sid in _ASKABLE if not self.sections[sid]]
+
+    def incomplete_sections(self, insufficient: set[str] = frozenset()) -> list[str]:
+        """Askable sections still empty OR judged insufficient, in template order.
+
+        `insufficient` is the set of filled-but-imprecise section ids from the LLM
+        sufficiency judge; without a provider it is empty → behaves like missing_sections."""
+        return [sid for sid in _ASKABLE
+                if not self.sections[sid] or sid in insufficient]
 
     def to_dict(self) -> dict:
         return {

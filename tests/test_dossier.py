@@ -53,3 +53,20 @@ def test_state_round_trips_through_dict():
     clone = EdbState.from_dict(state.to_dict())
     assert clone.sections["risques"][0].node_refs == ["risk-x"]
     assert clone.status("risques") == "filled"
+
+
+def test_every_askable_section_has_a_sufficiency_criterion():
+    from core.dossier.template import ASKABLE_SECTIONS, section_spec
+    for sid in ASKABLE_SECTIONS:
+        assert section_spec(sid).sufficiency_fr.strip()
+
+
+def test_incomplete_sections_includes_empty_and_judged_insufficient():
+    state = EdbState.new()
+    state.add_entry("besoin", EdbEntry(source="user", text="un cash-back"))
+    # besoin filled but judged insufficient → still incomplete; objectifs empty → incomplete
+    incomplete = state.incomplete_sections(insufficient={"besoin"})
+    assert "besoin" in incomplete
+    assert "objectifs" in incomplete
+    # filled AND judged sufficient → not incomplete
+    assert "besoin" not in state.incomplete_sections(insufficient=set())

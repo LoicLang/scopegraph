@@ -16,3 +16,7 @@ out/
 # screenshot tooling
 node_modules/
 tools/screenshots/package-lock.json
+.demo-cache/
+tools/screenshots/videos/
+tools/screenshots/frames/
+tools/screenshots/contact.png

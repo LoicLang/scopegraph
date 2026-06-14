@@ -43,9 +43,19 @@ Full pivot story (from a multi-agent predecessor): [docs/adr/0000-pivot-from-mas
 
 ## See it work
 
-Real captures of the live app (Mistral), driven end-to-end by
-[`tools/screenshots/capture.mjs`](tools/screenshots/capture.mjs) — one sentence in, and
-the **Context Map, the interview, and the dossier build themselves**.
+A real session of the live app (Mistral), driven end-to-end by
+[`tools/screenshots/record.mjs`](tools/screenshots/record.mjs) — one sentence in, and the
+**Context Map, the interview, and the dossier build themselves**.
+
+<p align="center">
+  <img src="assets/demo.gif" width="92%" alt="One sentence builds the Context Map; the interview fills the dossier; the challenge fires with each claim carrying its graph source" />
+</p>
+
+> One sentence → the map builds itself → a free answer fills the dossier → the challenge
+> fires, and every claim carries its **verbatim source from the graph**.
+> &nbsp;[▶ full video](assets/demo.mp4)
+
+The stills, step by step:
 
 <p align="center">
   <img src="assets/screenshots/01-map-and-interview.png" width="49%" alt="The Context Map populates from one sentence; the interview asks an SI-aware question; AI vocabulary chips appear" />

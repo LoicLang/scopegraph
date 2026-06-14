@@ -233,7 +233,8 @@ python3 -m venv .venv
 ```
 
 To add the LLM polish, copy `.env.example` to `.env` and set a provider + key
-(`mistral` | `deepseek` | `grok`). The real environment always wins over the file.
+(`mistral` | `gemini` | `deepseek` | `grok`). The real environment always wins over the
+file.
 
 ---
 
@@ -243,6 +244,6 @@ To add the LLM polish, copy `.env.example` to `.env` and set a provider + key
 |---|---|---|
 | **W1 — foundations** | ✅ done | ADRs · Pydantic schema + fail-fast loader + GraphService · seed (72 nodes, 100 edges, 7 traps) · interactive graph viewer |
 | **W2 — retrieval + map** | ✅ done | Qwen3 embedder + Chroma index · hybrid retrieval (semantic + domain boost + 2-hop) · MAPPING interview · chat + live Context Map |
-| **W3 — LLM challenge layer** | ✅ done | Provider protocol (Mistral/DeepSeek/Grok/Mock) · 12-section dossier · two-phase challenge + governance pull · propose/validate ledger · claim provenance + statement fidelity · graph/gap interview · three-pane UI · challenge-eval + conversation-eval |
+| **W3 — LLM challenge layer** | ✅ done | Provider protocol (Mistral/Gemini/DeepSeek/Grok/Mock) · 12-section dossier · two-phase challenge + governance pull · propose/validate ledger · claim provenance + statement fidelity · graph/gap interview · three-pane UI · challenge-eval + conversation-eval |
 | **W4 — dossier + eval** | next | Dossier renderer · Context Map polish · graph write-back · scripted BNPL demo (incl. the second scoping that sees the first) · formal eval run |
 | **ecosystem-foundry** | roadmap | Separate repo: graph built from unstructured documents (extraction, resolution, adversarial edge verification). Output conforms to schema v1 by construction. |

@@ -8,7 +8,82 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-14, session 6 — post-fix real-user retest)
+## Current state (2026-06-14, session 7 — Gemini comparison)
+
+- **Context-aware interview fixes + Gemini provider DONE** on
+  `codex/context-aware-gemini`. The runtime now gives question ranking the complete
+  brief/EDB/domain context, keeps excluded pivot questions out of positive retrieval,
+  extracts explicit free-text exclusions before retrieval, delta-triages new
+  post-challenge nodes, and renders challenge prose only from claims that survived
+  grounding. `GeminiProvider` uses the official `google-genai` SDK with
+  `gemini-3.5-flash`; both real-model benches accept `--provider gemini`.
+  Full hermetic suite: **281 passed**, ruff clean.
+
+- **Matched real HTTP/runtime comparison (2026-06-14, uncached, identical briefs and
+  user answers): Gemini is the better demo brain, but neither run is unattended-safe.**
+  The two approved projects were a BNPL e-commerce pilot and a temporary card-limit
+  increase for travel. Every field card was accepted; every offered claim was reviewed
+  against its displayed node provenance; flagged statements were rejected.
+
+  | Result | `mistral-small-latest` | `gemini-3.5-flash` |
+  |---|---:|---:|
+  | Final map sizes (BNPL / limits) | 35 / 29 | **23 / 23** |
+  | Explicit domain exclusions recorded | 0 / 0 | **2 / 1** |
+  | Claims offered | 11 / 13 | **5 / 3** |
+  | Grounding auto-rejections | 1 / 1 | 2 / 2 |
+  | Obvious manual claim rejections after provenance review | at least 3 / 7 | **0 / 0** |
+  | EDB completion after accepted final-turn cards | 100 % / 100 % | 88 % / 100 % |
+  | Statements quarantined | 2 / 2 | **0 / 1** |
+
+  - **Question selection improved for both models:** none of the 20 questions pursued an
+    explicitly excluded beneficiary, instant-payment, or physical-TPE domain. The
+    remaining phrasing defect is premise invention: Mistral framed three BNPL questions
+    around unrequested externalization; Gemini did so once. The model should select a
+    candidate, while the runtime either renders the final wording or validates it against
+    the brief before display.
+  - **Gemini reduces pollution, not enough to declare the map precise:** mean final size
+    fell from 32 to 23 nodes (28 %), and the travel map no longer retained beneficiary
+    siblings. Both maps still carry broad fraud/compliance/reference context whose project
+    relevance is debatable. Delta triage works, but initial retrieval + recall-first triage
+    remains intentionally wide.
+  - **Gemini's claim generation is materially cleaner:** its eight offered claims were
+    supported by their displayed provenance in manual review. Mistral still offered a
+    reversed freeze date (`à compter du` → `jusqu'au`), an instant-payment screening rule
+    over-applied to BNPL, a mobile-credit overlap inconsistent with the e-commerce scope,
+    and several card-limit dependencies not established by the cited nodes.
+  - **New root cause found — grounding conflates graph facts with project applicability.**
+    Three useful Gemini claims were auto-rejected because their reason connected a cited
+    graph fact to a date or need from the brief; `judge_claim_grounding` receives only node
+    provenance, so it treats the legitimate project half as unsupported. Mistral's two
+    auto-rejections were also false negatives. The next contract should split a claim into
+    `graph_fact` (judged only against cited nodes) and `project_link` (judged against the
+    brief), then render the card from both.
+  - **Statement judging also benefits from Gemini:** Mistral quarantined both statements
+    with issues that often referred to text absent from the statement itself. Gemini
+    accepted the clean BNPL statement and correctly quarantined the travel statement for
+    two actual unsupported links. The grounded-rendering change improves the floor; model
+    quality still matters for the semantic judge.
+  - **Trade-off:** Gemini was several times slower in this multi-call flow (roughly nine
+    minutes for both conversations versus roughly two for Mistral on this machine).
+    Recommendation: use **Gemini 3.5 Flash as the demo brain**, keep Mistral as a faster
+    supported option, and fix the structured grounding contract before considering
+    unattended dossier generation. A model upgrade alone helped substantially, but did
+    not replace runtime authority.
+
+## Next chantier — structured claim grounding, then demo
+
+1. Brainstorm and specify a two-source claim contract: `graph_fact` must be entailed by
+   cited nodes; `project_link` must be entailed by the user brief/accepted EDB. Judge each
+   field against its own source, then render one card. This should remove the false
+   auto-rejections measured with both providers without weakening mandatory grounding.
+2. Stop question premise invention: keep LLM candidate ranking, but either render the
+   chosen candidate deterministically or gate the generated wording against the brief and
+   candidate evidence. Re-test the externalization phrasing seen in both BNPL runs.
+3. Re-run the two fixed-answer scenarios with Gemini. Gate the scripted demo on no
+   false grounding rejection, no invented question premise, and no unsupported statement.
+4. Proceed to W4 dossier rendering only after that focused reliability gate passes.
+
+## Previous state (2026-06-14, session 6 — post-fix real-user retest)
 
 - **Post-fix real-user retest (2026-06-14, uncached `mistral-small-latest`): the five
   fixes improve safety, but unattended scoping is still not trustworthy.** Two projects
@@ -269,7 +344,7 @@ read_when:
   - 102 hermetic tests, ruff clean. Run the app: `pip install -e ".[embeddings]"` then
     `uvicorn --factory web.app:create_app --reload`.
 
-## Next chantier — L7 triage levers, then the demo
+## Historical W3 follow-ups (completed before session 7)
 
 The W3 bench ran 2026-06-12 (keys provided; deepseek-v4-flash, sweep N=0+2000).
 Numbers and analysis recorded in known-limits **L1 (precision 13→53 %, map 11.5),

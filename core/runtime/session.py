@@ -26,6 +26,7 @@ from core.runtime.challenge import (
     gate_triage,
     node_provenance,
     pull_governance,
+    render_node_set,
     render_stabilized,
     render_subgraph,
     statement_fact_flags,
@@ -100,6 +101,7 @@ class ScopingSession:
         self.statement_flags: list[str] = []  # unsourced numbers in the last challenge statement
         self.statement_issues: list[str] = []  # LLM-judged fidelity issues in the statement
         self.previously_mapped: set[str] = set()  # stabilized map snapshotted once at challenge completion (new-node diff); not updated post-challenge
+        self.delta_triaged: set[str] = set()  # post-challenge retrieval nodes already triaged
         self.precision_asked: set[str] = set()  # sections already re-asked for precision (convergence)
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
 
@@ -196,6 +198,7 @@ class ScopingSession:
                 {"kind": "field", "section_id": d} for d in dropped
             ]
         if self.challenge_done:
+            self._triage_new_nodes(result)
             # the map is live post-challenge: recompute the governance pull on the
             # current retrieval against the accumulated exclusions (deterministic).
             keeps = set(result.node_ids()) - set(self.rejected_nodes)
@@ -306,6 +309,46 @@ class ScopingSession:
         else:
             self._consecutive_graph_questions += 1
         return question
+
+    def _triage_new_nodes(self, result: RetrievalResult) -> None:
+        if self._provider is None:
+            return
+        new_ids = (
+            set(result.node_ids())
+            - self.previously_mapped
+            - set(self.rejected_nodes)
+            - self.delta_triaged
+        )
+        if not new_ids:
+            return
+        today = datetime.date.today().isoformat()
+        user = (
+            "Date du jour (à n'utiliser que pour situer une échéance relative "
+            "comme « avant la fin de l'année », jamais pour inventer une date) : "
+            f"{today}.\nBrief du projet :\n{self.brief.text()}\n\n"
+            "Nouveaux éléments :\n"
+            f"{render_node_set(new_ids, self._service)}"
+        )
+        try:
+            out = complete_with_retry(
+                self._provider,
+                load_prompt("challenge_triage"),
+                user,
+                required_keys=("verdicts",),
+            )
+        except JsonContractError:
+            self.gate_rejections.append({
+                "kind": "delta_triage",
+                "node_ids": sorted(new_ids),
+                "reason_rejected": "échec du triage modèle ; éléments conservés",
+            })
+            return
+        _keeps, rejects, dropped = gate_triage(out["verdicts"], new_ids)
+        self.rejected_nodes.update(rejects)
+        self.gate_rejections += [
+            {"kind": "triage", "node_id": node_id} for node_id in dropped
+        ]
+        self.delta_triaged.update(new_ids)
 
     def _run_challenge(self, result: RetrievalResult) -> tuple[str, list[Proposal]]:
         """Two-message challenge (spec §5). Returns (statement, new claim cards)."""

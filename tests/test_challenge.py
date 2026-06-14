@@ -12,6 +12,7 @@ from core.runtime.challenge import (
     gate_triage,
     node_provenance,
     pull_governance,
+    render_node_set,
     statement_fact_flags,
 )
 
@@ -82,6 +83,16 @@ def test_pull_excludes_rejected_and_already_kept_and_respects_cap(service):
     assert "con-x" not in pulled_ids  # already kept
     assert "dec-y" not in pulled_ids  # explicitly rejected by the LLM
     assert len(pulled) <= 1  # cap
+
+
+def test_render_node_set_only_includes_submitted_nodes_and_internal_edges(service):
+    rendered = render_node_set({"sys-a", "con-x"}, service)
+
+    assert "sys-a" in rendered
+    assert "con-x" in rendered
+    assert "con-x —CONSTRAINS→ sys-a" in rendered
+    assert "dec-y" not in rendered
+    assert "risk-z" not in rendered
 
 
 # -- gate B -------------------------------------------------------------------

@@ -491,6 +491,58 @@ def test_post_challenge_precision_marks_new_nodes_and_keeps_exclusions() -> None
     assert new_nodes == session.kept_node_ids() - snapshot  # diff is against the challenge-time snapshot
 
 
+def test_post_challenge_new_nodes_are_triaged_once() -> None:
+    nodes = [
+        System(
+            id="sys-canal",
+            name="Canal mobile",
+            description="Canal client mobile.",
+            owner_team="T",
+            domains=["banque-en-ligne"],
+        ),
+        System(
+            id="sys-nouveau",
+            name="Nouveau moteur",
+            description="Nouveau traitement différé.",
+            owner_team="T",
+            domains=["traitement-differe"],
+        ),
+    ]
+    service = GraphService({node.id: node for node in nodes}, [])
+    index = VectorIndex(FakeEmbedder(["canal", "nouveau"]))
+    index.build(service)
+    session = ScopingSession(service, index)
+    session.handle_message("améliorer notre canal mobile")
+    session.pending = None
+    session.pending_question = None
+    session.challenge_done = True
+    session.state = SessionState.SCOPING
+    session.previously_mapped = session.kept_node_ids()
+    provider = MockProvider([
+        {"additions": []},
+        {"entries": []},
+        {"verdicts": [{
+            "node_id": "sys-nouveau",
+            "verdict": "reject",
+            "reason": "hors du besoin",
+        }]},
+        {"candidate_key": "gap:contexte", "question": "Quel contexte ?"},
+    ])
+    session._provider = provider
+
+    session.handle_message("le nouveau moteur apparaît dans la recherche")
+
+    assert session.rejected_nodes["sys-nouveau"] == "hors du besoin"
+    assert session.delta_triaged == {"sys-nouveau"}
+    assert "sys-nouveau" not in session.kept_node_ids()
+    triage_calls = [
+        call for call in provider.calls if "Pour CHAQUE élément" in call[0]
+    ]
+    assert len(triage_calls) == 1
+    assert "sys-nouveau" in triage_calls[0][1]
+    assert "sys-canal" not in triage_calls[0][1].split("Nouveaux éléments :\n", 1)[1]
+
+
 def test_initial_brief_is_mined_into_the_edb() -> None:
     # the first message must feed extract_fields (provider path), not be discarded
     service = make_service()

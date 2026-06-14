@@ -21,7 +21,7 @@ _SECTION_SYNONYMS: dict[str, str] = {
     "parties prenantes": "utilisateurs",
     "carta": "carte",
     "carte_de_contexte": "carte",
-    "perimetre_hors": "perimetre",
+    "perimetre_hors": "perimetre",  # the section holds both in- and out-of-scope; the « hors périmètre : » text prefix (from the prompt) carries the distinction
 }
 
 
@@ -64,7 +64,7 @@ def extract_fields(
     """Proposes EDB entries from a free answer; returns (gated entries, dropped ids)."""
     if provider is None:
         return [], []
-    allowed = set(edb.sections)
+    allowed = {s.id for s in EDB_TEMPLATE_V1 if s.owner not in ("runtime", "llm")} & set(edb.sections)
     catalogue = ", ".join(f"{s.id} ({s.title_fr})" for s in EDB_TEMPLATE_V1 if s.id in allowed)
     system = load_prompt("extract_fields").replace("{sections}", catalogue)
     try:

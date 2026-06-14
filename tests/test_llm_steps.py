@@ -196,11 +196,27 @@ def test_judge_sufficiency_empty_edb_returns_empty():
 def test_extract_fields_remaps_known_section_synonyms():
     # the model emits non-canonical ids seen live (parties_prenantes, carta)
     mock = MockProvider([{"entries": [
-        {"section_id": "parties_prenantes", "text": "DSI sponsor"},  # → utilisateurs
-        {"section_id": "carta", "text": "x"},                         # → carte (then dropped: not askable? still remapped)
+        {"section_id": "parties_prenantes", "text": "DSI sponsor"},  # → utilisateurs (writable)
+        {"section_id": "carta", "text": "x"},                        # → carte (runtime-owned → dropped)
         {"section_id": "objectifs", "text": "+10% conversion"},
     ]}])
     entries, dropped = extract_fields(mock, "réponse", EdbState.new())
     sids = [e["section_id"] for e in entries]
-    assert "utilisateurs" in sids  # parties_prenantes remapped
-    assert "parties_prenantes" not in dropped  # remapped, not lost
+    # parties_prenantes remaps to utilisateurs → accepted
+    assert "utilisateurs" in sids
+    assert "parties_prenantes" not in dropped
+    # carta remaps to carte (runtime-owned) → dropped under original id
+    assert "objectifs" in sids
+    assert "carta" in dropped  # dropped under the original raw id, not "carte"
+
+
+def test_extract_fields_rejects_runtime_and_llm_owned_sections():
+    mock = MockProvider([{"entries": [
+        {"section_id": "challenge", "text": "x"},
+        {"section_id": "carte", "text": "y"},
+        {"section_id": "objectifs", "text": "+10%"},
+    ]}])
+    entries, dropped = extract_fields(mock, "r", EdbState.new())
+    sids = [e["section_id"] for e in entries]
+    assert sids == ["objectifs"]
+    assert "challenge" in dropped and "carte" in dropped

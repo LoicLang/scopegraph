@@ -1,6 +1,6 @@
 """The three per-turn LLM steps, each with a deterministic no-provider fallback."""
 
-from core.dossier.template import EdbState
+from core.dossier.template import EdbEntry, EdbState
 from core.llm.provider import MockProvider
 from core.runtime.brief import ProjectBrief
 from core.runtime.llm_steps import (
@@ -157,3 +157,31 @@ def test_pick_question_none_provider_uses_templates():
     candidate, question = pick_question(None, [gap], service=None)
     assert candidate.key == "gap:objectifs"
     assert "succès" in question
+
+
+def test_judge_sufficiency_returns_insufficient_set_and_followups():
+    from core.runtime.llm_steps import judge_section_sufficiency
+    edb = EdbState.new()
+    edb.add_entry("objectifs", EdbEntry(source="user", text="améliorer l'expérience"))
+    provider = MockProvider([{"verdicts": [
+        {"section_id": "objectifs", "sufficient": False,
+         "followup_fr": "Quel gain chiffré visez-vous, et à quelle échéance ?"},
+    ]}])
+    insufficient, followups = judge_section_sufficiency(provider, edb)
+    assert insufficient == {"objectifs"}
+    assert followups["objectifs"].startswith("Quel gain")
+
+
+def test_judge_sufficiency_none_provider_is_empty():
+    from core.runtime.llm_steps import judge_section_sufficiency
+    edb = EdbState.new()
+    edb.add_entry("objectifs", EdbEntry(source="user", text="x"))
+    assert judge_section_sufficiency(None, edb) == (set(), {})
+
+
+def test_judge_sufficiency_swallows_contract_failure():
+    from core.runtime.llm_steps import judge_section_sufficiency
+    edb = EdbState.new()
+    edb.add_entry("objectifs", EdbEntry(source="user", text="x"))
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+    assert judge_section_sufficiency(provider, edb) == (set(), {})

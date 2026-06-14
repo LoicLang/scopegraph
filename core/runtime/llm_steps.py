@@ -2,7 +2,7 @@
 no provider, or a failed JSON contract, never blocks a turn (hard rule: the
 templates and the gates are the product's floor, the LLM is the polish)."""
 
-from core.dossier.template import EdbState
+from core.dossier.template import ASKABLE_SECTIONS, EdbState, section_spec
 from core.graph.service import GraphService
 from core.llm.json_contract import JsonContractError, complete_with_retry
 from core.llm.prompts import load_prompt
@@ -123,6 +123,38 @@ def judge_statement_fidelity(
     except JsonContractError:
         return []
     return [str(issue).strip() for issue in out.get("issues", []) if str(issue).strip()]
+
+
+def judge_section_sufficiency(
+    provider: LLMProvider | None, edb: EdbState
+) -> tuple[set[str], dict[str, str]]:
+    """LLM judge over the FILLED askable sections: which are too vague/imprecise, and a
+    targeted follow-up for each. Returns (insufficient_ids, {section_id: followup_fr}).
+    (set(), {}) without a provider or on contract failure — binary completeness survives."""
+    if provider is None:
+        return set(), {}
+    filled = [sid for sid in ASKABLE_SECTIONS if edb.sections[sid]]
+    if not filled:
+        return set(), {}
+    blocks = []
+    for sid in filled:
+        spec = section_spec(sid)
+        content = " | ".join(e.text for e in edb.sections[sid])
+        blocks.append(f"[{sid}] critère : {spec.sufficiency_fr}\ncontenu : {content}")
+    user = "\n\n".join(blocks)
+    try:
+        out = complete_with_retry(provider, load_prompt("judge_sufficiency"), user,
+                                  required_keys=("verdicts",))
+    except JsonContractError:
+        return set(), {}
+    insufficient: set[str] = set()
+    followups: dict[str, str] = {}
+    for verdict in out.get("verdicts", []):
+        sid = str(verdict.get("section_id", ""))
+        if sid in filled and verdict.get("sufficient") is False:
+            insufficient.add(sid)
+            followups[sid] = str(verdict.get("followup_fr", "")).strip()
+    return insufficient, followups
 
 
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:

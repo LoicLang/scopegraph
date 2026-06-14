@@ -279,6 +279,7 @@ def test_challenge_flags_unsourced_numbers_in_statement() -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Environ 30% des cas sont à risque."},
+        {"challenge_statement": "Environ 30% des cas sont à risque."},
         {"issues": []},  # fidelity judge
     ])
     session = make_challenge_session(provider)
@@ -294,7 +295,8 @@ def test_challenge_statement_coerced_when_model_returns_a_dict() -> None:
         {"entries": []},  # #5: opener mined (empty)
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
-         "challenge_statement": {"en_francais": "Le défi en clair."}},
+         "challenge_statement": "Ancien rendu ignoré."},
+        {"challenge_statement": {"en_francais": "Le défi en clair."}},
         {"issues": []},
     ])
     session = make_challenge_session(provider)
@@ -310,6 +312,7 @@ def test_challenge_records_statement_fidelity_issues() -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée par rapport à la source."]},
     ])
     session = make_challenge_session(provider)
@@ -392,6 +395,7 @@ def _challenge_provider() -> MockProvider:
              "target_section": "dependances", "reason": "le canal porte le besoin"}],
          "domains": [], "challenge_statement": "Défi : le gel bloque T3."},
         {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded → carded
+        {"challenge_statement": "Défi : le canal porte le besoin."},
         {"issues": []},  # statement faithfulness judge
     ])
 
@@ -577,6 +581,7 @@ def test_insufficient_section_re_ask_reaches_user_end_to_end_then_converges() ->
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi : le gel bloque T3."},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},
     ])
     session = make_challenge_session(provider)
@@ -648,6 +653,7 @@ def test_ungrounded_claim_is_rejected_not_carded() -> None:
                      "target_section": "contraintes", "reason": "impose aussi un audit KYC non cité"}],
          "challenge_statement": "Énoncé fidèle aux sources."},
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},  # judge_statement_fidelity → clean
     ])
     _msg, cards = session._run_challenge(result)
@@ -683,6 +689,7 @@ def test_gate_and_grounding_rejections_both_tagged_kind_claim() -> None:
          "challenge_statement": "Énoncé."},
         # grounding judge: only the 1 valid claim (claim[1]) is evaluated
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "conclusion non couverte"}]},
+        {"challenge_statement": "Aucun défi supplémentaire n'est établi."},
         {"issues": []},  # judge_statement_fidelity
     ])
     _msg, cards = session._run_challenge(result)
@@ -701,7 +708,8 @@ def test_clean_statement_is_auto_stored() -> None:
     session._provider = MockProvider([
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
-         "challenge_statement": "Énoncé fidèle aux sources."},
+         "challenge_statement": "Énoncé historique à ignorer."},
+        {"challenge_statement": "Énoncé fidèle aux sources."},
         {"issues": []},  # clean fidelity → no quarantine
     ])
     session._run_challenge(result)
@@ -720,6 +728,7 @@ def test_flagged_statement_is_quarantined_not_auto_stored() -> None:
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(result)
@@ -742,6 +751,7 @@ def test_rejected_flagged_statement_stays_out_of_edb() -> None:
         {"verdicts": []},  # triage
         {"pulled_justifications": [], "domains": [], "claims": [],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(result)
@@ -810,6 +820,7 @@ def test_audit_fixes_hold_end_to_end() -> None:
              "target_section": "contraintes", "reason": "impose un audit KYC non cité"}],
          "challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"challenge_statement": "Le gel court jusqu'au 15 janvier 2026."},
         {"issues": ["Date inversée : « jusqu'au » au lieu de « à compter du »."]},
     ])
     _msg, cards = session._run_challenge(session.last_result)

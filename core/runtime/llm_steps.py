@@ -238,6 +238,64 @@ def judge_claim_grounding(
     return verdicts
 
 
+def render_grounded_challenge(
+    provider: LLMProvider | None,
+    claims: list[dict],
+    service: GraphService,
+    brief: ProjectBrief,
+) -> str:
+    """Renders challenge prose from claims that already passed every grounding gate."""
+    reasons = [
+        str(claim.get("reason", "")).strip().rstrip(".")
+        for claim in claims
+        if str(claim.get("reason", "")).strip()
+    ]
+    fallback = (
+        f"Défi de cadrage : {' ; '.join(reasons)}."
+        if reasons
+        else "Défi de cadrage : aucun point supplémentaire n'est établi par les éléments fondés."
+    )
+    if provider is None:
+        return fallback
+    blocks = []
+    for index, claim in enumerate(claims):
+        facts = node_provenance(service, [str(node_id) for node_id in claim.get("node_ids", [])])
+        sources = "\n".join(
+            f"- [{fact['node_id']}] {fact['label']} : {fact['text']}"
+            for fact in facts
+        )
+        blocks.append(
+            f"[{index}] point fondé : {claim.get('reason', '')}\n"
+            f"sources citées :\n{sources or '- (aucune)'}"
+        )
+    user = (
+        f"Brief du projet :\n{brief.text()}\n\n"
+        "Points déjà validés par les gates :\n"
+        f"{'\n\n'.join(blocks) or '(aucun point validé)'}"
+    )
+    try:
+        out = complete_with_retry(
+            provider,
+            load_prompt("render_grounded_challenge"),
+            user,
+            required_keys=("challenge_statement",),
+        )
+    except JsonContractError:
+        return fallback
+    raw_statement = out.get("challenge_statement", "")
+    if isinstance(raw_statement, dict):
+        raw_statement = next(
+            (
+                value
+                for value in raw_statement.values()
+                if isinstance(value, str) and value.strip()
+            ),
+            "",
+        )
+    statement = str(raw_statement).strip()
+    return statement or fallback
+
+
 def _template_question(candidate: Candidate, service: GraphService | None) -> str:
     if candidate.kind == "edb_gap":
         # #2: an insufficient filled section carries a targeted precision follow-up; the

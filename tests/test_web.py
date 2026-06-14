@@ -139,6 +139,7 @@ def test_proposal_accept_endpoint_applies_to_edb(tmp_path: Path) -> None:
              "target_section": "dependances", "reason": "la règle s'applique"}],
          "domains": [], "challenge_statement": "Défi."},
         {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded
+        {"challenge_statement": "Défi."},
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)
@@ -163,6 +164,7 @@ def test_claim_cards_carry_node_provenance(tmp_path: Path) -> None:
              "target_section": "contraintes", "reason": "la règle s'applique au cash-back"}],
          "domains": [], "challenge_statement": "Défi."},
         {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded
+        {"challenge_statement": "Défi."},
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)
@@ -182,6 +184,7 @@ def test_statement_flags_in_payload(tmp_path: Path) -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "30% des dossiers sont concernés."},
+        {"challenge_statement": "30% des dossiers sont concernés."},
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)
@@ -200,6 +203,7 @@ def test_enrichment_removal_endpoint_reruns_retrieval(tmp_path: Path) -> None:
         {"verdicts": []},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
+        {"challenge_statement": "Défi."},
         {"issues": []},  # fidelity judge
         {"candidate_key": "gap:contexte", "question": "Quel contexte ?"},
     ])
@@ -220,6 +224,7 @@ def test_node_restore_endpoint_moves_rejected_back_to_map(tmp_path: Path) -> Non
         {"verdicts": [{"node_id": "con-mini", "verdict": "reject", "reason": "hors sujet"}]},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
+        {"challenge_statement": "Défi."},
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)
@@ -248,6 +253,7 @@ def test_payload_map_uses_kept_node_ids_and_honors_exclusions(tmp_path: Path) ->
         {"verdicts": [{"node_id": "con-mini", "verdict": "reject", "reason": "hors sujet"}]},
         {"pulled_justifications": [], "claims": [], "domains": [],
          "challenge_statement": "Défi."},
+        {"challenge_statement": "Défi."},
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)

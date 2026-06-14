@@ -12,6 +12,7 @@ from core.runtime.llm_steps import (
     interpret_tie_answer,
     judge_statement_fidelity,
     pick_question,
+    render_grounded_challenge,
 )
 from core.runtime.pool import Candidate
 from core.runtime.triggers import WeakBriefTrigger
@@ -361,3 +362,44 @@ def test_judge_claim_grounding_defaults_missing_verdict_to_grounded():
     out = judge_claim_grounding(provider, claims, service)
     assert out[0] == {"grounded": True, "reason_fr": ""}  # missing verdict → default keep
     assert out[1]["grounded"] is False
+
+
+def test_render_grounded_challenge_uses_only_validated_claims_and_sources():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais du canal.")
+    claims = [{
+        "kind": "depends_on",
+        "node_ids": ["sys-x"],
+        "target_section": "dependances",
+        "reason": "le canal dépend du moteur central",
+    }]
+    provider = MockProvider([{"challenge_statement": "Défi fondé sur la dépendance."}])
+
+    statement = render_grounded_challenge(provider, claims, service, brief)
+
+    assert statement == "Défi fondé sur la dépendance."
+    user = provider.calls[0][1]
+    assert "le canal dépend du moteur central" in user
+    assert "Le canal dépend du moteur central." in user
+    assert "Réduire les délais du canal." in user
+
+
+def test_render_grounded_challenge_has_deterministic_fallback():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais.")
+    claims = [{"node_ids": ["sys-x"], "reason": "dépendance au moteur"}]
+
+    statement = render_grounded_challenge(None, claims, service, brief)
+
+    assert statement == "Défi de cadrage : dépendance au moteur."
+
+
+def test_render_grounded_challenge_falls_back_on_contract_failure():
+    service = _service_with_one_node("Le canal dépend du moteur central.")
+    brief = ProjectBrief(description="Réduire les délais.")
+    claims = [{"node_ids": ["sys-x"], "reason": "dépendance au moteur"}]
+    provider = MockProvider([{"bad": 1}, {"still": 2}])
+
+    statement = render_grounded_challenge(provider, claims, service, brief)
+
+    assert statement == "Défi de cadrage : dépendance au moteur."

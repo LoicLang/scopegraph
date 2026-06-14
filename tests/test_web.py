@@ -254,8 +254,10 @@ def test_payload_map_uses_kept_node_ids_and_honors_exclusions(tmp_path: Path) ->
 
 
 def test_annotations_marks_new_nodes_as_nouveau_after_challenge(tmp_path: Path) -> None:
-    # (c) A node in kept - previously_mapped gets provenance="nouveau" when challenge_done.
-    # We unit-test _annotations directly, injecting a hand-crafted session state.
+    # (c) Three invariants, all tested with specific node ids (sys-mini / con-mini):
+    #   1. kept - previously_mapped - restored → provenance="nouveau"
+    #   2. previously_mapped node → NOT marked "nouveau"
+    #   3. restored node → keeps "restauré par l'utilisateur", NOT relabeled "nouveau"
     from web.app import _annotations
     from core.runtime.session import ScopingSession
     from core.retrieval.index import VectorIndex
@@ -272,19 +274,36 @@ def test_annotations_marks_new_nodes_as_nouveau_after_challenge(tmp_path: Path) 
     result = session.last_result
     assert result is not None
 
-    # Simulate challenge_done with previously_mapped = empty (no prior nodes known)
-    session.challenge_done = True
-    session.previously_mapped = set()  # all current nodes are "new"
-
     kept = session.kept_node_ids()
     assert kept  # sanity: there are nodes on the map
+    assert "sys-mini" in kept and "con-mini" in kept
 
-    annotations = _annotations(session, result, kept)
+    session.challenge_done = True
 
-    # Every node currently on the map (kept) that was absent from previously_mapped
-    # must be marked provenance="nouveau"
-    new_nodes = kept - session.previously_mapped  # == kept (previously_mapped is empty)
-    for nid in new_nodes:
-        assert annotations[nid]["provenance"] == "nouveau", (
-            f"node {nid} should be annotated 'nouveau' but got {annotations.get(nid)}"
-        )
+    # --- Invariant 1 & 2: one previously-mapped node, one genuinely new node ---
+    session.previously_mapped = {"sys-mini"}
+    session.restored = set()
+    ann = _annotations(session, result, kept)
+    # con-mini: in kept, not in previously_mapped, not in restored → "nouveau"
+    assert ann["con-mini"].get("provenance") == "nouveau", (
+        f"con-mini should be 'nouveau' but got {ann.get('con-mini')}"
+    )
+    # sys-mini: in previously_mapped → must NOT be marked "nouveau"
+    assert ann.get("sys-mini", {}).get("provenance") != "nouveau", (
+        "sys-mini is previously_mapped and should not be 'nouveau'"
+    )
+
+    # --- Invariant 3: restored node must keep its provenance, not be relabeled ---
+    session.previously_mapped = set()
+    session.restored = {"con-mini"}
+    # Seed the restored annotation so _annotations can merge it
+    ann2 = _annotations(session, result, kept)
+    # con-mini is restored: the restored loop writes "restauré par l'utilisateur"
+    # and the new-node loop must NOT overwrite it
+    assert ann2["con-mini"].get("provenance") == "restauré par l'utilisateur", (
+        f"restored node should keep its provenance but got {ann2.get('con-mini')}"
+    )
+    # sys-mini: in kept, not previously_mapped, not restored → "nouveau"
+    assert ann2["sys-mini"].get("provenance") == "nouveau", (
+        f"sys-mini should be 'nouveau' but got {ann2.get('sys-mini')}"
+    )

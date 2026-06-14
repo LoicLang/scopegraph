@@ -59,7 +59,7 @@ def _annotations(
             **annotations.get(node_id, {}), "provenance": "restauré par l'utilisateur",
         }
     if session.challenge_done:
-        for node_id in kept_ids - session.previously_mapped:
+        for node_id in kept_ids - session.previously_mapped - session.restored:
             annotations[node_id] = {**annotations.get(node_id, {}), "provenance": "nouveau"}
     return annotations
 

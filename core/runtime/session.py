@@ -215,16 +215,12 @@ class ScopingSession:
         message: str | None = None
         can_ask = self.questions_asked < config.MAX_QUESTIONS
         if graph_candidates and can_ask:
-            # lever 2: a graph ambiguity is resolved before any EDB gap (the LLM only
-            # picks among graph candidates). P3: but interleave a discovery gap after
-            # MAX_CONSECUTIVE_GRAPH_QUESTIONS in a row, so the interview discovers the
-            # project instead of looping on "is domain X in scope?".
+            # The contextual picker may prefer an EDB gap over an incidental graph
+            # ambiguity. The runtime still bounds graph-question streaks deterministically.
             if self._consecutive_graph_questions >= MAX_CONSECUTIVE_GRAPH_QUESTIONS and gap_candidates:
                 question = self._ask(gap_candidates)
-                self._consecutive_graph_questions = 0
             else:
-                question = self._ask(graph_candidates)
-                self._consecutive_graph_questions += 1
+                question = self._ask(pool)
         elif (self.state is SessionState.MAPPING and not self.challenge_done
               and self._provider is not None):
             try:
@@ -239,7 +235,6 @@ class ScopingSession:
                 message = CHALLENGE_FAILED_MESSAGE
         elif pool and can_ask:  # EDB gaps only (graph exhausted)
             question = self._ask(pool)
-            self._consecutive_graph_questions = 0
         if question is None and message is None:
             # lever 1: never a silent turn — acknowledge and state what remains.
             # incomplete_sections() with no insufficient arg == missing_sections() (no-provider
@@ -279,7 +274,13 @@ class ScopingSession:
         self.precision_asked.add(section_id)
 
     def _ask(self, pool: list[Candidate]) -> str:
-        candidate, question = pick_question(self._provider, pool, self._service)
+        candidate, question = pick_question(
+            self._provider,
+            pool,
+            self._service,
+            brief=self.brief,
+            edb=self.edb,
+        )
         self.asked.add(candidate.key)
         # #2: re-asking a FILLED gap section is a precision follow-up — record it in
         # precision_asked, the bound that stops an insufficient section from re-entering
@@ -291,6 +292,10 @@ class ScopingSession:
         self.questions_asked += 1
         self.pending = candidate
         self.pending_question = question
+        if candidate.kind == "edb_gap":
+            self._consecutive_graph_questions = 0
+        else:
+            self._consecutive_graph_questions += 1
         return question
 
     def _run_challenge(self, result: RetrievalResult) -> tuple[str, list[Proposal]]:

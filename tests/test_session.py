@@ -173,9 +173,9 @@ def test_full_turn_with_provider_asks_woven_graph_question() -> None:
     assert "pivot:monetique" in session.asked
 
 
-def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
-    # The LLM tries to pick an EDB gap, but the runtime only offered graph candidates,
-    # so the out-of-pool pick is gated back to the graph candidate's template (lever 2).
+def test_contextual_picker_may_choose_edb_gap_before_graph_ambiguity() -> None:
+    # Both graph and EDB candidates are offered. The model may decline an incidental
+    # graph pivot by selecting a real EDB gap; the runtime still gates the selected key.
     provider = MockProvider([
         {"additions": []},
         {"entries": []},  # #5: the initial brief is mined (empty EDB → no sufficiency call)
@@ -186,8 +186,9 @@ def test_graph_ambiguity_is_offered_strictly_before_edb_gaps() -> None:
     index.build(service)
     session = ScopingSession(service, index, provider=provider)
     turn = session.handle_message("améliorer notre canal mobile")
-    assert turn.question is not None
-    assert not any(key.startswith("gap:") for key in session.asked)  # graph won
+    assert turn.question == "Question de section ?"
+    assert "gap:objectifs" in session.asked
+    assert session._consecutive_graph_questions == 0
 
 
 def test_no_silent_turn_when_cap_reached_and_gaps_remain() -> None:

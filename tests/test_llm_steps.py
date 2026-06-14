@@ -95,6 +95,55 @@ def test_pick_question_accepts_a_valid_choice():
     assert question.startswith("Quel succès")
 
 
+def test_pick_question_receives_project_context():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
+    brief = ProjectBrief(
+        description="hausse temporaire de plafond carte",
+        domains=["monetique"],
+        excluded_domains=["paiement-instantane"],
+    )
+    edb = EdbState.new()
+    edb.add_entry("contexte", EdbEntry(source="user", text="voyage à l'étranger"))
+    mock = MockProvider([{
+        "candidate_key": "gap:objectifs",
+        "question": "Quel gain mesurable visez-vous ?",
+    }])
+
+    candidate, _question = pick_question(
+        mock, [weak, gap], service=None, brief=brief, edb=edb
+    )
+
+    assert candidate.key == "gap:objectifs"
+    user = mock.calls[0][1]
+    assert "hausse temporaire de plafond carte" in user
+    assert "voyage à l'étranger" in user
+    assert "monetique" in user
+    assert "paiement-instantane" in user
+    assert "[weak]" in user and "[gap:objectifs]" in user
+
+
+def test_pick_question_skip_graph_selects_first_offered_gap():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
+    mock = MockProvider([{"candidate_key": "skip_graph", "question": ""}])
+
+    candidate, question = pick_question(mock, [weak, gap], service=None)
+
+    assert candidate.key == "gap:objectifs"
+    assert "succès" in question
+
+
+def test_pick_question_skip_graph_without_gap_uses_normal_fallback():
+    weak = Candidate(kind="weak", key="weak", trigger=WeakBriefTrigger())
+    mock = MockProvider([{"candidate_key": "skip_graph", "question": ""}])
+
+    candidate, question = pick_question(mock, [weak], service=None)
+
+    assert candidate.key == "weak"
+    assert "préciser" in question
+
+
 def test_interpret_pivot_uses_llm_verdict_beyond_yes_no():
     # "uniquement en magasin" carries an implicit confirm the token parser misses.
     provider = MockProvider([{"verdict": "confirm"}])

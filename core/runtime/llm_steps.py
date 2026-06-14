@@ -223,17 +223,44 @@ def _candidate_context(candidate: Candidate, service: GraphService | None) -> st
     return f"[{candidate.key}] ambiguïté graphe ({candidate.kind}) — gabarit : {_template_question(candidate, service)}"
 
 
+def _edb_context(edb: EdbState | None) -> str:
+    if edb is None:
+        return "(aucun contenu accepté)"
+    lines = [
+        f"- {section_id}: {' | '.join(entry.text for entry in entries)}"
+        for section_id, entries in edb.sections.items()
+        if entries
+    ]
+    return "\n".join(lines) or "(aucun contenu accepté)"
+
+
 def pick_question(
     provider: LLMProvider | None,
     pool: list[Candidate],
     service: GraphService | None,
+    *,
+    brief: ProjectBrief | None = None,
+    edb: EdbState | None = None,
 ) -> tuple[Candidate, str]:
     """LLM choice gated to the pool; templates are the permanent fallback (spec §4.4)."""
     assert pool, "pick_question requires a non-empty pool"
     fallback = (pool[0], _template_question(pool[0], service))
     if provider is None:
         return fallback
-    user = "\n".join(_candidate_context(c, service) for c in pool)
+    project = brief.text() if brief is not None else "(brief non fourni)"
+    confirmed = ", ".join(brief.domains) if brief and brief.domains else "(aucun)"
+    excluded = (
+        ", ".join(brief.excluded_domains)
+        if brief and brief.excluded_domains else "(aucun)"
+    )
+    candidates = "\n".join(_candidate_context(c, service) for c in pool)
+    user = (
+        f"Brief complet :\n{project}\n\n"
+        f"Domaines confirmés : {confirmed}\n"
+        f"Domaines exclus : {excluded}\n\n"
+        f"EDB acceptée :\n{_edb_context(edb)}\n\n"
+        f"Candidates autorisées :\n{candidates}"
+    )
     try:
         out = complete_with_retry(
             provider, load_prompt("pick_question"), user,
@@ -242,7 +269,14 @@ def pick_question(
     except JsonContractError:
         return fallback
     by_key = {c.key: c for c in pool}
-    candidate = by_key.get(str(out["candidate_key"]))
+    selected_key = str(out["candidate_key"])
+    if selected_key == "skip_graph":
+        gap = next((candidate for candidate in pool if candidate.kind == "edb_gap"), None)
+        return (
+            (gap, _template_question(gap, service))
+            if gap is not None else fallback
+        )
+    candidate = by_key.get(selected_key)
     question = str(out["question"]).strip()
     if candidate is None or not question:
         return fallback  # gated: an id outside the pool is an LLM error, not a crash

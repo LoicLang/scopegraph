@@ -4,6 +4,7 @@ Pure assembly — the runtime decides WHAT may be asked; the LLM (or the templat
 fallback) only picks within this pool and phrases the question.
 """
 
+from collections.abc import Collection
 from dataclasses import dataclass
 
 from core.dossier.template import EdbState
@@ -26,6 +27,7 @@ class Candidate:
     domain: str = ""  # pivot/tie context
     node_id: str = ""  # pivot context
     section_id: str = ""  # edb_gap context
+    followup: str = ""  # edb_gap precision follow-up (sufficiency judge), else ""
     trigger: Trigger | None = None  # the W2 trigger object for fallback rendering
 
 
@@ -36,7 +38,10 @@ def build_pool(
     edb: EdbState,
     *,
     profile: RetrievalProfile = DEFAULT_PROFILE,
+    insufficient: Collection[str] = frozenset(),
+    followups: dict[str, str] | None = None,
 ) -> list[Candidate]:
+    followups = followups or {}
     pool: list[Candidate] = []
     primary = detect_trigger(result, brief, asked, profile=profile)
     if isinstance(primary, WeakBriefTrigger):
@@ -49,8 +54,9 @@ def build_pool(
     for pivot in collect_pivot_candidates(result, brief, asked):
         pool.append(Candidate(kind="pivot", key=pivot.key, domain=pivot.domain,
                               node_id=pivot.node_id, trigger=pivot))
-    for section_id in edb.missing_sections():
+    for section_id in edb.incomplete_sections(insufficient):
         key = f"gap:{section_id}"
         if key not in asked:
-            pool.append(Candidate(kind="edb_gap", key=key, section_id=section_id))
+            pool.append(Candidate(kind="edb_gap", key=key, section_id=section_id,
+                                  followup=followups.get(section_id, "")))
     return pool

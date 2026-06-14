@@ -59,3 +59,14 @@ def test_asked_log_and_filled_sections_drop_candidates():
 
 def test_gap_question_uses_the_template_hint():
     assert "succès" in gap_question("objectifs")
+
+
+def test_build_pool_offers_insufficient_filled_section_with_followup():
+    edb = EdbState.new()
+    edb.add_entry("objectifs", EdbEntry(source="user", text="vague"))
+    result = _result()
+    brief = ProjectBrief(description="d")
+    pool = build_pool(result, brief, asked=set(), edb=edb,
+                      insufficient={"objectifs"}, followups={"objectifs": "Chiffrez ?"})
+    objectifs_candidates = [c for c in pool if c.section_id == "objectifs"]
+    assert objectifs_candidates and objectifs_candidates[0].followup == "Chiffrez ?"

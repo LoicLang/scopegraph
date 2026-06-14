@@ -138,6 +138,7 @@ def test_proposal_accept_endpoint_applies_to_edb(tmp_path: Path) -> None:
             {"kind": "constraint_applies", "node_ids": ["con-mini"],
              "target_section": "dependances", "reason": "la règle s'applique"}],
          "domains": [], "challenge_statement": "Défi."},
+        {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)
@@ -161,6 +162,7 @@ def test_claim_cards_carry_node_provenance(tmp_path: Path) -> None:
             {"kind": "constraint_applies", "node_ids": ["con-mini"],
              "target_section": "contraintes", "reason": "la règle s'applique au cash-back"}],
          "domains": [], "challenge_statement": "Défi."},
+        {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded
         {"issues": []},  # fidelity judge
     ])
     client = mini_client(tmp_path, provider)

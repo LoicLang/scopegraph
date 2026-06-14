@@ -36,6 +36,7 @@ from core.runtime.llm_steps import (
     extract_fields,
     interpret_pivot_answer,
     interpret_tie_answer,
+    judge_claim_grounding,
     judge_section_sufficiency,
     judge_statement_fidelity,
     pick_question,
@@ -313,8 +314,20 @@ class ScopingSession:
                                        "domains", "challenge_statement"))
         valid, rejected_claims = gate_claims(out2, map_ids, self._service)
         self.gate_rejections += [{"kind": "claim", **r} for r in rejected_claims]
+        # #3: clause-complete grounding — a claim whose conclusions exceed its cited
+        # provenance is auto-rejected (lands in the gate panel, not a card).
+        groundings = judge_claim_grounding(self._provider, valid, self._service)
+        grounded: list[dict] = []
+        for claim, verdict in zip(valid, groundings, strict=True):
+            if verdict["grounded"]:
+                grounded.append(claim)
+            else:
+                self.gate_rejections.append({
+                    **claim, "kind": "claim",
+                    "reason_rejected": verdict["reason_fr"] or "non couvert par les sources citées",
+                })
         cards: list[Proposal] = []
-        for claim in valid:
+        for claim in grounded:
             pid = self.ledger.add(Proposal.claim(
                 kind=claim["kind"], node_ids=claim["node_ids"],
                 target_section=claim["target_section"], reason=claim["reason"]))

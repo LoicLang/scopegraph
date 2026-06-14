@@ -359,7 +359,7 @@ def test_no_provider_session_behaves_like_w2_plus_gap_templates() -> None:
 
 def _challenge_provider() -> MockProvider:
     # queue: enrich · extract(opener mined, empty) · triage(keep all)
-    #      · claims(one valid claim + statement) · fidelity judge
+    #      · claims(one valid claim + statement) · grounding judge(grounded) · fidelity judge
     return MockProvider([
         {"additions": []},
         {"entries": []},  # #5: the opener is mined; empty EDB → no sufficiency call
@@ -368,6 +368,7 @@ def _challenge_provider() -> MockProvider:
             {"kind": "depends_on", "node_ids": ["sys-canal"],
              "target_section": "dependances", "reason": "le canal porte le besoin"}],
          "domains": [], "challenge_statement": "Défi : le gel bloque T3."},
+        {"verdicts": [{"index": 0, "grounded": True, "reason_fr": ""}]},  # #3: claim grounded → carded
         {"issues": []},  # statement faithfulness judge
     ])
 
@@ -556,3 +557,25 @@ def test_insufficient_section_is_re_asked_once_then_closed() -> None:
     # once re-asked, the section converges and is no longer offered.
     insufficient = {"objectifs"} - session.precision_asked
     assert "objectifs" not in session.edb.incomplete_sections(insufficient=insufficient)
+
+
+def test_ungrounded_claim_is_rejected_not_carded() -> None:
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    session = ScopingSession(service, index)  # template mode for setup
+    session.handle_message("améliorer le canal mobile")
+    result = session.last_result
+    session._provider = MockProvider([
+        {"verdicts": []},  # triage: all keep by default
+        {"pulled_justifications": [], "domains": [],
+         "claims": [{"kind": "constraint_applies", "node_ids": ["sys-canal"],
+                     "target_section": "contraintes", "reason": "impose aussi un audit KYC non cité"}],
+         "challenge_statement": "Énoncé fidèle aux sources."},
+        {"verdicts": [{"index": 0, "grounded": False, "reason_fr": "audit KYC absent des sources"}]},
+        {"issues": []},  # judge_statement_fidelity → clean
+    ])
+    _msg, cards = session._run_challenge(result)
+    assert all(c.kind != "claim" for c in cards)  # ungrounded claim is NOT carded
+    assert any(r.get("kind") == "claim" and "KYC" in r.get("reason_rejected", "")
+               for r in session.gate_rejections)

@@ -8,7 +8,66 @@ read_when:
 
 # Build order
 
-## Current state (2026-06-13, session 4 — reliability + measurement)
+## Current state (2026-06-14, session 5 — real-user audit)
+
+- **Fresh real-user test (2026-06-14, uncached Mistral, BNPL brief): mixed verdict.**
+  A PM role-play scoped a 3-installment e-commerce card payment pilot through the live
+  UI, then checked every proposal against its displayed provenance and the seed graph.
+  The challenge found genuinely useful hidden context (credit engine, KYC freshness and
+  stale-data risk, AI Act, SCA reuse, API standard, fraud-model drift), and the statement
+  fidelity judge correctly caught the model reversing the monetique freeze from
+  « à compter du 15 janvier 2026 » to « jusqu'au 15 janvier 2026 ».
+  - **Conversation relevance is still weak off-script:** 3 of 5 questions pursued
+    beneficiaries, transfers, or instant payments despite explicit exclusions; only the
+    final credit-engine pivot surfaced the decisive dependency.
+  - **Post-challenge map stabilization is stale:** volunteered EDB details re-run retrieval
+    and replace `last_result`, while `rejected_nodes` / `pulled` still describe the earlier
+    challenged result. The final 21-node map therefore reintroduced three beneficiary
+    features and the instant-payment gateway after they had been excluded. This is the
+    highest-priority reliability bug before the demo.
+  - **Grounding is syntactic, not clause-complete:** gate B verifies that at least one cited
+    node exists in the stabilized map, but accepted claims can name additional systems or
+    add conclusions unsupported by the cited provenance. Six of thirteen claim cards
+    needed manual rejection in this run.
+  - **EDB extraction needs canonical section guidance:** the model emitted `carta` three
+    times and `parties_prenantes` once; the runtime rejected them visibly, but stakeholders
+    were lost. The initial brief is not mined at all, so its October 2026 milestone had to
+    be repeated. Exclusions were also proposed as bare labels without « hors périmètre ».
+  - The EDB reached binary complete after eight substantive user turns and manual proposal
+    triage. The final dossier is useful but not trustworthy unattended: its stored challenge
+    still contains the known freeze-date contradiction even though the amber warning catches
+    it.
+
+- **All five audit defects FIXED (2026-06-14, branch `post-challenge-reliability-edb`),
+  TDD-hermetic, subagent-driven from `docs/plans/2026-06-14-post-challenge-reliability-edb.md`
+  (spec `docs/specs/2026-06-14-post-challenge-reliability-edb-design.md`). Full suite 266
+  passed, ruff clean.**
+  - **#1 live-but-coherent map**: `rejected_nodes` now accumulates across reruns (exclusions
+    are commitments); a new `ScopingSession.kept_node_ids()` re-applies excluded domains at
+    the payload layer (the retriever only filters expansion — anchors bypassed it, the leak);
+    `pulled` is recomputed each post-challenge round; genuinely new nodes are flagged
+    `« nouveau »` against a challenge-time snapshot (`previously_mapped`) instead of being
+    re-triaged. Map + recall metrics use `kept_node_ids()`.
+  - **#2 EDB sufficiency**: `EdbSectionSpec.sufficiency_fr` rubric per askable section +
+    `judge_section_sufficiency` LLM step → a filled-but-vague section re-surfaces with a
+    targeted follow-up (« +X % sur quoi, à quelle échéance ? »), bounded to one re-ask per
+    section (`precision_asked`) so the interview still converges. Insufficient sections bypass
+    the asked-gate so the re-ask actually fires (caught in review: the common case was silently
+    dropped). End-to-end convergence test added.
+  - **#3 clause-complete grounding**: `judge_claim_grounding` LLM step auto-rejects claims
+    whose conclusions exceed their cited provenance into the gate panel; all claim rejections
+    (gate + grounding) now tagged `kind="claim"` uniformly (fixed a latent metrics undercount).
+  - **#4 statement quarantine**: a flagged challenge statement (fidelity issues OR unsourced
+    numbers) is no longer auto-stored — it waits as a `kind="statement"` ledger card carrying
+    its alerts; accept writes it to the EDB (edited → `source="user"`), reject keeps it out.
+    Clean statements still auto-enter. UI surfaces the card's own amber fidelity strip.
+  - **#5 extraction**: the initial brief is now mined (jalons/objectifs in the opener),
+    extraction gets an id→title catalogue + synonym remap (`parties_prenantes`→`utilisateurs`)
+    and never writes to runtime/llm-owned sections (no `challenge`-section pollution),
+    exclusions phrased « hors périmètre : ».
+  - Every LLM step degrades to prior behavior with `provider=None`; the convergence invariant
+    and `MAX_QUESTIONS` cap are preserved. Not yet merged to `main`; real-LLM `conversation-eval`
+    scenario for these five is a recorded follow-up (Task 14, needs keys + go).
 
 - **Three follow-ups DONE (2026-06-13), all TDD-hermetic on `main`:**
   - **#1 LLM interprets pivot/tie answers** (`interpret_pivot_answer` / `interpret_tie_answer`):

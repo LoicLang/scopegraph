@@ -129,7 +129,7 @@ class ScopingSession:
         EDB fields separately, in _map_round — orthogonal to domain resolution)."""
         assert self.brief is not None
         question = self.pending_question or ""
-        self.brief.qa.append(QA(question=question, answer=answer))
+        include_question_in_query = True
         match candidate.trigger:
             case DomainTieTrigger(domain_a=domain_a, domain_b=domain_b):
                 domains = (domain_a, domain_b)
@@ -154,7 +154,13 @@ class ScopingSession:
                     self.brief.domains.append(domain)
                 elif verdict == "exclude" and domain not in self.brief.excluded_domains:
                     self.brief.excluded_domains.append(domain)
+                    include_question_in_query = False
                 # unclear → the QA text alone enriches the brief; never re-asked
+        self.brief.qa.append(QA(
+            question=question,
+            answer=answer,
+            include_question_in_query=include_question_in_query,
+        ))
 
     def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
         assert self.brief is not None

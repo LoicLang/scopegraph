@@ -59,6 +59,8 @@ def test_answer_non_excludes_domain_and_loop_converges() -> None:
     session = make_session(["canal"])
     session.handle_message("améliorer notre canal mobile")
     turn = session.handle_message("non")  # monetique out of scope
+    assert session.brief.qa[0].include_question_in_query is False
+    assert "monetique" not in session.brief.query_text()
     kept = set(turn.result.node_ids())
     assert "sys-moteur" not in kept
     assert "con-regle" not in kept

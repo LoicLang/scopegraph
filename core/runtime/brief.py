@@ -1,8 +1,8 @@
-"""ProjectBrief: the accumulated, structured semantic query (never raw chat history).
+"""ProjectBrief: the accumulated transcript and its positive semantic projection.
 
-Both question and answer text enter text(): the question carries the graph vocabulary
-(domain, node name), so a confirmed pivot becomes a direct semantic anchor next round
-— the loop converts hops into anchors (W2 spec §4).
+The full transcript remains available through text(). query_text() omits the question
+of an excluded graph pivot, so an irrelevant topic introduced by the assistant does not
+become positive retrieval evidence on the next round.
 """
 
 from pydantic import BaseModel, Field
@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 class QA(BaseModel):
     question: str
     answer: str
+    include_question_in_query: bool = True
 
 
 class ProjectBrief(BaseModel):
@@ -24,8 +25,17 @@ class ProjectBrief(BaseModel):
         parts = [self.description, *(f"{item.question} {item.answer}" for item in self.qa)]
         return "\n".join(parts)
 
+    def positive_text(self) -> str:
+        parts = [self.description]
+        for item in self.qa:
+            if item.include_question_in_query:
+                parts.append(f"{item.question} {item.answer}")
+            else:
+                parts.append(item.answer)
+        return "\n".join(parts)
+
     def query_text(self) -> str:
         """Retrieval query = the user's words + revocable AI vocabulary (W3 spec §4.1)."""
         if not self.enrichments:
-            return self.text()
-        return self.text() + "\n" + " ".join(self.enrichments)
+            return self.positive_text()
+        return self.positive_text() + "\n" + " ".join(self.enrichments)

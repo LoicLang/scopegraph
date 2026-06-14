@@ -225,3 +225,66 @@ def test_node_restore_endpoint_moves_rejected_back_to_map(tmp_path: Path) -> Non
     assert "con-mini" not in out["rejected_nodes"]
     map_ids = {node["id"] for node in out["map"]["nodes"]}
     assert "con-mini" in map_ids
+
+
+# -- Task 2: payload uses kept_node_ids(); new post-challenge nodes get "nouveau" ----
+
+
+def test_payload_map_uses_kept_node_ids_and_honors_exclusions(tmp_path: Path) -> None:
+    # After triage rejects con-mini, the map must not contain it — proving kept_node_ids()
+    # (which respects rejected_nodes) drives the only= set in _session_payload.
+    # queue: enrich · triage(reject con-mini) · claims(empty)
+    provider = MockProvider([
+        {"additions": []},
+        {"verdicts": [{"node_id": "con-mini", "verdict": "reject", "reason": "hors sujet"}]},
+        {"pulled_justifications": [], "claims": [], "domains": [],
+         "challenge_statement": "Défi."},
+        {"issues": []},  # fidelity judge
+    ])
+    client = mini_client(tmp_path, provider)
+    session_id = client.post("/api/session").json()["session_id"]
+    out = client.post(f"/api/session/{session_id}/message",
+                      json={"text": "refonte du canal"}).json()
+    # (a) payload renders
+    assert "map" in out and "nodes" in out["map"]
+    # (b) kept_node_ids() drives only= — rejected node must be absent
+    map_ids = {node["id"] for node in out["map"]["nodes"]}
+    assert "con-mini" not in map_ids
+    assert "sys-mini" in map_ids
+
+
+def test_annotations_marks_new_nodes_as_nouveau_after_challenge(tmp_path: Path) -> None:
+    # (c) A node in kept - previously_mapped gets provenance="nouveau" when challenge_done.
+    # We unit-test _annotations directly, injecting a hand-crafted session state.
+    from web.app import _annotations
+    from core.runtime.session import ScopingSession
+    from core.retrieval.index import VectorIndex
+    from core.graph.service import GraphService
+
+    graph_dir = make_mini_graph(tmp_path)
+    service = GraphService.from_dir(graph_dir)
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+
+    session = ScopingSession(service, index)
+    # Do one real turn so last_result is set
+    session.handle_message("refonte du canal")
+    result = session.last_result
+    assert result is not None
+
+    # Simulate challenge_done with previously_mapped = empty (no prior nodes known)
+    session.challenge_done = True
+    session.previously_mapped = set()  # all current nodes are "new"
+
+    kept = session.kept_node_ids()
+    assert kept  # sanity: there are nodes on the map
+
+    annotations = _annotations(session, result, kept)
+
+    # Every node currently on the map (kept) that was absent from previously_mapped
+    # must be marked provenance="nouveau"
+    new_nodes = kept - session.previously_mapped  # == kept (previously_mapped is empty)
+    for nid in new_nodes:
+        assert annotations[nid]["provenance"] == "nouveau", (
+            f"node {nid} should be annotated 'nouveau' but got {annotations.get(nid)}"
+        )

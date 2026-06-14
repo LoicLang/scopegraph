@@ -37,7 +37,9 @@ class DecisionIn(BaseModel):
     edited_text: str | None = None
 
 
-def _annotations(session: ScopingSession, result: RetrievalResult) -> dict[str, dict]:
+def _annotations(
+    session: ScopingSession, result: RetrievalResult, kept_ids: set[str]
+) -> dict[str, dict]:
     annotations: dict[str, dict] = {}
     for scored in result.anchors:
         annotations[scored.node_id] = {"role": "anchor", "score": round(scored.score, 3)}
@@ -56,6 +58,9 @@ def _annotations(session: ScopingSession, result: RetrievalResult) -> dict[str, 
         annotations[node_id] = {
             **annotations.get(node_id, {}), "provenance": "restauré par l'utilisateur",
         }
+    if session.challenge_done:
+        for node_id in kept_ids - session.previously_mapped:
+            annotations[node_id] = {**annotations.get(node_id, {}), "provenance": "nouveau"}
     return annotations
 
 
@@ -78,13 +83,11 @@ def _session_payload(
 ) -> dict:
     result = session.last_result
     assert result is not None, "payload requires at least one completed round"
-    kept = (set(result.node_ids()) | {p.node_id for p in session.pulled}) - set(
-        session.rejected_nodes
-    )
+    kept = session.kept_node_ids()
     payload = build_payload(
         service,
         only=kept,
-        annotations=_annotations(session, result),
+        annotations=_annotations(session, result, kept),
         highlight={s.node_id for s in result.anchors} - set(session.rejected_nodes),
     )
     return {

@@ -41,11 +41,11 @@ def test_node_document_uses_title_and_statement_for_decisions() -> None:
 
 def test_graph_fingerprint_changes_with_content(tmp_path: Path) -> None:
     (tmp_path / "nodes").mkdir()
-    (tmp_path / "nodes" / "a.yaml").write_text("id: a\n")
-    (tmp_path / "edges.yaml").write_text("edges: []\n")
+    (tmp_path / "nodes" / "a.yaml").write_text("id: a\n", encoding="utf-8")
+    (tmp_path / "edges.yaml").write_text("edges: []\n", encoding="utf-8")
     first = graph_fingerprint(tmp_path)
     assert first == graph_fingerprint(tmp_path)  # stable
-    (tmp_path / "nodes" / "a.yaml").write_text("id: a\nname: changed\n")
+    (tmp_path / "nodes" / "a.yaml").write_text("id: a\nname: changed\n", encoding="utf-8")
     assert graph_fingerprint(tmp_path) != first
 
 

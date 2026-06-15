@@ -8,12 +8,28 @@ gardés — justifie-les). Produis :
   destination dans l'EDB (target_section ∈ {"dependances", "contraintes", "risques",
   "perimetre", "jalons"}), avec une raison en français ;
 - "domains" : les domaines du projet (slugs existants uniquement) ;
-- "challenge_statement" : le défi argumenté en français — interpelle l'utilisateur
-  sur les contraintes, recouvrements et risques que la carte révèle.
+- "challenge_statement" : le défi argumenté en français. Il ÉNONCE un état et un
+  constat de façon DÉCLARATIVE — ce que le projet est réellement, ce qu'il hérite,
+  les contraintes/recouvrements/risques que la carte révèle. La phase de cadrage est
+  TERMINÉE : ne pose AUCUNE question ouverte à l'utilisateur (pas de « avez-vous
+  prévu… ? », « comment comptez-vous… ? »). Un point incertain se formule comme une
+  assertion conditionnelle (« si le projet manipule des PAN, il entre dans le
+  périmètre PCI DSS ») ou un point à confirmer en impératif (« ce point devra être
+  validé avec l'équipe monétique »), jamais comme une question. Affirme, n'interroge pas.
 Chaque affirmation doit s'appuyer sur des nœuds cités. Les node_ids doivent être
 des identifiants EXACTS copiés de la carte ci-dessus — jamais inventés ; pour
 signaler un risque ou un recouvrement nouveau, cite les nœuds existants qui le
-motivent et exprime le reste dans la raison. Fidélité aux faits : dans chaque
+motivent et exprime le reste dans la raison.
+CONDITIONNALITÉ — avant d'affirmer qu'une contrainte ou une dépendance S'APPLIQUE,
+vérifie que le projet remplit RÉELLEMENT la condition énoncée par le nœud. Une règle
+visant « tout nouveau flux de paiement » ne s'applique que si le projet crée un
+nouveau flux de paiement ; un programme de fidélité/cashback qui observe des
+paiements carte EXISTANTS n'en crée pas. Une contrainte au périmètre défini (ex. PCI
+DSS limité aux composants manipulant PAN/CVV/piste) ne s'étend pas au-delà de ce
+périmètre. Si le lien n'est que POSSIBLE ou conditionnel, ne fais PAS de claim ferme :
+formule-le dans le défi comme une assertion conditionnelle DÉCLARATIVE (« si le
+projet touche X, alors Y s'appliquera ») — jamais comme une question. Au moindre
+doute, sous-affirme plutôt que de sur-affirmer. Fidélité aux faits : dans chaque
 raison ET dans le défi, reprends les faits, dates et chiffres EXACTEMENT tels
 qu'ils figurent dans le texte des nœuds cités (ne transforme pas « à compter du
 15 janvier 2026 » en « jusqu'en 2026 ») ; n'affirme rien au-delà de ce que les

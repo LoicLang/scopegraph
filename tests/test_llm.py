@@ -202,13 +202,35 @@ def test_factory_resolves_gemini(monkeypatch):
     assert type(make_provider()).__name__ == "GeminiProvider"
 
 
+def test_factory_resolves_gemini_with_model_override(monkeypatch):
+    import sys
+    import types
+
+    fake_genai = types.ModuleType("google.genai")
+    fake_genai.Client = lambda api_key: types.SimpleNamespace(models=None)
+    fake_google = types.ModuleType("google")
+    fake_google.genai = fake_genai
+    monkeypatch.setitem(sys.modules, "google", fake_google)
+    monkeypatch.setitem(sys.modules, "google.genai", fake_genai)
+
+    from core.llm.factory import make_provider
+
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "Gemini")  # case-insensitive
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3.5-flash-custom")
+    provider = make_provider()
+    assert type(provider).__name__ == "GeminiProvider"
+    assert provider.model == "gemini-3.5-flash-custom"
+
+
 def test_load_dotenv_fills_missing_vars_without_overriding(monkeypatch, tmp_path):
     from core.llm.factory import load_dotenv
 
     env_file = tmp_path / ".env"
     env_file.write_text(
         "# clés locales\nMISTRAL_API_KEY=from-file\n"
-        'DEEPSEEK_API_KEY="quoted"\n\nexport EXTRA=ok\nmalformed line\n'
+        'DEEPSEEK_API_KEY="quoted"\n\nexport EXTRA=ok\nmalformed line\n',
+        encoding="utf-8",
     )
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)

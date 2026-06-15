@@ -88,17 +88,20 @@ def make_mini_graph(tmp_path: Path) -> Path:
     """One system + one constraint, same domain → no graph trigger, challenge on turn 1."""
     graph = tmp_path / "graph"
     (graph / "nodes").mkdir(parents=True)
-    (graph / "domains.yaml").write_text("domains:\n  - banque-en-ligne\n")
+    (graph / "domains.yaml").write_text("domains:\n  - banque-en-ligne\n", encoding="utf-8")
     (graph / "nodes" / "sys-mini.yaml").write_text(
         "type: system\nid: sys-mini\nname: Canal mini\n"
-        "description: Canal client minimal.\nowner_team: T\ndomains: [banque-en-ligne]\n"
+        "description: Canal client minimal.\nowner_team: T\ndomains: [banque-en-ligne]\n",
+        encoding="utf-8",
     )
     (graph / "nodes" / "con-mini.yaml").write_text(
         "type: constraint\nid: con-mini\ntitle: Règle mini\nstatement: Contrainte locale.\n"
-        "source: PCI\nseverity: high\ndomains: [banque-en-ligne]\n"
+        "source: PCI\nseverity: high\ndomains: [banque-en-ligne]\n",
+        encoding="utf-8",
     )
     (graph / "edges.yaml").write_text(
-        "edges:\n  - {source_id: con-mini, target_id: sys-mini, type: CONSTRAINS}\n"
+        "edges:\n  - {source_id: con-mini, target_id: sys-mini, type: CONSTRAINS}\n",
+        encoding="utf-8",
     )
     return graph
 

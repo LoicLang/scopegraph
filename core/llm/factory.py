@@ -48,5 +48,7 @@ def make_provider() -> LLMProvider | None:
     if name == "gemini":
         from core.llm.gemini import GeminiProvider
 
-        return GeminiProvider(api_key=os.environ["GEMINI_API_KEY"])
+        model = os.environ.get("GEMINI_MODEL")
+        kwargs = {"model": model} if model else {}
+        return GeminiProvider(api_key=os.environ["GEMINI_API_KEY"], **kwargs)
     raise ValueError(f"unknown SCOPEGRAPH_LLM_PROVIDER: {name}")

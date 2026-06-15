@@ -82,8 +82,16 @@ def _session_payload(
     cards_filter: list | None = None,
 ) -> dict:
     result = session.last_result
-    assert result is not None, "payload requires at least one completed round"
-    kept = session.kept_node_ids()
+    if result is None:  # conversational « entrée » phase: subject not stated yet, no map
+        return {
+            "state": session.state, "question": session.pending_question, "message": message,
+            "map": None, "brief": session.brief.model_dump() if session.brief else None,
+            "edb": session.edb.to_dict(), "missing_sections": session.edb.missing_sections(),
+            "cards": [], "rejected_nodes": session.rejected_nodes, "gate_rejections": [],
+            "statement_flags": [], "statement_issues": [], "pulled": [], "proposed_domains": [],
+            "close_reason": session.close_reason,
+        }
+    kept = session.kept_node_ids()  # audit-fix #1: canonical, honors excluded domains
     payload = build_payload(
         service,
         only=kept,
@@ -111,6 +119,7 @@ def _session_payload(
             for p in session.pulled
         ],
         "proposed_domains": session.proposed_domains,
+        "close_reason": session.close_reason,
     }
 
 
@@ -144,6 +153,11 @@ def create_app(
     provider = _maybe_cache(provider)  # SCOPEGRAPH_CACHE_DIR → instant replays (dev/demo)
 
     app = FastAPI(title="scopegraph")
+    # Opt-in conversational scoping (LLM talks + proposes gated actions). Off by default
+    # so the hermetic test suite keeps the deterministic path; the server enables it.
+    conversational = os.environ.get("SCOPEGRAPH_CONVERSATIONAL", "0").lower() in (
+        "1", "true", "yes", "on",
+    )
     sessions: dict[str, ScopingSession] = {}
 
     def _get_session(session_id: str) -> ScopingSession:
@@ -155,7 +169,9 @@ def create_app(
     @app.post("/api/session")
     def create_session() -> dict:
         session_id = uuid.uuid4().hex
-        sessions[session_id] = ScopingSession(service, index, provider=provider)
+        sessions[session_id] = ScopingSession(
+            service, index, provider=provider, conversational=conversational
+        )
         return {"session_id": session_id, "state": sessions[session_id].state}
 
     @app.post("/api/session/{session_id}/message")

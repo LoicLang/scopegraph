@@ -89,13 +89,15 @@ def _edge_lines(service: GraphService, ids: set[str]) -> list[str]:
     ]
 
 
-def render_subgraph(result, service: GraphService) -> str:
+def render_subgraph(result, service: GraphService, exclude: set[str] = frozenset()) -> str:
     """Plain-text French rendering of the raw retrieved map (triage input).
 
-    Dumb and complete — the LLM needs the descriptions to judge. Shared with
-    the challenge bench (scripts/challenge-eval)."""
-    ids = set(result.node_ids())
-    lines = [_node_line(service.get_node(s.node_id)) for s in [*result.anchors, *result.expanded]]
+    Dumb and complete — the LLM needs the descriptions to judge. `exclude` drops nodes
+    already pruned (e.g. during the conversational interview) so the triage never re-sees
+    them. Shared with the challenge bench (scripts/challenge-eval)."""
+    scored = [s for s in [*result.anchors, *result.expanded] if s.node_id not in exclude]
+    ids = {s.node_id for s in scored}
+    lines = [_node_line(service.get_node(s.node_id)) for s in scored]
     return "\n".join(lines + _edge_lines(service, ids))
 
 

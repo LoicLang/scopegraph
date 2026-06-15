@@ -366,7 +366,10 @@ def pick_question(
     except JsonContractError:
         return fallback
     by_key = {c.key: c for c in pool}
-    selected_key = str(out["candidate_key"])
+    # The prompt shows each key as [key]; some models (e.g. Gemini) echo the brackets.
+    # Strip them so the choice still matches — else the LLM question is dropped (robotic
+    # regression: the gated miss silently falls back to the raw template).
+    selected_key = str(out["candidate_key"]).strip().strip("[]").strip()
     if selected_key == "skip_graph":
         gap = next((candidate for candidate in pool if candidate.kind == "edb_gap"), None)
         return (

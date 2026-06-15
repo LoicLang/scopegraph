@@ -19,6 +19,7 @@ from core.retrieval.config import DEFAULT_PROFILE, RetrievalProfile
 from core.retrieval.index import VectorIndex
 from core.retrieval.retriever import RetrievalResult, retrieve
 from core.runtime.brief import QA, ProjectBrief
+from core.runtime.converse import apply_scope_actions, converse_and_scope
 from core.runtime.challenge import (
     PulledNode,
     gate_claims,
@@ -50,6 +51,16 @@ from core.runtime.triggers import DomainTieTrigger, PivotTrigger
 CHALLENGE_FAILED_MESSAGE = "Le challenge a échoué (modèle) — réessayez."
 EDB_COMPLETE_MESSAGE = "EDB complet — prêt pour la rédaction (W4)"
 MAX_CONSECUTIVE_GRAPH_QUESTIONS = 2  # P3: interleave a discovery gap after this many pivots
+MAX_SCOPE_TURNS = 7  # conversational damping: absorbing cap — force the challenge past this
+
+
+def _empty_result() -> "RetrievalResult":
+    return RetrievalResult(anchors=[], expanded=[], domain_scores={}, derived_domains=[])
+
+
+def _join(*parts: str | None) -> str | None:
+    kept = [p for p in parts if p]
+    return "\n\n".join(kept) if kept else None
 
 
 class SessionState(StrEnum):
@@ -79,11 +90,13 @@ class ScopingSession:
         index: VectorIndex,
         profile: RetrievalProfile = DEFAULT_PROFILE,
         provider: LLMProvider | None = None,
+        conversational: bool = False,
     ) -> None:
         self._service = service
         self._index = index
         self._profile = profile
         self._provider = provider
+        self._conversational = conversational  # opt-in: LLM-driven scoping conversation
         self.state = SessionState.DESCRIBING
         self.brief: ProjectBrief | None = None
         self.asked: set[str] = set()
@@ -105,28 +118,165 @@ class ScopingSession:
         self.delta_triaged: set[str] = set()  # post-challenge retrieval nodes already triaged
         self.precision_asked: set[str] = set()  # sections already re-asked for precision (convergence)
         self._consecutive_graph_questions = 0  # P3: interleave discovery gaps
+        self.universe: set[str] = set()  # conversational: frozen recall-first candidate set
+        self._scope_turns = 0  # conversational damping: total cadrage turns (absorbing cap)
+        self.close_reason: str | None = None  # "perimetre_stable" | "damping" — why scoping ended
+        self.asked_questions: list[str] = []  # conversational: questions already posed (anti-repeat)
 
     def handle_message(self, text: str) -> Turn:
         text = text.strip()
         if not text:
             raise ValueError("empty message")
-        free_text: str | None = None
+        if self._conversational and self._provider is not None:
+            turn = self._conversational_turn(text)
+            if turn is not None:
+                return turn  # None → LLM step failed; fall through to the deterministic path
+        # Deterministic interview (default, and the conversational fallback).
         if self.state is SessionState.DESCRIBING:
-            self.brief = ProjectBrief(description=text)
+            if self.brief is None:
+                self.brief = ProjectBrief(description=text)
             self.state = SessionState.MAPPING
-            free_text = text  # #5: mine the initial brief too (jalons/objectifs in the opener)
-        elif self.state in (SessionState.MAPPING, SessionState.SCOPING):
-            if self.pending is not None:
-                self._apply_answer(self.pending, text)  # domain effects (pivot/tie)
-                self.pending = None
-                self.pending_question = None
-                free_text = text  # P1: always mine the prose — extraction is orthogonal
-            else:  # detail volunteered after stability: enrich and re-run
-                self.brief.qa.append(QA(question="(précision)", answer=text))
-                free_text = text
-        else:
+            # #5: mine the initial brief too (jalons/objectifs in the opener).
+            return self._map_round(text)
+        if self.state not in (SessionState.MAPPING, SessionState.SCOPING):
             raise NotImplementedError(f"state {self.state} arrives with W4")
+        free_text: str | None = None
+        if self.pending is not None:
+            self._apply_answer(self.pending, text)  # domain effects (pivot/tie)
+            self.pending = None
+            self.pending_question = None
+            free_text = text  # P1: always mine the prose — extraction is orthogonal
+        else:  # detail volunteered after stability: enrich and re-run
+            self.brief.qa.append(QA(question="(précision)", answer=text))
+            free_text = text
         return self._map_round(free_text)
+
+    # --- Conversational interview (opt-in): readiness gate → frozen scoping → challenge ---
+
+    def _conversational_turn(self, text: str) -> Turn | None:
+        """One conversational turn. None → the LLM step failed (caller falls back)."""
+        if self.state is SessionState.DESCRIBING:
+            # Phase « entrée »: no recall yet — wait until the subject is actually stated.
+            if self.brief is None:
+                self.brief = ProjectBrief(description=text)
+            elif text != self.brief.description:
+                self.brief.qa.append(QA(question="(sujet)", answer=text))
+            converse = converse_and_scope(
+                self._provider, phase="entrée", brief_text=self.brief.text(),
+                map_text="", known_domains=self._service.known_domains(),
+                pending_question=None, user_message=text,
+            )
+            if converse is None:
+                return None
+            if not converse.ready_to_map:  # still gathering the subject — keep talking
+                return Turn(state=self.state, question=None, result=_empty_result(),
+                            brief=self.brief, message=converse.message)
+            # Subject stated → the ONE recall, then FREEZE the candidate universe (Piste A).
+            result = retrieve(
+                self.brief.query_text(), self._service, self._index,
+                domains=self.brief.domains, excluded_domains=self.brief.excluded_domains,
+                profile=self._profile,
+            )
+            self.universe = set(result.node_ids())
+            self.last_result = result
+            self.state = SessionState.MAPPING
+            # The first scope turn greets and asks Q1 on its own — don't also carry the
+            # entrée acknowledgement, which would double the « super projet ! » intro.
+            return self._scope_turn(user_message=None)
+        return self._scope_turn(user_message=text)
+
+    def _scope_turn(self, *, user_message: str | None, lead: str | None = None) -> Turn | None:
+        """Scope the FROZEN universe: prune (monotone), own the question, or close out."""
+        converse = converse_and_scope(
+            self._provider, phase="cadrage", brief_text=self.brief.text(),
+            map_text=self._render_current_map(), known_domains=self._service.known_domains(),
+            pending_question=self.pending_question, user_message=user_message or "",
+            asked_questions=tuple(self.asked_questions),
+        )
+        self._scope_turns += 1
+        if converse is None:
+            # LLM hiccup mid-scoping: close out on the FROZEN map rather than fall back to
+            # the deterministic re-retrieve (which would unfreeze and reopen oscillation).
+            if self.universe and not self.challenge_done:
+                return self._challenge_turn(lead=None, cards=[])
+            return None
+        self.gate_rejections += apply_scope_actions(
+            converse.actions, brief=self.brief, universe=self.universe,
+            service=self._service, rejected_nodes=self.rejected_nodes,
+        )
+        # Damping (Piste C) — evaluated BEFORE the help branch, so a stuck interview (the
+        # user keeps not-answering → the LLM keeps re-asking) still closes out instead of
+        # looping. Close on: LLM says stable · question cap · absorbing turn cap.
+        forced = (self.questions_asked >= config.MAX_QUESTIONS
+                  or self._scope_turns > MAX_SCOPE_TURNS)
+        if (converse.scope_stable or forced) and not self.challenge_done:
+            if user_message is not None and self.pending_question:
+                self.brief.qa.append(QA(question=self.pending_question, answer=user_message))
+            self.close_reason = "perimetre_stable" if converse.scope_stable else "damping"
+            # On a clean semantic close keep the short transition; on a forced (damping)
+            # close drop it — the challenge statement stands on its own, no verbose preamble.
+            close_lead = converse.message if converse.scope_stable else None
+            return self._challenge_turn(lead=_join(lead, close_lead), cards=[])
+        # Help: keep the same question, don't progress (only while a question is pending).
+        if user_message is not None and self.pending_question and not converse.advance:
+            return self._frozen_turn(message=converse.message, question=self.pending_question)
+        # Record the answer + mine the prose for EDB fields.
+        cards: list[Proposal] = []
+        if user_message is not None:
+            if self.pending_question:
+                self.brief.qa.append(QA(question=self.pending_question, answer=user_message))
+            entries, dropped = extract_fields(self._provider, user_message, self.edb)
+            for entry in entries:
+                pid = self.ledger.add(Proposal.field(
+                    section_id=entry["section_id"], text=entry["text"],
+                    node_refs=entry["node_refs"]))
+                cards.append(self.ledger.get(pid))
+            self.gate_rejections += [{"kind": "field", "section_id": d} for d in dropped]
+        # Otherwise the LLM owns the next question (Piste B — no second question layer).
+        self.pending = None
+        self.pending_question = converse.question or None
+        if self.pending_question:
+            self.questions_asked += 1
+            self.asked_questions.append(self.pending_question)  # anti-repeat memory
+        return self._frozen_turn(message=_join(lead, converse.message),
+                                 question=self.pending_question, cards=cards)
+
+    def _challenge_turn(self, *, lead: str | None, cards: list[Proposal]) -> Turn:
+        self.pending = None
+        self.pending_question = None  # clear it so the UI doesn't show a dead question
+        self.state = SessionState.CHALLENGING
+        try:
+            statement, claim_cards = self._run_challenge(self.last_result)
+        except JsonContractError:  # the challenge floor failed (model) — stay scopable
+            self.state = SessionState.MAPPING
+            return self._frozen_turn(message=_join(lead, CHALLENGE_FAILED_MESSAGE), cards=cards)
+        self.state = SessionState.SCOPING
+        return self._frozen_turn(message=_join(lead, statement), cards=cards + claim_cards)
+
+    def _frozen_turn(
+        self, *, message: str | None, question: str | None = None,
+        cards: list[Proposal] | None = None,
+    ) -> Turn:
+        return Turn(state=self.state, question=question, result=self.last_result or _empty_result(),
+                    brief=self.brief, message=message, cards=cards or [])
+
+    def _current_map_ids(self) -> set[str]:
+        if self.universe:  # conversational: the frozen universe minus what's been pruned
+            return set(self.universe) - set(self.rejected_nodes)
+        if self.last_result is None:
+            return set()
+        return (set(self.last_result.node_ids()) | {p.node_id for p in self.pulled}) - set(
+            self.rejected_nodes
+        )
+
+    def _render_current_map(self) -> str:
+        """node_id · label · domains for every node on the current map (LLM context)."""
+        lines = []
+        for node_id in sorted(self._current_map_ids()):
+            node = self._service.get_node(node_id)
+            label = getattr(node, "name", "") or getattr(node, "title", "")
+            lines.append(f"{node_id} · {label} · {', '.join(node.domains)}")
+        return "\n".join(lines)
 
     def _apply_answer(self, candidate: Candidate, answer: str) -> None:
         """Records the QA and applies pivot/tie domain effects (the prose is mined for
@@ -166,7 +316,9 @@ class ScopingSession:
             include_question_in_query=include_question_in_query,
         ))
 
-    def _map_round(self, free_text: str | None = None, *, enrich: bool = True) -> Turn:
+    def _map_round(
+        self, free_text: str | None = None, *, enrich: bool = True, lead_in: str | None = None
+    ) -> Turn:
         assert self.brief is not None
         just_challenged = False
         if free_text is not None and _has_explicit_exclusion(free_text):
@@ -258,6 +410,8 @@ class ScopingSession:
                 "section(s) à compléter, décrivez-les directement et je les classerai."
                 if missing else EDB_COMPLETE_MESSAGE
             )
+        if lead_in:  # conversational acknowledgement shown above the question/message
+            message = lead_in if not message else f"{lead_in}\n\n{message}"
         self.last_result = result
         if just_challenged:
             self.previously_mapped = self.kept_node_ids()
@@ -353,7 +507,8 @@ class ScopingSession:
 
     def _run_challenge(self, result: RetrievalResult) -> tuple[str, list[Proposal]]:
         """Two-message challenge (spec §5). Returns (statement, new claim cards)."""
-        submitted = {s.node_id for s in [*result.anchors, *result.expanded]}
+        # honor any nodes already pruned during the conversational interview
+        submitted = {s.node_id for s in [*result.anchors, *result.expanded]} - set(self.rejected_nodes)
         # The brief MUST ride along: the model judges relevance TO this project —
         # without it, it hallucinates a project from the map (caught by the bench).
         # Today's date rides along too so deadline phrasing stays current (P2: a run
@@ -362,13 +517,16 @@ class ScopingSession:
         brief_header = (f"Date du jour (à n'utiliser que pour situer une échéance relative "
                         f"comme « avant la fin de l'année », jamais pour inventer une date) : "
                         f"{today}.\nBrief du projet :\n{self.brief.text()}\n\n")
-        triage_user = brief_header + "Carte brute :\n" + render_subgraph(result, self._service)
+        triage_user = (brief_header + "Carte brute :\n"
+                       + render_subgraph(result, self._service, exclude=set(self.rejected_nodes)))
         out1 = complete_with_retry(self._provider, load_prompt("challenge_triage"),
                                    triage_user, required_keys=("verdicts",))
         keeps, rejects, dropped = gate_triage(out1["verdicts"], submitted)
         self.rejected_nodes.update(rejects)  # accumulate — exclusions persist across reruns
         self.gate_rejections += [{"kind": "triage", "node_id": d} for d in dropped]
-        self.pulled = pull_governance(self._service, set(keeps), set(rejects))
+        # Pull governance honoring ALL rejections (triage + the conversational prunes), so a
+        # node the user explicitly excluded isn't dragged back in via a CONSTRAINS edge.
+        self.pulled = pull_governance(self._service, set(keeps), set(self.rejected_nodes))
         map_ids = set(keeps) | {p.node_id for p in self.pulled}
         claims_user = (brief_header + "Carte stabilisée :\n"
                        + render_stabilized(keeps, self.pulled, self._service))

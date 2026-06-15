@@ -147,13 +147,67 @@ def test_factory_resolves_grok(monkeypatch):
     assert type(make_provider()).__name__ == "GrokProvider"
 
 
+def test_gemini_calls_openai_compatible_endpoint(monkeypatch):
+    import sys
+    import types
+
+    captured: dict = {}
+
+    class _Completions:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            msg = types.SimpleNamespace(content='{"ok": true}')
+            return types.SimpleNamespace(choices=[types.SimpleNamespace(message=msg)])
+
+    class _Client:
+        def __init__(self, api_key, base_url):
+            captured["base_url"] = base_url
+            self.chat = types.SimpleNamespace(completions=_Completions())
+
+    fake = types.ModuleType("openai")
+    fake.OpenAI = _Client
+    monkeypatch.setitem(sys.modules, "openai", fake)
+
+    from core.llm.gemini import GeminiProvider
+
+    out = GeminiProvider(api_key="k").complete_json("sys", "user")
+    assert out == {"ok": True}
+    assert captured["base_url"] == "https://generativelanguage.googleapis.com/v1beta/openai/"
+    assert captured["model"] == "gemini-3.5-flash"
+    assert captured["temperature"] == 0
+    assert captured["response_format"] == {"type": "json_object"}
+
+
+def test_factory_resolves_gemini_with_model_override(monkeypatch):
+    import sys
+    import types
+
+    captured: dict = {}
+
+    fake = types.ModuleType("openai")
+    fake.OpenAI = lambda api_key, base_url: captured.update(
+        api_key=api_key, base_url=base_url
+    ) or types.SimpleNamespace(chat=None)
+    monkeypatch.setitem(sys.modules, "openai", fake)
+
+    from core.llm.factory import make_provider
+
+    monkeypatch.setenv("SCOPEGRAPH_LLM_PROVIDER", "Gemini")  # case-insensitive
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-3.5-flash-custom")
+    provider = make_provider()
+    assert type(provider).__name__ == "GeminiProvider"
+    assert provider.model == "gemini-3.5-flash-custom"
+
+
 def test_load_dotenv_fills_missing_vars_without_overriding(monkeypatch, tmp_path):
     from core.llm.factory import load_dotenv
 
     env_file = tmp_path / ".env"
     env_file.write_text(
         "# clés locales\nMISTRAL_API_KEY=from-file\n"
-        'DEEPSEEK_API_KEY="quoted"\n\nexport EXTRA=ok\nmalformed line\n'
+        'DEEPSEEK_API_KEY="quoted"\n\nexport EXTRA=ok\nmalformed line\n',
+        encoding="utf-8",
     )
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)

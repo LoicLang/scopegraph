@@ -156,7 +156,10 @@ def pick_question(
     except JsonContractError:
         return fallback
     by_key = {c.key: c for c in pool}
-    candidate = by_key.get(str(out["candidate_key"]))
+    # The prompt shows each key as [key]; some models (e.g. Gemini) echo the brackets.
+    # Strip them so the choice still matches — else the LLM question is dropped (robotic
+    # regression: the gated miss silently falls back to the raw template).
+    candidate = by_key.get(str(out["candidate_key"]).strip().strip("[]").strip())
     question = str(out["question"]).strip()
     if candidate is None or not question:
         return fallback  # gated: an id outside the pool is an LLM error, not a crash

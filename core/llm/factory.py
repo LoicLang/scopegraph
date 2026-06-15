@@ -45,4 +45,10 @@ def make_provider() -> LLMProvider | None:
         from core.llm.grok import GrokProvider
 
         return GrokProvider(api_key=os.environ["GROK_API_KEY"])
+    if name == "gemini":
+        from core.llm.gemini import GeminiProvider
+
+        model = os.environ.get("GEMINI_MODEL")
+        kwargs = {"model": model} if model else {}
+        return GeminiProvider(api_key=os.environ["GEMINI_API_KEY"], **kwargs)
     raise ValueError(f"unknown SCOPEGRAPH_LLM_PROVIDER: {name}")

@@ -157,3 +157,14 @@ def test_pick_question_none_provider_uses_templates():
     candidate, question = pick_question(None, [gap], service=None)
     assert candidate.key == "gap:objectifs"
     assert "succès" in question
+
+
+def test_pick_question_accepts_bracketed_key():
+    """The prompt shows keys as [key]; some models (e.g. Gemini) echo the brackets.
+    The returned candidate_key must still match — else the LLM question is silently
+    dropped for the raw template (the 'robotic' regression)."""
+    gap = Candidate(kind="edb_gap", key="gap:objectifs", section_id="objectifs")
+    mock = MockProvider([{"candidate_key": "[gap:objectifs]", "question": "Question naturelle ?"}])
+    candidate, question = pick_question(mock, [gap], service=None)
+    assert candidate.section_id == "objectifs"
+    assert question == "Question naturelle ?"  # the LLM phrasing, NOT the template

@@ -7,87 +7,136 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js"></script>
 <style>
+  /* — Sober / modern theme: neutral structure, one accent, semantic state colours — */
+  :root {
+    --bg: #f7f8fa; --surface: #ffffff;
+    --ink: #19222e; --ink-soft: #5a6573; --ink-faint: #9aa4b0;
+    --line: #ebeef2; --line-2: #dde2e8;
+    --accent: #2f6bed; --accent-soft: #eaf0fe;
+    --ok: #138a5e; --ok-soft: #e7f5ee;
+    --warn: #9a6a12; --warn-soft: #fbf3e2; --warn-line: #ecd7a6;
+    --danger: #c4554a;
+    --claim: #a8443a; --claim-soft: #fcecea;
+    --user: #138a5e; --user-soft: #e7f5ee;
+    --llm: #6a4bb8; --llm-soft: #efeafb;
+    --radius: 10px; --radius-sm: 8px;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: system-ui, sans-serif; background: #f6f7f9; color: #1c2733; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+         font-size: 13.5px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
   main { display: flex; height: 100vh; }
-  /* keep each pane inside the viewport — without this a long challenge statement
-     stretches a pane and the map blows up to content height */
   main > section { min-height: 0; min-width: 0; }
-  /* draggable splitters: chat and edb get a resizable width (CSS var), map flexes */
-  .gutter { flex: 0 0 6px; background: #e3e8ee; cursor: col-resize; }
-  .gutter:hover { background: #b9c2cc; }
-  #chat { flex: 0 0 var(--chat-w, 380px); display: flex; flex-direction: column;
-          border-right: 1px solid #d8dee5; background: #fff; }
-  #chat h1 { font-size: 1.1rem; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d8dee5; }
-  #messages { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
-  .bot, .user { max-width: 85%; padding: 8px 12px; border-radius: 10px; line-height: 1.35;
+  .gutter { flex: 0 0 6px; background: transparent; cursor: col-resize; transition: background .12s; }
+  .gutter:hover { background: var(--line-2); }
+  button { font-family: inherit; cursor: pointer; border: 0; border-radius: var(--radius-sm);
+           transition: background .12s, border-color .12s, opacity .12s; }
+
+  /* — Chat pane — */
+  #chat { flex: 0 0 var(--chat-w, 384px); display: flex; flex-direction: column;
+          border-right: 1px solid var(--line); background: var(--surface); }
+  #chat h1 { font-size: 0.95rem; font-weight: 600; letter-spacing: -.01em; margin: 0;
+             padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  #messages { flex: 1; overflow-y: auto; padding: 16px 18px; display: flex;
+              flex-direction: column; gap: 9px; }
+  .bot, .user { max-width: 86%; padding: 9px 13px; border-radius: 13px; line-height: 1.45;
                 white-space: pre-wrap; overflow-wrap: anywhere; }
-  .bot { background: #eef2f6; align-self: flex-start; }
-  .user { background: #1d6fd1; color: #fff; align-self: flex-end; }
-  .card { border: 1px solid #d8dee5; border-left: 4px solid #2e9e6b; border-radius: 8px;
-          padding: 8px 12px; font-size: 0.85rem; background: #fbfcfd; align-self: stretch; }
-  .card .kind { font-size: 0.7rem; text-transform: uppercase; color: #5d6b7a; }
-  .card .prov { margin-top: 6px; padding: 6px 8px; background: #f1f4f8; border-radius: 6px;
-                font-size: 0.78rem; color: #3c4a59; }
-  .card .prov-h { font-size: 0.68rem; text-transform: uppercase; color: #7a8794; margin-bottom: 2px; }
-  .card .prov-row { line-height: 1.3; margin: 1px 0; }
-  .card .actions { margin-top: 6px; display: flex; gap: 6px; }
-  .card .actions button { padding: 4px 10px; font-size: 0.8rem; }
-  .card .actions .reject { background: #d15c4f; }
-  .card .actions .edit { background: #5d6b7a; }
-  #chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 18px; }
-  .chip { display: inline-flex; align-items: center; gap: 4px; background: #e8f0fa;
-          border: 1px solid #b9d2ef; border-radius: 999px; padding: 2px 10px; font-size: 0.78rem; }
-  .chip button { background: none; border: 0; color: #5d6b7a; cursor: pointer; padding: 0 2px; font-size: 0.85rem; }
-  form { display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid #d8dee5; align-items: flex-end; }
-  textarea { flex: 1; padding: 9px 12px; border: 1px solid #c4ccd4; border-radius: 8px;
-             font-size: 0.95rem; font-family: inherit; line-height: 1.4; resize: none;
-             min-height: 44px; max-height: 180px; overflow-y: auto; }
-  button { padding: 9px 16px; border: 0; border-radius: 8px; background: #1d6fd1; color: #fff; cursor: pointer; }
+  .bot { background: #f1f3f6; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .user { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .handoff { align-self: stretch; margin-top: 2px; display: flex; align-items: center; gap: 7px;
+             padding: 8px 12px; border-radius: var(--radius-sm); font-size: 0.8rem;
+             color: var(--warn); background: var(--warn-soft); border: 1px solid var(--warn-line); }
+  .handoff svg { flex: 0 0 auto; }
+  #chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 18px 0; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-soft);
+          border: 1px solid #cdddfb; border-radius: 999px; padding: 2px 10px; font-size: 0.76rem; color: #244e9e; }
+  .chip button { background: none; color: #5d6b7a; padding: 0 2px; font-size: 0.85rem; }
+  form { display: flex; gap: 8px; padding: 13px 18px; border-top: 1px solid var(--line); align-items: flex-end; }
+  textarea { flex: 1; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: var(--radius-sm);
+             font-size: 0.92rem; font-family: inherit; line-height: 1.4; resize: none;
+             min-height: 44px; max-height: 180px; overflow-y: auto; background: #fcfcfd; transition: border-color .12s; }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  form > button { padding: 10px 17px; background: var(--accent); color: #fff; font-weight: 500; }
+  form > button:hover { background: #2658c9; }
+
+  /* — Map pane — */
   #mappane { position: relative; display: flex; flex-direction: column; flex: 1 1 0; }
   #cy { flex: 1; position: relative; }
-  #detail { position: absolute; left: 12px; bottom: 12px; right: 12px; background: #ffffffe6;
-            border: 1px solid #d8dee5; border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;
-            min-height: 1.2em; z-index: 5; }
-  #empty { position: absolute; inset: 0; display: grid; place-items: center; color: #8a97a5; }
-  #gatestrip { background: #fdf3dd; border-top: 1px solid #ecd9a8; color: #7a5d18;
-               font-size: 0.78rem; padding: 6px 12px; }
+  #detail { position: absolute; left: 14px; bottom: 14px; right: 14px; background: #ffffffec;
+            border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 9px 13px;
+            font-size: 0.82rem; min-height: 1.2em; z-index: 5; backdrop-filter: blur(3px); }
+  #empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--ink-faint); }
+  #gatestrip { background: var(--warn-soft); border-top: 1px solid var(--warn-line); color: var(--warn);
+               font-size: 0.78rem; padding: 7px 13px; }
   .factstrip { background: #fdeae6; border-top: 1px solid #f0c2b6; color: #a04335;
-               font-size: 0.78rem; padding: 6px 12px; }
-  /* « the assistant is thinking » indicator while a turn is in flight */
+               font-size: 0.78rem; padding: 7px 13px; }
   .thinking { align-self: flex-start; display: inline-flex; gap: 5px; align-items: center;
-              background: #eef2f6; padding: 11px 14px; border-radius: 10px; }
-  .thinking .dot { width: 7px; height: 7px; border-radius: 50%; background: #8a97a5;
+              background: #f1f3f6; padding: 12px 15px; border-radius: 13px; }
+  .thinking .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint);
                    animation: sg-blink 1.2s infinite both; }
   .thinking .dot:nth-child(2) { animation-delay: .2s; }
   .thinking .dot:nth-child(3) { animation-delay: .4s; }
   @keyframes sg-blink { 0%, 80%, 100% { opacity: .2; transform: translateY(0); }
                         40% { opacity: 1; transform: translateY(-3px); } }
-  /* why scoping ended — made visible for the demo */
-  #closebadge { background: #e3f4ea; border-top: 1px solid #b5dfc6; color: #1e6e43;
-                font-size: 0.82rem; padding: 7px 12px; font-weight: 600; }
-  #closebadge.damping { background: #fdf3dd; border-color: #ecd9a8; color: #7a5d18; }
-  #rejected { border-top: 1px solid #d8dee5; background: #fff; font-size: 0.85rem; max-height: 30vh; overflow-y: auto; }
-  #rejected summary { padding: 8px 12px; cursor: pointer; color: #5d6b7a; }
-  #rejected .row { display: flex; justify-content: space-between; align-items: center;
-                   gap: 8px; padding: 4px 12px; border-top: 1px solid #eef2f6; }
-  #rejected .row button { padding: 3px 10px; font-size: 0.78rem; background: #5d6b7a; }
-  #edb { flex: 0 0 var(--edb-w, 340px); border-left: 1px solid #d8dee5; background: #fff; overflow-y: auto; }
-  #edb h2 { font-size: 1rem; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d8dee5;
-            display: flex; justify-content: space-between; align-items: center; }
-  #edb .badge { font-size: 0.72rem; font-weight: normal; background: #fdf3dd; color: #7a5d18;
-                border: 1px solid #ecd9a8; border-radius: 999px; padding: 2px 10px; }
-  #edb .badge.done { background: #e3f4ea; color: #1e6e43; border-color: #b5dfc6; }
-  .section { padding: 10px 18px; border-bottom: 1px solid #eef2f6; }
-  .section h3 { margin: 0 0 4px; font-size: 0.82rem; color: #3c4a59; }
-  .section .muted { color: #aab6c2; }
-  .entry { font-size: 0.83rem; margin: 3px 0; line-height: 1.35;
-           white-space: pre-wrap; overflow-wrap: anywhere; }
-  .src { font-size: 0.66rem; text-transform: uppercase; border-radius: 4px; padding: 1px 5px;
-         margin-right: 5px; background: #eef2f6; color: #5d6b7a; vertical-align: middle; }
-  .src.user { background: #e3f4ea; color: #1e6e43; }
-  .src.llm { background: #ece7f8; color: #5b3fa8; }
-  .src.claim { background: #fdeae6; color: #a04335; }
+  #closebadge { background: var(--ok-soft); border-top: 1px solid #bfe4d2; color: var(--ok);
+                font-size: 0.82rem; padding: 8px 13px; font-weight: 500; }
+  #closebadge.damping { background: var(--warn-soft); border-color: var(--warn-line); color: var(--warn); }
+  #rejected { border-top: 1px solid var(--line); background: var(--surface); font-size: 0.83rem;
+              max-height: 30vh; overflow-y: auto; }
+  #rejected summary { padding: 9px 13px; cursor: pointer; color: var(--ink-soft); }
+  #rejected .row { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+                   padding: 5px 13px; border-top: 1px solid var(--line); }
+  #rejected .row button { padding: 3px 10px; font-size: 0.76rem; background: #eef0f3; color: var(--ink-soft); }
+  #rejected .row button:hover { background: #e3e6eb; }
+
+  /* — EDB pane — */
+  #edb { flex: 0 0 var(--edb-w, 360px); border-left: 1px solid var(--line); background: var(--surface); overflow-y: auto; }
+  #edb h2 { font-size: 0.95rem; font-weight: 600; letter-spacing: -.01em; margin: 0;
+            padding: 16px 18px; border-bottom: 1px solid var(--line);
+            display: flex; align-items: center; gap: 8px; position: sticky; top: 0; background: var(--surface); z-index: 2; }
+  #edb h2 .title { margin-right: auto; }
+  .badge { font-size: 0.7rem; font-weight: 500; background: #f1f3f6; color: var(--ink-soft);
+           border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 10px; }
+  .badge.done { background: var(--ok-soft); color: var(--ok); border-color: #bfe4d2; }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); border-color: var(--warn-line); }
+  .validate-all { font-size: 0.74rem; font-weight: 500; padding: 4px 11px; color: var(--warn);
+                  background: var(--warn-soft); border: 1px solid var(--warn-line); display: inline-flex; align-items: center; gap: 4px; }
+  .validate-all:hover { background: #f6ebd4; }
+  .section { padding: 12px 18px; border-bottom: 1px solid var(--line); }
+  .section .sec-head { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .section h3 { margin: 0; font-size: 0.78rem; font-weight: 600; color: var(--ink-soft);
+                text-transform: uppercase; letter-spacing: .03em; }
+  .sec-validate { margin-left: auto; font-size: 0.7rem; font-weight: 500; padding: 3px 9px;
+                  color: var(--ok); background: var(--ok-soft); border: 1px solid #bfe4d2; display: inline-flex; align-items: center; gap: 4px; }
+  .sec-validate:hover { background: #d8efe3; }
+  .section .muted { color: var(--ink-faint); font-size: 0.82rem; }
+  .entry { font-size: 0.84rem; margin: 5px 0; line-height: 1.45;
+           white-space: pre-wrap; overflow-wrap: anywhere; display: flex; gap: 6px; align-items: baseline; }
+  .src { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .02em; border-radius: 5px;
+         padding: 1px 6px; flex: 0 0 auto; font-weight: 600; }
+  .src.user { background: var(--user-soft); color: var(--user); }
+  .src.llm { background: var(--llm-soft); color: var(--llm); }
+  .src.claim { background: var(--claim-soft); color: var(--claim); }
+
+  /* — Pending proposal (validate in place) — */
+  .prop { border: 1px dashed var(--warn-line); background: var(--warn-soft); border-radius: var(--radius-sm);
+          padding: 9px 11px; margin: 7px 0; }
+  .prop .prop-tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: .04em;
+                    font-weight: 600; color: var(--warn); }
+  .prop .prop-text { font-size: 0.84rem; line-height: 1.45; margin-top: 3px; color: var(--ink); }
+  .prop .src-toggle { background: none; padding: 0; margin-top: 6px; font-size: 0.74rem; color: var(--ink-soft); }
+  .prop .src-toggle:hover { color: var(--ink); }
+  .prop .src-box { margin-top: 6px; padding: 7px 9px; background: #fff; border: 1px solid var(--warn-line);
+                   border-radius: 6px; font-size: 0.78rem; color: var(--ink-soft); }
+  .prop .src-row { line-height: 1.35; margin: 2px 0; }
+  .prop .actions { display: flex; gap: 6px; margin-top: 9px; }
+  .prop .actions button { padding: 4px 11px; font-size: 0.76rem; font-weight: 500;
+                          border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-soft); }
+  .prop .actions .accept { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .prop .actions .accept:hover { background: #0f7350; }
+  .prop .actions .edit:hover { background: #eef0f3; }
+  .prop .actions .reject { color: var(--danger); }
+  .prop .actions .reject:hover { background: #faecea; }
 </style>
 </head>
 <body x-data="app()" x-init="start(); setupResizers()">
@@ -98,27 +147,13 @@
       <template x-for="m in messages">
         <div :class="m.role" x-text="m.text"></div>
       </template>
-      <template x-for="c in cards" :key="c.id">
-        <div class="card">
-          <div class="kind" x-text="c.kind === 'claim' ? 'Affirmation à valider' : 'Élément d\'EDB proposé'"></div>
-          <div x-text="c.text"></div>
-          <template x-if="(c.provenance || []).length">
-            <div class="prov">
-              <div class="prov-h">Source (texte du référentiel) :</div>
-              <template x-for="src in c.provenance" :key="src.node_id">
-                <div class="prov-row"><b x-text="src.label || src.node_id"></b><span x-text="' — ' + src.text"></span></div>
-              </template>
-            </div>
-          </template>
-          <div class="actions">
-            <button @click="decide(c.id, 'accept')">Accepter</button>
-            <button class="edit" @click="edit(c)">Modifier</button>
-            <button class="reject" @click="decide(c.id, 'reject')">Refuser</button>
-          </div>
-        </div>
-      </template>
       <div class="bot thinking" x-show="thinking">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <div class="handoff" x-show="cards.length" x-cloak>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        <span x-text="`${cards.length} proposition(s) à valider dans l'Expression de besoin`"></span>
       </div>
     </div>
     <div id="chips" x-show="enrichments.length">
@@ -163,17 +198,58 @@
   </section>
   <div class="gutter" data-resize="edb" title="Glisser pour redimensionner"></div>
   <section id="edb">
-    <h2>Expression de besoin
-      <span class="badge" :class="missing.length === 0 && 'done'"
-            x-text="missing.length ? `${missing.length} section(s) à remplir` : 'complète'"></span>
+    <h2>
+      <span class="title">Expression de besoin</span>
+      <template x-if="cards.length">
+        <span class="badge warn" x-text="`${cards.length} à valider`"></span>
+      </template>
+      <template x-if="cards.length">
+        <button class="validate-all" @click="acceptAll()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round"><path d="M2 12l5 5L17 6M13 16l3 3 6-7"/></svg>
+          Tout valider
+        </button>
+      </template>
+      <template x-if="!cards.length">
+        <span class="badge" :class="missing.length === 0 && 'done'"
+              x-text="missing.length ? `${missing.length} section(s) à remplir` : 'complète'"></span>
+      </template>
     </h2>
     <template x-for="s in sections" :key="s.id">
       <div class="section">
-        <h3 x-text="s.title"></h3>
-        <template x-if="!(edb[s.id] || []).length"><div class="entry muted">—</div></template>
-        <template x-for="e in edb[s.id] || []">
+        <div class="sec-head">
+          <h3 x-text="s.title"></h3>
+          <button class="sec-validate" x-show="pendingFor(s.id).length" @click="acceptSection(s.id)"
+                  x-text="`Valider la section · ${pendingFor(s.id).length}`"></button>
+        </div>
+        <template x-if="!(edb[s.id] || []).length && !pendingFor(s.id).length">
+          <div class="muted">—</div>
+        </template>
+        <template x-for="e in edb[s.id] || []" :key="e.text">
           <div class="entry">
             <span class="src" :class="srcClass(e.source)" x-text="srcLabel(e.source)"></span><span x-text="e.text"></span>
+          </div>
+        </template>
+        <template x-for="c in pendingFor(s.id)" :key="c.id">
+          <div class="prop" x-data="{ open: false }">
+            <div class="prop-tag" x-text="kindLabel(c)"></div>
+            <div class="prop-text" x-text="c.text"></div>
+            <template x-if="(c.provenance || []).length">
+              <div>
+                <button class="src-toggle" @click="open = !open"
+                        x-text="open ? '▾ masquer la source' : '▸ voir la source (référentiel)'"></button>
+                <div class="src-box" x-show="open" x-cloak>
+                  <template x-for="src in c.provenance" :key="src.node_id">
+                    <div class="src-row"><b x-text="src.label || src.node_id"></b><span x-text="' — ' + src.text"></span></div>
+                  </template>
+                </div>
+              </div>
+            </template>
+            <div class="actions">
+              <button class="accept" @click="decide(c.id, 'accept')">Accepter</button>
+              <button class="edit" @click="edit(c)">Modifier</button>
+              <button class="reject" @click="decide(c.id, 'reject')">Refuser</button>
+            </div>
           </div>
         </template>
       </div>
@@ -200,6 +276,17 @@ const EDB_SECTIONS = [
   { id: "carte", title: "Context Map" },
 ];
 let cy = null;
+let lastMapSig = null;
+
+// Fingerprint of the map data (kept nodes + their roles + edges). Used to skip a needless
+// rebuild when nothing about the graph changed — e.g. validating EDB cards leaves the map
+// identical, so it must stay put instead of re-running the force layout and shuffling.
+function mapSignature(payload) {
+  if (!payload) return "none";
+  const n = payload.nodes.map(x => `${x.id}:${x.role || ""}:${x.score || ""}:${x.via || ""}`).sort().join("|");
+  const e = payload.edges.map(x => `${x.source}>${x.target}:${x.type || ""}`).sort().join("|");
+  return n + "##" + e;
+}
 
 // Draggable splitters: drag a gutter to resize the chat (left) or EDB (right) pane;
 // the map pane flexes to fill the rest. Widths persist as CSS vars on :root.
@@ -212,7 +299,7 @@ function setupResizers() {
       const varName = which === "chat" ? "--chat-w" : "--edb-w";
       const startX = e.clientX;
       const startW = parseFloat(getComputedStyle(root).getPropertyValue(varName))
-                     || (which === "chat" ? 380 : 340);
+                     || (which === "chat" ? 384 : 360);
       const onMove = ev => {
         const delta = ev.clientX - startX;
         let w = which === "chat" ? startW + delta : startW - delta;  // edb grows leftward
@@ -233,6 +320,11 @@ function setupResizers() {
 }
 
 function renderMap(payload, ui) {
+  // Map unchanged (e.g. accepting/rejecting EDB cards) → keep the current graph and its
+  // node positions; do NOT destroy + relayout, which is what made it jump around.
+  const sig = mapSignature(payload);
+  if (sig === lastMapSig) { ui.hasMap = !!(payload && payload.nodes.length); return; }
+  lastMapSig = sig;
   if (!payload) {  // conversational « entrée » phase: subject not stated yet, no map
     ui.hasMap = false;
     if (cy) { cy.destroy(); cy = null; }
@@ -320,6 +412,12 @@ function app() {
     srcClass(source) {
       return source.startsWith("claim:") ? "claim" : source;
     },
+    kindLabel(card) {  // pending proposal heading
+      return card.kind === "claim" ? "Affirmation à valider" : "Élément d'EDB proposé";
+    },
+    pendingFor(sectionId) {  // pending proposals routed to this EDB section
+      return this.cards.filter(c => (c.payload.section_id || c.payload.target_section) === sectionId);
+    },
     async call(path, options) {
       const response = await fetch(`/api/session/${this.sessionId}${path}`, options);
       if (!response.ok) { this.push("bot", "Erreur — reformulez ou réessayez."); return null; }
@@ -332,6 +430,7 @@ function app() {
       this.draft = "";
       if (this.$refs.input) this.$refs.input.style.height = "auto";  // collapse after send
       this.thinking = true;  // show the « assistant is thinking » indicator
+      const thinkStart = Date.now();
       this.$nextTick(() => { const el = document.getElementById("messages"); el.scrollTop = el.scrollHeight; });
       let data;
       try {
@@ -341,6 +440,11 @@ function app() {
           body: JSON.stringify({ text }),
         });
       } finally {
+        // Hold the indicator for a brief minimum so a fast (cached) reply still shows a
+        // « working » beat instead of flickering — a no-op when the real LLM is slower.
+        const MIN_THINKING_MS = 700;
+        const elapsed = Date.now() - thinkStart;
+        if (elapsed < MIN_THINKING_MS) await new Promise((r) => setTimeout(r, MIN_THINKING_MS - elapsed));
         this.thinking = false;
       }
       if (!data) return;
@@ -357,6 +461,12 @@ function app() {
         body: JSON.stringify({ decision, edited_text: editedText }),
       });
     },
+    async acceptSection(sectionId) {  // validate every pending proposal of one section
+      for (const card of this.pendingFor(sectionId)) await this.decide(card.id, "accept");
+    },
+    async acceptAll() {  // validate every pending proposal, in template order
+      for (const card of [...this.cards]) await this.decide(card.id, "accept");
+    },
     edit(card) {
       const text = prompt("Modifier avant d'accepter :", card.text);
       if (text !== null && text.trim()) this.decide(card.id, "accept", text.trim());
@@ -370,5 +480,6 @@ function app() {
   };
 }
 </script>
+<style>[x-cloak] { display: none !important; }</style>
 </body>
 </html>

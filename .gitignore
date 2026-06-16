@@ -17,3 +17,10 @@ out/
 node_modules/
 tools/screenshots/package-lock.json
 .demo-cache/
+.demo_cache/
+tools/screenshots/_rec/
+server-demo.log
+
+# demo videos are testing-only (kept out of the repo, see history); stills (*.png) are fine
+assets/demo/*.webm
+assets/demo/*.mp4

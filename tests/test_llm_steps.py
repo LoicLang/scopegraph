@@ -11,6 +11,7 @@ from core.runtime.llm_steps import (
     interpret_tie_answer,
     judge_statement_fidelity,
     pick_question,
+    synthesize_section,
 )
 from core.runtime.pool import Candidate
 from core.runtime.triggers import WeakBriefTrigger
@@ -150,6 +151,18 @@ def test_judge_statement_swallows_contract_failure():
 def test_judge_statement_filters_blank_issues():
     provider = MockProvider([{"issues": ["", "  ", "vrai problème"]}])
     assert judge_statement_fidelity(provider, "x", ["y"]) == ["vrai problème"]
+
+
+def test_synthesize_section_merges_via_provider():
+    mock = MockProvider([{"texte": "Texte fusionné, clair et bien rédigé."}])
+    out = synthesize_section(mock, "Expression du besoin", "ancien texte", "nouvel apport")
+    assert out == "Texte fusionné, clair et bien rédigé."
+
+
+def test_synthesize_section_degrades_to_none():
+    assert synthesize_section(None, "S", "a", "b") is None  # no provider
+    bad = MockProvider([{"x": 1}, {"y": 2}])                # missing "texte" twice → None
+    assert synthesize_section(bad, "S", "a", "b") is None
 
 
 def test_pick_question_none_provider_uses_templates():

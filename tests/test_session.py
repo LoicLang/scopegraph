@@ -415,3 +415,20 @@ def test_tie_answer_matches_whole_domain_tokens_only() -> None:
     ]
     assert _match_domains("le credit, clairement", ("credit", "credit-immobilier")) == ["credit"]
     assert _match_domains("les deux", ("credit", "monetique")) == []
+
+
+def test_accept_two_field_cards_synthesizes_one_clean_user_entry():
+    from core.runtime.ledger import Proposal
+
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    provider = MockProvider([{"texte": "Synthèse claire des deux apports."}])
+    session = ScopingSession(service, index, provider=provider)
+    p1 = session.ledger.add(Proposal.field(section_id="besoin", text="premier apport", node_refs=[]))
+    p2 = session.ledger.add(Proposal.field(section_id="besoin", text="second apport", node_refs=[]))
+    session.accept_proposal(p1)  # no existing user entry → kept as-is (already reformulated)
+    session.accept_proposal(p2)  # existing → the whole field is re-synthesized into one text
+    users = [e for e in session.edb.sections["besoin"] if e.source == "user"]
+    assert len(users) == 1
+    assert users[0].text == "Synthèse claire des deux apports."

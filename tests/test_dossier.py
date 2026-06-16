@@ -47,6 +47,23 @@ def test_completeness_lists_missing_user_facing_sections():
     assert "challenge" not in missing  # llm-owned, never asked
 
 
+def test_set_user_entry_keeps_one_user_entry_first_and_preserves_claims():
+    state = EdbState.new()
+    state.add_entry("besoin", EdbEntry(source="user", text="première formulation"))
+    state.add_entry("besoin", EdbEntry(source="claim:c1", text="claim text", node_refs=["sys-x"]))
+    state.set_user_entry("besoin", "formulation synthétisée", ["sys-y"])  # replaces the user entry
+    user = state.user_entry("besoin")
+    assert user is not None and user.text == "formulation synthétisée" and user.node_refs == ["sys-y"]
+    assert [e.source for e in state.sections["besoin"]] == ["user", "claim:c1"]  # user first
+    assert sum(e.source == "user" for e in state.sections["besoin"]) == 1  # exactly one
+
+
+def test_user_entry_is_none_when_only_claims():
+    state = EdbState.new()
+    state.add_entry("risques", EdbEntry(source="claim:c1", text="r"))
+    assert state.user_entry("risques") is None
+
+
 def test_state_round_trips_through_dict():
     state = EdbState.new()
     state.add_entry("risques", EdbEntry(source="claim:c1", text="r", node_refs=["risk-x"]))

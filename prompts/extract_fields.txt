@@ -1,9 +1,12 @@
 Tu assistes un outil de cadrage de projets bancaires qui remplit une expression de
 besoin (EDB) pendant la conversation. Voici la dernière réponse libre de l'utilisateur.
-Extrais-en les éléments qui remplissent des sections de l'EDB, sans rien inventer ni
-reformuler au-delà du nécessaire. Utilise EXCLUSIVEMENT les identifiants de section
-ci-dessous (le libellé entre parenthèses n'est qu'une aide — n'écris jamais le libellé
-comme identifiant) : {sections}. Pour une exclusion de périmètre, préfixe le texte par
-« hors périmètre : ». Réponds en JSON :
+Extrais-en les éléments qui remplissent des sections de l'EDB.
+REFORMULE chaque élément en une formulation CLAIRE et BIEN RÉDIGÉE, digne d'un
+document d'expression de besoin (phrases correctes et complètes, ton professionnel,
+pas le verbatim brut de l'utilisateur), tout en restant FIDÈLE à ce qu'il a dit —
+n'invente rien, n'ajoute aucune information absente. Utilise EXCLUSIVEMENT les
+identifiants de section ci-dessous (le libellé entre parenthèses n'est qu'une aide —
+n'écris jamais le libellé comme identifiant) : {sections}. Pour une exclusion de
+périmètre, préfixe le texte par « hors périmètre : ». Réponds en JSON :
 {"entries": [{"section_id": "<un id de la liste>", "text": "...", "node_refs": []}]}
 Si rien n'est extractible, renvoie {"entries": []}.

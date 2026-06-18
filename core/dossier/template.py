@@ -87,6 +87,21 @@ class EdbState:
             raise KeyError(f"unknown EDB section: {section_id}")
         self.sections[section_id].append(entry)
 
+    def user_entry(self, section_id: str) -> EdbEntry | None:
+        """The single synthesized user-sourced entry of a section, if any."""
+        for entry in self.sections.get(section_id, []):
+            if entry.source == "user":
+                return entry
+        return None
+
+    def set_user_entry(self, section_id: str, text: str, node_refs: list[str]) -> None:
+        """Replace the section's user content with ONE synthesized entry (kept first);
+        claim/llm entries are preserved."""
+        if section_id not in self.sections:
+            raise KeyError(f"unknown EDB section: {section_id}")
+        others = [e for e in self.sections[section_id] if e.source != "user"]
+        self.sections[section_id] = [EdbEntry("user", text, list(node_refs)), *others]
+
     def status(self, section_id: str) -> str:
         return "filled" if self.sections[section_id] else "empty"
 

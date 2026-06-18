@@ -114,6 +114,26 @@ def extract_excluded_domains(
     return excluded
 
 
+def synthesize_section(
+    provider: LLMProvider | None, section_title: str, existing_text: str, new_text: str
+) -> str | None:
+    """Re-write a section's USER content as ONE coherent, well-written text that merges
+    the existing text with a newly accepted element (not a list of messages). None when
+    there's no provider or the JSON contract fails — the caller falls back to a plain
+    concatenation (never blocking)."""
+    if provider is None:
+        return None
+    user = (f"Section : {section_title}\n\n"
+            f"Texte actuel de la section :\n{existing_text}\n\n"
+            f"Nouvel élément validé à intégrer :\n{new_text}")
+    try:
+        out = complete_with_retry(provider, load_prompt("synthesize_section"), user,
+                                  required_keys=("texte",))
+    except JsonContractError:
+        return None
+    return str(out.get("texte", "")).strip() or None
+
+
 def interpret_pivot_answer(
     provider: LLMProvider | None, question: str, answer: str, domain: str
 ) -> str | None:

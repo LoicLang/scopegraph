@@ -9,7 +9,7 @@ import datetime
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from core.dossier.template import EdbEntry, EdbState
+from core.dossier.template import EdbEntry, EdbState, section_spec
 from core.graph.service import GraphService
 from core.llm.json_contract import JsonContractError, complete_with_retry
 from core.llm.prompts import load_prompt
@@ -44,6 +44,7 @@ from core.runtime.llm_steps import (
     judge_statement_fidelity,
     pick_question,
     render_grounded_challenge,
+    synthesize_section,
 )
 from core.runtime.pool import Candidate, build_pool
 from core.runtime.triggers import DomainTieTrigger, PivotTrigger
@@ -586,14 +587,25 @@ class ScopingSession:
     def accept_proposal(self, pid: str, edited_text: str | None = None) -> Proposal:
         proposal = self.ledger.accept(pid, edited_text)
         if proposal.kind == "field":
-            self.edb.add_entry(proposal.payload["section_id"], EdbEntry(
-                source="user", text=proposal.text,
-                node_refs=list(proposal.payload["node_refs"])))
+            # Keep ONE synthesized user entry per section: merge the (already reformulated)
+            # new text into the existing one — a clean field, never a list of messages.
+            section_id = proposal.payload["section_id"]
+            refs = list(proposal.payload["node_refs"])
+            existing = self.edb.user_entry(section_id)
+            if existing is None:
+                text = proposal.text
+            else:
+                merged = synthesize_section(
+                    self._provider, section_spec(section_id).title_fr,
+                    existing.text, proposal.text)
+                text = merged if merged is not None else f"{existing.text}\n{proposal.text}"
+                refs = list(dict.fromkeys(existing.node_refs + refs))  # union, order-kept
+            self.edb.set_user_entry(section_id, text, refs)
         elif proposal.kind == "statement":
             # #4: accepting a quarantined statement writes it into the challenge section.
             source = "user" if edited_text is not None else "llm"
             self.edb.add_entry("challenge", EdbEntry(source=source, text=proposal.text))
-        else:  # claim
+        else:  # claim — kept as a distinct, traceable entry (its own node provenance)
             self.edb.add_entry(proposal.payload["target_section"], EdbEntry(
                 source=f"claim:{pid}", text=proposal.text,
                 node_refs=list(proposal.payload["node_ids"])))

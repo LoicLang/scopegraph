@@ -833,3 +833,20 @@ def test_audit_fixes_hold_end_to_end() -> None:
     assert session.edb.sections["challenge"] == []
     statement_cards = [c for c in cards if c.kind == "statement"]
     assert statement_cards and statement_cards[0].payload["issues"]
+
+
+def test_accept_two_field_cards_synthesizes_one_clean_user_entry():
+    from core.runtime.ledger import Proposal
+
+    service = make_service()
+    index = VectorIndex(FakeEmbedder(["canal"]))
+    index.build(service)
+    provider = MockProvider([{"texte": "Synthèse claire des deux apports."}])
+    session = ScopingSession(service, index, provider=provider)
+    p1 = session.ledger.add(Proposal.field(section_id="besoin", text="premier apport", node_refs=[]))
+    p2 = session.ledger.add(Proposal.field(section_id="besoin", text="second apport", node_refs=[]))
+    session.accept_proposal(p1)  # no existing user entry → kept as-is (already reformulated)
+    session.accept_proposal(p2)  # existing → the whole field is re-synthesized into one text
+    users = [e for e in session.edb.sections["besoin"] if e.source == "user"]
+    assert len(users) == 1
+    assert users[0].text == "Synthèse claire des deux apports."

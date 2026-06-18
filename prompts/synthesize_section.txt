@@ -1,0 +1,12 @@
+Tu rédiges une section d'une expression de besoin (EDB) d'un projet bancaire. On te
+donne le texte ACTUEL de la section et un NOUVEL élément validé par l'utilisateur à y
+intégrer.
+
+Produis UN seul texte, clair et bien rédigé, qui FUSIONNE le tout — surtout PAS une
+liste de messages ni une juxtaposition. Le résultat doit se lire comme un paragraphe
+(ou quelques phrases / puces si c'est plus clair) cohérent et professionnel pour cette
+section. Reste strictement FIDÈLE au contenu existant et au nouvel élément : n'invente
+rien, n'ajoute aucune information, ne contredis rien. Élimine les redites, ordonne
+logiquement, et soigne la formulation. Garde le texte concis.
+
+Réponds en JSON : {"texte": "..."}
